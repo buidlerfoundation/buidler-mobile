@@ -1,72 +1,50 @@
-import actions from 'actions';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {ThemeType} from 'models';
 import React from 'react';
-import {View, StyleSheet, Text, Image, Platform} from 'react-native';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import themes from 'themes';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import NavigationServices from 'services/NavigationServices';
-import {StackID} from 'common/ScreenID';
-import PushNotificationHelper from 'helpers/PushNotificationHelper';
+import {View, StyleSheet, Text} from 'react-native';
+import {useTheme} from '@react-navigation/native';
+import {utils} from 'ethers';
+import RNGoldenKeystore from 'react-native-golden-keystore';
 
-type LoginScreenProps = {
-  themeType: ThemeType;
-  login: (accessToken: string, callback: (res: boolean) => void) => boolean;
-  findTeamAndChannel?: () => any;
-  getInitial?: () => any;
-};
-
-const LoginScreen = ({
-  themeType,
-  login,
-  findTeamAndChannel,
-  getInitial,
-}: LoginScreenProps) => {
-  const {colors} = themes[themeType];
-  const title = 'Today\nis a new day';
-  const onGoogleLogin = async () => {
-    try {
-      if (Platform.OS === 'ios') {
-        await GoogleSignin.configure();
-      } else {
-        await GoogleSignin.configure({
-          webClientId:
-            '5581270904-hjbadilhbi84ag2enn82fvu9donbll07.apps.googleusercontent.com',
-        });
-      }
-      await GoogleSignin.signOut();
-      const userInfo = await GoogleSignin.signIn();
-      NavigationServices.showLoading();
-      login(userInfo.idToken, async res => {
-        if (res) {
-          await Promise.all([getInitial(), findTeamAndChannel()]);
-          await PushNotificationHelper.init();
-          NavigationServices.hideLoading();
-          NavigationServices.replace(StackID.HomeStack);
-        }
-      });
-      console.log(userInfo);
-    } catch (e) {
-      console.log(e);
-      NavigationServices.hideLoading();
-    }
+const LoginScreen = () => {
+  const {colors} = useTheme();
+  const title = 'Your chats is\nYour tasks';
+  const onCreatePress = async () => {
+    const seed = await RNGoldenKeystore.generateMnemonic();
+    const {private_key} = await RNGoldenKeystore.createHDKeyPair(
+      seed,
+      '',
+      RNGoldenKeystore.CoinType.ETH.path,
+      0,
+    );
+    const publicKey = utils.computePublicKey(`0x${private_key}`, true);
+    console.log(seed);
+    console.log(private_key);
+    console.log(publicKey);
   };
+  const onImportPress = () => {};
   return (
     <View style={styles.container}>
       <SVG.Logo width={80} height={80} />
       <Text style={[styles.title, {color: colors.text}]}>{title}</Text>
       <Text style={[styles.description, {color: colors.text}]}>
-        Remote Today is a daily tool for chat, tasks, meeting for remote
-        working.
+        Buidler is a daily tool for chat, tasks, meeting for remote working.
       </Text>
-      <Touchable style={styles.loginButton} onPress={onGoogleLogin}>
-        <Image source={require('assets/images/logo_google.png')} />
-        <Text style={styles.loginGoogleText}>Sign in with Google</Text>
+      <Touchable
+        style={[styles.createButton, {backgroundColor: colors.primary}]}
+        onPress={onCreatePress}>
+        <Text style={[styles.text, {color: colors.text}]}>
+          Create a new wallet
+        </Text>
+      </Touchable>
+      <Touchable
+        style={[styles.importButton, {backgroundColor: colors.border}]}
+        onPress={onImportPress}>
+        <Text style={[styles.text, {color: colors.text}]}>
+          Import existing wallet
+        </Text>
       </Touchable>
     </View>
   );
@@ -107,15 +85,25 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
     marginTop: 30,
   },
+  createButton: {
+    marginTop: 70,
+    borderRadius: 5,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  importButton: {
+    marginTop: 20,
+    borderRadius: 5,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 16,
+    lineHeight: 19,
+    fontFamily: Fonts.SemiBold,
+  },
 });
 
-const mapStateToProps = (state: any) => {
-  return {
-    themeType: state.configs.theme,
-  };
-};
-
-const mapActionsToProps = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(mapStateToProps, mapActionsToProps)(LoginScreen);
+export default LoginScreen;

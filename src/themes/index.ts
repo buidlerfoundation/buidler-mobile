@@ -3,7 +3,7 @@ import {ExtendedTheme} from '@react-navigation/native';
 const light: ExtendedTheme = {
   dark: false,
   colors: {
-    primary: '#d8292f',
+    primary: '#092555',
     secondary: '#616161',
     background: '#191919',
     card: '#FFFFFF',
@@ -33,7 +33,7 @@ const light: ExtendedTheme = {
 const dark: ExtendedTheme = {
   dark: true,
   colors: {
-    primary: '#d8292f',
+    primary: '#092555',
     secondary: '#616161',
     background: '#191919',
     card: '#FFFFFF',

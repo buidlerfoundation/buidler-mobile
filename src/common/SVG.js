@@ -7,7 +7,7 @@ import IconCheckOutLine from '../assets/images/ic_check_outline.svg';
 import IconCheckDoing from '../assets/images/ic_check_doing.svg';
 import IconCheckDone from '../assets/images/ic_check_done.svg';
 import IconCheckArchived from '../assets/images/ic_check_archived.svg';
-import Logo from '../assets/images/today_logo.svg';
+import Logo from '../assets/images/logo.svg';
 import IconCreateTask from '../assets/images/ic_create_task.svg';
 import IconPlus from '../assets/images/ic_plus.svg';
 import IconAssign from '../assets/images/ic_assign.svg';
