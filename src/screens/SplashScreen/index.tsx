@@ -16,6 +16,7 @@ type SplashScreenProps = {
   findTeamAndChannel?: () => any;
   getInitial?: () => any;
   setCurrentTeam?: (team: Team, channelId?: string) => any;
+  setRealHeight?: (height: number) => any;
 };
 
 const SplashScreen = ({
@@ -23,6 +24,7 @@ const SplashScreen = ({
   findTeamAndChannel,
   getInitial,
   setCurrentTeam,
+  setRealHeight,
 }: SplashScreenProps) => {
   const initApp = async () => {
     await PushNotificationHelper.init();
@@ -57,7 +59,8 @@ const SplashScreen = ({
   }, []);
   return (
     <View
-      style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}></View>
+      style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}
+      onLayout={e => setRealHeight?.(e.nativeEvent.layout.height)}></View>
   );
 };
 

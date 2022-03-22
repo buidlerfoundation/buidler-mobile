@@ -4,6 +4,10 @@ export default {
   ChannelScreen: 'ChannelScreen',
   ConversationScreen: 'ConversationScreen',
   TaskScreen: 'TaskScreen',
+  CreatePasswordScreen: 'CreatePasswordScreen',
+  StoreSeedPhraseScreen: 'StoreSeedPhraseScreen',
+  BackupScreen: 'BackupScreen',
+  ImportSeedPhraseScreen: 'ImportSeedPhraseScreen',
 };
 
 export const StackID = {

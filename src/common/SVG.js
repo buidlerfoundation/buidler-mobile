@@ -23,6 +23,8 @@ import IconEdit from '../assets/images/ic_edit.svg';
 import IconCircleClose from '../assets/images/ic_circle_close.svg';
 import IconFile from '../assets/images/ic_file.svg';
 import IconDownload from '../assets/images/ic_download.svg';
+import IconArrowBack from '../assets/images/ic_arrow_back.svg';
+import IconCopy from '../assets/images/ic_copy.svg';
 
 export default {
   IconExpand,
@@ -50,4 +52,6 @@ export default {
   IconFile,
   IconDownload,
   IconCheckArchived,
+  IconArrowBack,
+  IconCopy,
 };

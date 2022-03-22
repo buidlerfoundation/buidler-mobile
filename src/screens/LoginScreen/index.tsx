@@ -7,24 +7,29 @@ import {View, StyleSheet, Text} from 'react-native';
 import {useTheme} from '@react-navigation/native';
 import {utils} from 'ethers';
 import RNGoldenKeystore from 'react-native-golden-keystore';
+import NavigationServices from 'services/NavigationServices';
+import ScreenID from 'common/ScreenID';
 
 const LoginScreen = () => {
   const {colors} = useTheme();
   const title = 'Your chats is\nYour tasks';
   const onCreatePress = async () => {
-    const seed = await RNGoldenKeystore.generateMnemonic();
-    const {private_key} = await RNGoldenKeystore.createHDKeyPair(
-      seed,
-      '',
-      RNGoldenKeystore.CoinType.ETH.path,
-      0,
-    );
-    const publicKey = utils.computePublicKey(`0x${private_key}`, true);
-    console.log(seed);
-    console.log(private_key);
-    console.log(publicKey);
+    NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen);
+    // const seed = await RNGoldenKeystore.generateMnemonic();
+    // const {private_key} = await RNGoldenKeystore.createHDKeyPair(
+    //   seed,
+    //   '',
+    //   RNGoldenKeystore.CoinType.ETH.path,
+    //   0,
+    // );
+    // const publicKey = utils.computePublicKey(`0x${private_key}`, true);
+    // console.log(seed);
+    // console.log(private_key);
+    // console.log(publicKey);
   };
-  const onImportPress = () => {};
+  const onImportPress = () => {
+    NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
+  };
   return (
     <View style={styles.container}>
       <SVG.Logo width={80} height={80} />

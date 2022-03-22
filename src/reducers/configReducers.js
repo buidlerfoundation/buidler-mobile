@@ -1,7 +1,7 @@
 import {actionTypes} from 'actions/actionTypes';
 
 const initialState = {
-  theme: 'light',
+  theme: 'dark',
   realHeight: 0,
 };
 
