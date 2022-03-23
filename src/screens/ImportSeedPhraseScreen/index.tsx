@@ -16,7 +16,7 @@ const ImportSeedPhraseScreen = () => {
   const [seed, setSeed] = useState('');
   const fetchCopiedText = async () => {
     const text = await Clipboard.getString();
-    setSeed(text);
+    setSeed(text.toLowerCase());
   };
   const onNextPress = async () => {
     const isValid = await RNGoldenKeystore.mnemonicIsValid(seed);
@@ -48,6 +48,7 @@ const ImportSeedPhraseScreen = () => {
             value={seed}
             onChangeText={text => setSeed(text)}
             multiline
+            autoCapitalize="none"
           />
           <Touchable style={styles.buttonPaste} onPress={fetchCopiedText}>
             <Text style={[styles.textPaste, {color: colors.subtext}]}>

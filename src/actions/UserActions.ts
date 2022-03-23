@@ -226,7 +226,6 @@ export const accessApp =
         const signingKey = new utils.SigningKey(`0x${private_key}`);
         const signature = signingKey.signDigest(msgHashBytes);
         const res = await api.verifyNonce(nonce, signature.compact);
-        console.log(nonce, signature);
         if (res.statusCode === 200) {
           dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
           AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);

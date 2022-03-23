@@ -1,7 +1,7 @@
 import actions from 'actions';
 import {StackID} from 'common/ScreenID';
 import React, {useEffect} from 'react';
-import {View} from 'react-native';
+import {View, Platform} from 'react-native';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import NavigationServices from 'services/NavigationServices';
@@ -10,6 +10,8 @@ import {AsyncKey} from 'common/AppStorage';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import {Team} from 'models';
 import store from '../../store';
+import messaging from '@react-native-firebase/messaging';
+import api from 'services/api';
 
 type SplashScreenProps = {
   findUser?: () => any;
@@ -30,6 +32,11 @@ const SplashScreen = ({
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     if (accessToken) {
       await PushNotificationHelper.init();
+      const deviceToken = await messaging().getToken();
+      await api.addDeviceToken({
+        device_token: deviceToken,
+        platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
+      });
       await Promise.all([getInitial(), findUser(), findTeamAndChannel()]);
       let params = {};
       if (
