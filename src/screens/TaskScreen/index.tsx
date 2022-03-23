@@ -25,6 +25,7 @@ import Modal from 'react-native-modal';
 import TaskItemDetail from './TaskItemDetail';
 import FastImage from 'react-native-fast-image';
 import HapticUtils from 'utils/HapticUtils';
+import {normalizeUserName} from 'helpers/MessageHelper';
 
 type TaskScreenProps = {
   themeType: ThemeType;
@@ -166,7 +167,7 @@ const TaskScreen = ({
               source={{uri: currentChannel.user?.avatar_url}}
             />
             <Text style={[styles.title, {color: colors.text}]}>
-              {currentChannel.user?.full_name}
+              {normalizeUserName(currentChannel.user?.user_name)}
             </Text>
           </View>
         ) : (

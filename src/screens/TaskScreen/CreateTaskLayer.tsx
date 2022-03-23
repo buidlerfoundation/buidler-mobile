@@ -21,6 +21,7 @@ import {resizeImage} from 'helpers/ImageHelpers';
 import AvatarView from 'components/AvatarView';
 import PermissionHelper from 'helpers/PermissionHelper';
 import HapticUtils from 'utils/HapticUtils';
+import {normalizeUserName} from 'helpers/MessageHelper';
 
 type CreateTaskLayerProps = {
   themeType: ThemeType;
@@ -127,7 +128,7 @@ const CreateTaskLayer = ({
             />
           </View>
           <Text style={[styles.selectorChannelText, {color: colors.text}]}>
-            {item.full_name}
+            {normalizeUserName(item.user_name)}
           </Text>
           <View style={{flex: 1}} />
           {isSelected && <SVG.IconCheck fill={colors.text} />}

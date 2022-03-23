@@ -27,9 +27,9 @@ const SplashScreen = ({
   setRealHeight,
 }: SplashScreenProps) => {
   const initApp = async () => {
-    await PushNotificationHelper.init();
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     if (accessToken) {
+      await PushNotificationHelper.init();
       await Promise.all([getInitial(), findUser(), findTeamAndChannel()]);
       let params = {};
       if (

@@ -7,6 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import messaging from '@react-native-firebase/messaging';
 import {Platform} from 'react-native';
+import {encryptString, getIV} from 'utils/DataCrypto';
+import {utils} from 'ethers';
+import RNGoldenKeystore from 'react-native-golden-keystore';
+import NavigationServices from 'services/NavigationServices';
+import ScreenID from 'common/ScreenID';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -195,5 +200,47 @@ export const setCurrentTeam =
           type: actionTypes.CHANNEL_FAIL,
         });
       }
+    }
+  };
+
+export const accessApp =
+  (seed: string, password: string) => async (dispatch: Dispatch) => {
+    dispatch({type: actionTypes.ACCESS_APP_REQUEST});
+    try {
+      const iv = await getIV();
+      const {private_key} = await RNGoldenKeystore.createHDKeyPair(
+        seed,
+        '',
+        RNGoldenKeystore.CoinType.ETH.path,
+        0,
+      );
+      const publicKey = utils.computePublicKey(`0x${private_key}`, true);
+      const data = {[publicKey]: private_key};
+      const encryptedData = encryptString(JSON.stringify(data), password, iv);
+      AsyncStorage.setItem(AsyncKey.encryptedDataKey, encryptedData);
+      const {nonce, message} = await api.requestNonce(publicKey);
+      let err = null;
+      if (nonce) {
+        const msgHash = utils.hashMessage(nonce);
+        const msgHashBytes = utils.arrayify(msgHash);
+        const signingKey = new utils.SigningKey(`0x${private_key}`);
+        const signature = signingKey.signDigest(msgHashBytes);
+        const res = await api.verifyNonce(nonce, signature.compact);
+        console.log(nonce, signature);
+        if (res.statusCode === 200) {
+          dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
+          AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);
+          NavigationServices.reset(ScreenID.SplashScreen);
+        } else {
+          err = res.message;
+        }
+      } else {
+        err = message;
+      }
+      if (err) {
+        dispatch({type: actionTypes.ACCESS_APP_FAIL, message: err});
+      }
+    } catch (error) {
+      dispatch({type: actionTypes.ACCESS_APP_FAIL, message: error});
     }
   };

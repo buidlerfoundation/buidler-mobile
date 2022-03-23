@@ -6,7 +6,7 @@ import FastImage from 'react-native-fast-image';
 import Fonts from 'common/Fonts';
 import MessagePhoto from './MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
-import {normalizeMessageText} from 'helpers/MessageHelper';
+import {normalizeMessageText, normalizeUserName} from 'helpers/MessageHelper';
 import {messageFromNow} from 'utils/DateUtils';
 
 type MessageItemProps = {
@@ -38,7 +38,7 @@ const MessageItem = ({
         {item.isHead && (
           <View style={styles.nameWrapper}>
             <Text style={[styles.senderName, {color: colors.text}]}>
-              {sender.full_name}
+              {normalizeUserName(sender.user_name)}
             </Text>
             <Text style={[styles.messageDate, {color: colors.secondary}]}>
               {messageFromNow(item.createdAt)}

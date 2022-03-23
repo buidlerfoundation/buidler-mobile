@@ -10,8 +10,26 @@ import AppDevice from 'common/AppDevice';
 import KeyboardLayout from 'components/KeyboardLayout';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {AuthStackParamsList} from 'navigation/AuthStack';
+import {bindActionCreators} from 'redux';
+import actions from 'actions';
+import {connect} from 'react-redux';
 
-const CreatePasswordScreen = () => {
+type Props = NativeStackScreenProps<
+  AuthStackParamsList,
+  'CreatePasswordScreen'
+>;
+
+interface CreatePasswordScreenProps extends Props {
+  accessApp: (seed: string, password: string) => any;
+}
+
+const CreatePasswordScreen = ({
+  route,
+  accessApp,
+}: CreatePasswordScreenProps) => {
+  const seed = route.params?.seed || '';
   const {colors, dark} = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
@@ -28,6 +46,16 @@ const CreatePasswordScreen = () => {
       return 0;
     return passwordRules().filter(el => el.regex.test(password)).length;
   }, [password]);
+  const onNextPress = () => {
+    if (seed) {
+      // logged on
+      accessApp(seed, password);
+    } else {
+      NavigationServices.pushToScreen(ScreenID.StoreSeedPhraseScreen, {
+        password,
+      });
+    }
+  };
   return (
     <KeyboardLayout>
       <View style={styles.container}>
@@ -89,9 +117,7 @@ const CreatePasswordScreen = () => {
           </Touchable>
           <Touchable
             style={[styles.buttonNext, {backgroundColor: colors.primary}]}
-            onPress={() =>
-              NavigationServices.pushToScreen(ScreenID.StoreSeedPhraseScreen)
-            }>
+            onPress={onNextPress}>
             <Text style={[styles.textNext, {color: colors.text}]}>Next</Text>
           </Touchable>
         </View>
@@ -168,4 +194,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreatePasswordScreen;
+const mapActionsToProps: any = (dispatch: any) =>
+  bindActionCreators(actions, dispatch);
+
+export default connect(undefined, mapActionsToProps)(CreatePasswordScreen);

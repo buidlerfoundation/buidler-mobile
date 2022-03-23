@@ -5,7 +5,11 @@ import ImageLightBox from 'components/ImageLightBox';
 import RenderHTML from 'components/RenderHTML';
 import Touchable from 'components/Touchable';
 import ImageHelper from 'helpers/ImageHelper';
-import {normalizeMessage, normalizeMessageText} from 'helpers/MessageHelper';
+import {
+  normalizeMessage,
+  normalizeMessageText,
+  normalizeUserName,
+} from 'helpers/MessageHelper';
 import {Channel, Message, Task, ThemeType, User} from 'models';
 import React from 'react';
 import {StyleSheet, View, FlatList, Text} from 'react-native';
@@ -161,7 +165,7 @@ const TaskItemDetail = ({
                           styles.channelName,
                           {color: colors.text, marginLeft: 15},
                         ]}>
-                        {creator.full_name}
+                        {normalizeUserName(creator.user_name)}
                       </Text>
                     </View>
                   )}

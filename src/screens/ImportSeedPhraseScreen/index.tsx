@@ -6,10 +6,26 @@ import {useTheme} from '@react-navigation/native';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
 import AppDevice from 'common/AppDevice';
+import Clipboard from '@react-native-clipboard/clipboard';
+import RNGoldenKeystore from 'react-native-golden-keystore';
+import NavigationServices from 'services/NavigationServices';
+import ScreenID from 'common/ScreenID';
 
 const ImportSeedPhraseScreen = () => {
   const {colors, dark} = useTheme();
   const [seed, setSeed] = useState('');
+  const fetchCopiedText = async () => {
+    const text = await Clipboard.getString();
+    setSeed(text);
+  };
+  const onNextPress = async () => {
+    const isValid = await RNGoldenKeystore.mnemonicIsValid(seed);
+    if (isValid == 0) {
+      alert('Invalid seed phrase');
+      return;
+    }
+    NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {seed});
+  };
   return (
     <KeyboardLayout>
       <View style={styles.container}>
@@ -33,14 +49,15 @@ const ImportSeedPhraseScreen = () => {
             onChangeText={text => setSeed(text)}
             multiline
           />
-          <Touchable style={styles.buttonPaste}>
+          <Touchable style={styles.buttonPaste} onPress={fetchCopiedText}>
             <Text style={[styles.textPaste, {color: colors.subtext}]}>
               Paste
             </Text>
           </Touchable>
         </View>
         <Touchable
-          style={[styles.buttonNext, {backgroundColor: colors.primary}]}>
+          style={[styles.buttonNext, {backgroundColor: colors.primary}]}
+          onPress={onNextPress}>
           <Text style={[styles.textNext, {color: colors.text}]}>Next</Text>
         </Touchable>
       </View>

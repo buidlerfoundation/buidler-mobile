@@ -5,7 +5,11 @@ import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
-import {normalizeMessage, normalizeMessages} from 'helpers/MessageHelper';
+import {
+  normalizeMessage,
+  normalizeMessages,
+  normalizeUserName,
+} from 'helpers/MessageHelper';
 import {Channel, Message, Team, ThemeType, User} from 'models';
 import React, {useEffect, useState, useRef} from 'react';
 import {
@@ -199,7 +203,7 @@ const ConversationScreen = ({
                 size={32}
               />
               <Text style={[styles.title, {color: colors.text}]}>
-                {currentChannel.user?.full_name}
+                {normalizeUserName(currentChannel.user?.user_name)}
               </Text>
             </View>
           ) : (

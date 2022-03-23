@@ -1,5 +1,6 @@
 import Fonts from 'common/Fonts';
 import AvatarView from 'components/AvatarView';
+import {normalizeUserName} from 'helpers/MessageHelper';
 import {ThemeType, User} from 'models';
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
@@ -34,7 +35,7 @@ const MemberItem = ({
           styles.userName,
           {color: isUnSeen || isSelected ? colors.text : colors.subtext},
         ]}>
-        {item.full_name}
+        {normalizeUserName(item.user_name)}
       </Text>
     </View>
   );

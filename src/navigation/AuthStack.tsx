@@ -8,6 +8,14 @@ import StoreSeedPhraseScreen from 'screens/StoreSeedPhraseScreen';
 import BackupScreen from 'screens/BackupScreen';
 import ImportSeedPhraseScreen from 'screens/ImportSeedPhraseScreen';
 
+export type AuthStackParamsList = {
+  LoginScreen: undefined;
+  CreatePasswordScreen: {seed?: string};
+  StoreSeedPhraseScreen: {password: string};
+  BackupScreen: {password: string; seed: string};
+  ImportSeedPhraseScreen: undefined;
+};
+
 const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {

@@ -47,3 +47,13 @@ export const normalizeMessageText = (text: string, isShowNote = false) => {
   // }
   return `<span>${res}</span>`;
 };
+
+export const normalizeUserName = (str: string) => {
+  if (str?.length > 20) {
+    return `${str.substring(0, 5)}...${str.substring(
+      str.length - 5,
+      str.length,
+    )}`;
+  }
+  return str;
+};
