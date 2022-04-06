@@ -26,6 +26,8 @@ import TaskItemDetail from './TaskItemDetail';
 import FastImage from 'react-native-fast-image';
 import HapticUtils from 'utils/HapticUtils';
 import {normalizeUserName} from 'helpers/MessageHelper';
+import ImageHelper from 'helpers/ImageHelper';
+import Blockies from 'components/Blockies';
 
 type TaskScreenProps = {
   themeType: ThemeType;
@@ -152,6 +154,10 @@ const TaskScreen = ({
       currentTeam?.team_id,
     );
   };
+  const data = ImageHelper.normalizeAvatar(
+    currentChannel?.user?.avatar_url,
+    currentChannel?.user?.user_id,
+  );
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -162,10 +168,20 @@ const TaskScreen = ({
               alignItems: 'center',
               marginLeft: 5,
             }}>
-            <FastImage
-              style={{width: 32, height: 32, borderRadius: 16}}
-              source={{uri: currentChannel.user?.avatar_url}}
-            />
+            {typeof data === 'string' ? (
+              <FastImage
+                style={{width: 32, height: 32, borderRadius: 16}}
+                source={{
+                  uri: data,
+                }}
+              />
+            ) : (
+              <Blockies
+                blockies={data.address}
+                size={8}
+                style={{width: 32, height: 32, borderRadius: 16}}
+              />
+            )}
             <Text style={[styles.title, {color: colors.text}]}>
               {normalizeUserName(currentChannel.user?.user_name)}
             </Text>

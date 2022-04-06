@@ -365,12 +365,16 @@ PODS:
     - React-Core
   - react-native-pager-view (5.4.15):
     - React-Core
+  - react-native-randombytes (3.6.1):
+    - React-Core
   - react-native-safe-area-context (3.4.1):
     - React-Core
   - react-native-video (5.2.0):
     - React-Core
     - react-native-video/Video (= 5.2.0)
   - react-native-video/Video (5.2.0):
+    - React-Core
+  - react-native-webview (11.18.1):
     - React-Core
   - React-perflogger (0.67.4)
   - React-RCTActionSheet (0.67.4):
@@ -534,8 +538,10 @@ DEPENDENCIES:
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
+  - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-video (from `../node_modules/react-native-video`)
+  - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
   - React-RCTAnimation (from `../node_modules/react-native/Libraries/NativeAnimation`)
@@ -646,10 +652,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-resizer"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
+  react-native-randombytes:
+    :path: "../node_modules/react-native-randombytes"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-video:
     :path: "../node_modules/react-native-video"
+  react-native-webview:
+    :path: "../node_modules/react-native-webview"
   React-perflogger:
     :path: "../node_modules/react-native/ReactCommon/reactperflogger"
   React-RCTActionSheet:
@@ -755,8 +765,10 @@ SPEC CHECKSUMS:
   react-native-image-picker: 4e6008ad8c2321622affa2c85432a5ebd02d480c
   react-native-image-resizer: d9fb629a867335bdc13230ac2a58702bb8c8828f
   react-native-pager-view: b1914469643f40042e65d78cbf3d3dfebd6fb0d9
+  react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
   react-native-video: a4c2635d0802f983594b7057e1bce8f442f0ad28
+  react-native-webview: 0b7bd2bffced115aefd393e1841babd9b9a557b1
   React-perflogger: 0afaf2f01a47fd0fc368a93bfbb5bd3b26db6e7f
   React-RCTActionSheet: 59f35c4029e0b532fc42114241a06e170b7431a2
   React-RCTAnimation: aae4f4bed122e78bdab72f7118d291d70a932ce2

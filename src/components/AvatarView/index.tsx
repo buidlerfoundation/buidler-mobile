@@ -1,8 +1,10 @@
+import ImageHelper from 'helpers/ImageHelper';
 import {ThemeType, User} from 'models';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import themes from 'themes';
+import Blockies from 'components/Blockies';
 
 type AvatarViewProps = {
   themeType: ThemeType;
@@ -12,12 +14,23 @@ type AvatarViewProps = {
 
 const AvatarView = ({themeType, user, size = 25}: AvatarViewProps) => {
   const {colors} = themes[themeType];
+  const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
   return (
     <View style={styles.container}>
-      <FastImage
-        style={{width: size, height: size, borderRadius: size / 2}}
-        source={{uri: user.avatar_url}}
-      />
+      {typeof data === 'string' ? (
+        <FastImage
+          style={{width: size, height: size, borderRadius: size / 2}}
+          source={{
+            uri: data,
+          }}
+        />
+      ) : (
+        <Blockies
+          blockies={data.address}
+          size={8}
+          style={{width: size, height: size, borderRadius: size / 2}}
+        />
+      )}
       {user.status === 'online' && (
         <View
           style={[

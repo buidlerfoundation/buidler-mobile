@@ -10,6 +10,8 @@ import SocketUtils from 'utils/SocketUtils';
 import FastImage from 'react-native-fast-image';
 import Spinner from 'components/Spinner';
 import api from 'services/api';
+import ImageHelper from 'helpers/ImageHelper';
+import Blockies from 'components/Blockies';
 
 type MessageInputProps = {
   themeType: ThemeType;
@@ -101,15 +103,39 @@ const MessageInput = ({
       const sender = teamUserData?.find?.(
         u => u.user_id === messageReply?.sender_id,
       );
+      const data = ImageHelper.normalizeAvatar(
+        sender?.avatar_url,
+        sender?.user_id,
+      );
       return (
         <View style={[styles.replyContainer, {borderColor: colors.border}]}>
           <View
             style={[styles.replyIndicator, {backgroundColor: colors.subtext}]}
           />
-          <FastImage
-            source={{uri: sender?.avatar_url}}
-            style={{width: 25, height: 25, borderRadius: 12.5, marginLeft: 18}}
-          />
+          {typeof data === 'string' ? (
+            <FastImage
+              source={{
+                uri: data,
+              }}
+              style={{
+                width: 25,
+                height: 25,
+                borderRadius: 12.5,
+                marginLeft: 18,
+              }}
+            />
+          ) : (
+            <Blockies
+              blockies={data.address}
+              size={8}
+              style={{
+                width: 25,
+                height: 25,
+                borderRadius: 12.5,
+                marginLeft: 18,
+              }}
+            />
+          )}
           <Text style={[styles.replyContent, {color: colors.text}]}>
             {messageReply.plain_text}
           </Text>

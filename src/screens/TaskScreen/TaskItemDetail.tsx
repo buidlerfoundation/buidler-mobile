@@ -18,6 +18,7 @@ import MessageInput from 'screens/ConversationScreen/MessageInput';
 import MessageItem from 'screens/ConversationScreen/MessageItem';
 import themes from 'themes';
 import {fromNow, isOverDate} from 'utils/DateUtils';
+import Blockies from 'components/Blockies';
 
 type TaskItemDetailProps = {
   themeType: ThemeType;
@@ -75,6 +76,10 @@ const TaskItemDetail = ({
       );
     }
   };
+  const data = ImageHelper.normalizeAvatar(
+    creator?.avatar_url,
+    creator?.user_id,
+  );
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <BottomSheetHandle
@@ -156,10 +161,20 @@ const TaskItemDetail = ({
                   </Text>
                   {creator && (
                     <View style={styles.memberView}>
-                      <FastImage
-                        source={{uri: creator.avatar_url}}
-                        style={styles.avatar}
-                      />
+                      {typeof data === 'string' ? (
+                        <FastImage
+                          source={{
+                            uri: data,
+                          }}
+                          style={styles.avatar}
+                        />
+                      ) : (
+                        <Blockies
+                          blockies={data.address}
+                          size={8}
+                          style={styles.avatar}
+                        />
+                      )}
                       <Text
                         style={[
                           styles.channelName,

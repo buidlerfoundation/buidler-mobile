@@ -13,16 +13,24 @@ class ImageHelper {
     this.imgDomain = domain;
   }
 
+  normalizeAvatar = (name: string, id: string) => {
+    if (!name && id?.substring(0, 2) === '0x') {
+      return {address: id};
+    }
+    if (name?.includes?.('http')) return name;
+    return `${this.imgDomain}${id}/${name}`;
+  };
+
   normalizeImage = (
     name: string,
-    teamId: string,
+    id: string,
     options: imageOptions = {},
     noParams = false,
   ) => {
     if (this.imgDomain === '' || this.imgConfig == null || name == null)
       return '';
     if (name.includes('.gif') || noParams) {
-      return `${this.imgDomain}${teamId}/${name}`;
+      return `${this.imgDomain}${id}/${name}`;
     }
     let params = '?auto=format&fit=crop';
     if (options.w || options.h) {
@@ -37,7 +45,7 @@ class ImageHelper {
     if (options.radius) {
       params += `&corner-radius=${options.radius},${options.radius},${options.radius},${options.radius}&mask=corners`;
     }
-    return `${this.imgDomain}${teamId}/${name}${params}`;
+    return `${this.imgDomain}${id}/${name}${params}`;
   };
 }
 

@@ -8,6 +8,8 @@ import MessagePhoto from './MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
 import {normalizeMessageText, normalizeUserName} from 'helpers/MessageHelper';
 import {messageFromNow} from 'utils/DateUtils';
+import ImageHelper from 'helpers/ImageHelper';
+import Blockies from 'components/Blockies';
 
 type MessageItemProps = {
   item: Message;
@@ -27,13 +29,21 @@ const MessageItem = ({
   const sender = teamUserData?.find?.(u => u.user_id === item.sender_id);
   const {colors} = themes[themeType];
   if (!sender) return null;
+  const data = ImageHelper.normalizeAvatar(sender?.avatar_url, sender?.user_id);
+  const Avatar =
+    typeof data === 'string' ? (
+      <FastImage
+        source={{
+          uri: data,
+        }}
+        style={styles.avatar}
+      />
+    ) : (
+      <Blockies blockies={data.address} size={8} style={styles.avatar} />
+    );
   return (
     <View style={[styles.container, {marginTop: item.isHead ? 20 : 0}]}>
-      {item.isHead ? (
-        <FastImage source={{uri: sender.avatar_url}} style={styles.avatar} />
-      ) : (
-        <View style={{width: 35}} />
-      )}
+      {item.isHead ? Avatar : <View style={{width: 35}} />}
       <View style={styles.bodyMessage}>
         {item.isHead && (
           <View style={styles.nameWrapper}>
