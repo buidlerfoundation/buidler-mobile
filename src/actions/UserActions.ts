@@ -214,6 +214,7 @@ export const accessApp =
         RNGoldenKeystore.CoinType.ETH.path,
         0,
       );
+      dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: private_key});
       const publicKey = utils.computePublicKey(`0x${private_key}`, true);
       const data = {[publicKey]: private_key};
       const encryptedData = encryptString(JSON.stringify(data), password, iv);

@@ -43,7 +43,12 @@ import {titleMessageFromNow} from 'utils/DateUtils';
 type ConversationScreenProps = {
   themeType: ThemeType;
   currentChannel: Channel;
-  getMessages: (channelId: string, before?: string, isFresh?: boolean) => any;
+  getMessages: (
+    channelId: string,
+    channelType: string,
+    before?: string,
+    isFresh?: boolean,
+  ) => any;
   messages: Array<Message>;
   teamUserData: Array<User>;
   currentTeam: Team;
@@ -74,7 +79,12 @@ const ConversationScreen = ({
   const [attachments, setAttachments] = useState([]);
   const toggleGallery = () => setOpenGallery(!isOpenGallery);
   useEffect(() => {
-    getMessages(currentChannel.channel_id, undefined, true);
+    getMessages(
+      currentChannel.channel_id,
+      currentChannel.channel_type,
+      undefined,
+      true,
+    );
   }, [currentChannel]);
   const {colors} = themes[themeType];
   const renderItem = ({item}: {item: Message}) => {
@@ -110,7 +120,11 @@ const ConversationScreen = ({
     if (!messageCanMore || loadMoreMessage) return;
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
-    getMessages(currentChannel.channel_id, lastMsg.createdAt);
+    getMessages(
+      currentChannel.channel_id,
+      currentChannel.channel_type,
+      lastMsg.createdAt,
+    );
   };
   const onSelectPhoto = async (items: Array<any>) => {
     if (!SocketUtils.generateId) {

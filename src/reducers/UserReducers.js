@@ -64,7 +64,7 @@ const userReducers = (state = initialState, action) => {
       };
     }
     case actionTypes.GET_TEAM_USER: {
-      const {teamUsers, teamId} = payload;
+      const {teamUsers} = payload;
       return {
         ...state,
         teamUserData: teamUsers,
@@ -156,6 +156,76 @@ const userReducers = (state = initialState, action) => {
       return {
         ...state,
         channel: [...state.channel, payload],
+      };
+    }
+    case actionTypes.NEW_USER: {
+      return {
+        ...state,
+        teamUserData: [...state.teamUserData, payload],
+      };
+    }
+    case actionTypes.NEW_CHANNEL: {
+      let newTeamUserData = state.teamUserData;
+      const {currentChannel} = state;
+      if (payload.channel_type === 'Direct') {
+        newTeamUserData = newTeamUserData.map(el => {
+          if (
+            !!payload.channel_member.find(id => id === el.user_id) &&
+            (el.user_id !== state.userData.user_id ||
+              payload.channel_member.length === 1)
+          ) {
+            el.direct_channel = payload.channel_id;
+          }
+          return el;
+        });
+        if (
+          payload.channel_member.find(el => el === currentChannel.user?.user_id)
+        ) {
+          currentChannel.channel_id = payload.channel_id;
+        }
+      }
+      return {
+        ...state,
+        channel: [...state.channel, payload],
+        teamUserData: newTeamUserData,
+        currentChannel,
+      };
+    }
+    case actionTypes.UPDATE_CHANNEL_SUCCESS: {
+      return {
+        ...state,
+        channel: state.channel.map(el => {
+          if (el.channel_id === payload.channel_id) {
+            return {...el, ...payload};
+          }
+          return el;
+        }),
+        currentChannel:
+          state.currentChannel.channel_id === payload.channel_id
+            ? {...state.currentChannel, ...payload}
+            : state.currentChannel,
+      };
+    }
+    case actionTypes.DELETE_CHANNEL_SUCCESS: {
+      const {currentChannel, channel} = state;
+      const currentIdx = channel.findIndex(
+        el => el.channel_id === currentChannel.channel_id,
+      );
+      const newChannel = channel.filter(
+        el => el.channel_id !== payload.channelId,
+      );
+      let newCurrentChannel = currentChannel;
+      if (currentChannel.channel_id === payload.channelId) {
+        newCurrentChannel = newChannel?.[currentIdx] || newChannel?.[0];
+        AsyncStorage.setItem(
+          AsyncKey.lastChannelId,
+          newCurrentChannel?.channel_id,
+        );
+      }
+      return {
+        ...state,
+        channel: newChannel,
+        currentChannel: newCurrentChannel,
       };
     }
     default:

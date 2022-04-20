@@ -7,4 +7,7 @@ export const AsyncKey = {
   lastTeamId: `${PrefixKey}_last_team_id`,
   ivKey: `${PrefixKey}_iv_key`,
   encryptedDataKey: `${PrefixKey}_encrypted_data_key`,
+  deviceCode: `${PrefixKey}_device_code`,
+  encryptedSeedKey: `${PrefixKey}_encrypted_seed_key`,
+  channelPrivateKey: `${PrefixKey}_channel_private_key`,
 };

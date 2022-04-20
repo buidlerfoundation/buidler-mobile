@@ -17,11 +17,25 @@ import BottomActionSheet from 'components/BottomActionSheet';
 import ImageViewer from 'components/ImageViewer';
 import notifee, {EventType} from '@notifee/react-native';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
+import EthCrypto from 'eth-crypto';
 
 LogBox.ignoreAllLogs();
 
 const App = () => {
+  const test = async () => {
+    const encrypted = await EthCrypto.encryptWithPublicKey(
+      '033333db2859fb5dc791edf29e73adc5e6addff1fa4c2e443af30b8990102ef374', // publicKey
+      'foobar', // message
+    );
+    const message = await EthCrypto.decryptWithPrivateKey(
+      '0x3e8a25bedd79c30cc8e535dde02466efc4324b9ce0a7d0a4591babcde7ef550d', // privateKey
+      encrypted,
+    );
+    console.log('XXX: ', encrypted);
+    console.log('XXX: ', message);
+  };
   useEffect(() => {
+    // test();
     return notifee.onForegroundEvent(({type, detail}) => {
       switch (type) {
         case EventType.DISMISSED:

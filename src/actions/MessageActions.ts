@@ -1,3 +1,4 @@
+import {normalizeMessageData} from 'helpers/ChannelHelper';
 import {ActionCreator, Dispatch} from 'redux';
 import api from 'services/api';
 import {actionTypes} from './actionTypes';
@@ -25,7 +26,7 @@ export const getConversations: ActionCreator<any> =
   };
 
 export const getMessages: ActionCreator<any> =
-  (channelId: string, before?: string, isFresh = false) =>
+  (channelId: string, channelType: string, before?: string, isFresh = false) =>
   async (dispatch: Dispatch) => {
     if (before) {
       dispatch({type: actionTypes.MESSAGE_MORE, payload: {channelId}});
@@ -35,10 +36,14 @@ export const getMessages: ActionCreator<any> =
       dispatch({type: actionTypes.MESSAGE_REQUEST, payload: {channelId}});
     }
     const messageRes = await api.getMessages(channelId, 20, before);
+    const isPrivate = channelType === 'Private' || channelType === 'Direct';
     if (messageRes.statusCode === 200) {
+      const messageData = isPrivate
+        ? await normalizeMessageData(messageRes.data, channelId)
+        : messageRes.data;
       dispatch({
         type: actionTypes.MESSAGE_SUCCESS,
-        payload: {data: messageRes.data, channelId, before, isFresh},
+        payload: {data: messageData, channelId, before, isFresh},
       });
     }
   };

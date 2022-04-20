@@ -31,7 +31,7 @@ async function requestAPI(
   if (serviceBaseUrl) {
     apiUrl = serviceBaseUrl + uri;
   } else {
-    apiUrl = AppConfig.baseUrl + uri;
+    apiUrl = AppConfig.stagingBaseUrl + uri;
   }
 
   // Get access token and attach it to API request's header

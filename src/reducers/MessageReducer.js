@@ -22,6 +22,29 @@ const messageReducers = (state = initialState, action) => {
         },
       };
     }
+    case actionTypes.DELETE_MESSAGE: {
+      const {messageId, channelId, parentId} = payload;
+      const newMessageData = state.messageData;
+      if (newMessageData[channelId]) {
+        newMessageData[channelId] = {
+          ...newMessageData[channelId],
+          data: newMessageData[channelId].data
+            .filter(el => el.message_id !== messageId)
+            .map(el => {
+              if (el.parent_id === parentId) {
+                el.conversation_data = el.conversation_data.filter(
+                  c => c.message_id !== messageId,
+                );
+              }
+              return el;
+            }),
+        };
+      }
+      return {
+        ...state,
+        messageData: newMessageData,
+      };
+    }
     case actionTypes.EDIT_MESSAGE: {
       const {data} = payload;
       const {channel_id, message_id, content, plain_text, parent_id} = data;
