@@ -1,5 +1,6 @@
 export default {
   SplashScreen: 'SplashScreen',
+  UnlockScreen: 'UnlockScreen',
   LoginScreen: 'LoginScreen',
   ChannelScreen: 'ChannelScreen',
   ConversationScreen: 'ConversationScreen',

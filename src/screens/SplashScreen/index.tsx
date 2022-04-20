@@ -1,5 +1,5 @@
 import actions from 'actions';
-import {StackID} from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import React, {useEffect} from 'react';
 import {View, Platform} from 'react-native';
 import {connect} from 'react-redux';
@@ -8,24 +8,18 @@ import NavigationServices from 'services/NavigationServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
-import {Team} from 'models';
-import store from '../../store';
 import messaging from '@react-native-firebase/messaging';
 import api from 'services/api';
 
 type SplashScreenProps = {
   findUser?: () => any;
-  findTeamAndChannel?: () => any;
   getInitial?: () => any;
-  setCurrentTeam?: (team: Team, channelId?: string) => any;
   setRealHeight?: (height: number) => any;
 };
 
 const SplashScreen = ({
   findUser,
-  findTeamAndChannel,
   getInitial,
-  setCurrentTeam,
   setRealHeight,
 }: SplashScreenProps) => {
   const initApp = async () => {
@@ -37,26 +31,8 @@ const SplashScreen = ({
         device_token: deviceToken,
         platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
       });
-      await Promise.all([getInitial(), findUser(), findTeamAndChannel()]);
-      let params = {};
-      if (
-        PushNotificationHelper.initialNotification &&
-        PushNotificationHelper.initNotificationData
-      ) {
-        const {data, type} = PushNotificationHelper.initNotificationData;
-        params = {type};
-        const {team_id} = data.notification_data;
-        const {channel_id} = data.message_data;
-        const {team} = store.getState()?.user;
-        const teamNotification = team?.find?.(
-          (t: Team) => t.team_id === team_id,
-        );
-        if (teamNotification) {
-          await setCurrentTeam(teamNotification, channel_id);
-        }
-        PushNotificationHelper.reset();
-      }
-      NavigationServices.replace(StackID.HomeStack, params);
+      await Promise.all([getInitial(), findUser()]);
+      NavigationServices.replace(ScreenID.UnlockScreen);
     } else {
       NavigationServices.replace(StackID.AuthStack);
     }

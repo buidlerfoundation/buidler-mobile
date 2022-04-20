@@ -10,6 +10,7 @@ import {connect} from 'react-redux';
 import {ThemeType} from 'models';
 import themes from 'themes';
 import AuthStack from './AuthStack';
+import UnlockScreen from 'screens/UnlockScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,12 @@ const RootNavigator = ({themeType}: RootNavigatorProps) => {
             animation: 'none',
           }}>
           <Stack.Screen name={ScreenID.SplashScreen} component={SplashScreen} />
+        </Stack.Group>
+        <Stack.Group
+          screenOptions={{
+            animation: 'none',
+          }}>
+          <Stack.Screen name={ScreenID.UnlockScreen} component={UnlockScreen} />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
         <Stack.Screen name={StackID.AuthStack} component={AuthStack} />
