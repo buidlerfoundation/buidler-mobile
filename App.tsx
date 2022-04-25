@@ -9,7 +9,7 @@
 import React, {useEffect} from 'react';
 import {StatusBar, View, LogBox} from 'react-native';
 import RootNavigator from 'navigation';
-import {Provider} from 'react-redux';
+import {Provider, useSelector} from 'react-redux';
 import store from './src/store';
 import Spinner from 'components/Spinner';
 import NavigationServices from 'services/NavigationServices';

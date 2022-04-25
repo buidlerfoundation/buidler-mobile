@@ -6,11 +6,20 @@ const initialState = {
   privateKey: '',
   seed: '',
   channelPrivateKey: {},
+  openOTP: false,
+  requestOtpCode: '',
 };
 
 export default (state = initialState, action) => {
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.TOGGLE_OTP: {
+      return {
+        ...state,
+        openOTP: !state.openOTP,
+        requestOtpCode: payload?.otp || '',
+      };
+    }
     case actionTypes.SET_THEME: {
       return {
         ...state,

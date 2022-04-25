@@ -9,6 +9,7 @@ export default {
   StoreSeedPhraseScreen: 'StoreSeedPhraseScreen',
   BackupScreen: 'BackupScreen',
   ImportSeedPhraseScreen: 'ImportSeedPhraseScreen',
+  EnterOTPScreen: 'EnterOTP',
 };
 
 export const StackID = {

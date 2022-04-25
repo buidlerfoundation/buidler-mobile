@@ -110,6 +110,15 @@ const decryptPrivateChannel = async (item: any, privateKey: string) => {
   };
 };
 
+export const getRawPrivateChannel = async () => {
+  const current = await AsyncStorage.getItem(AsyncKey.channelPrivateKey);
+  let res: any = {};
+  if (typeof current === 'string') {
+    res = JSON.parse(current);
+  }
+  return res;
+};
+
 export const getPrivateChannel = async (privateKey: string) => {
   const current = await AsyncStorage.getItem(AsyncKey.channelPrivateKey);
   // const current = JSON.stringify(testData);

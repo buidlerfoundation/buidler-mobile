@@ -27,3 +27,9 @@ export const requestNonce = (pubKey: string) =>
 
 export const verifyNonce = (nonce: string, signature: string) =>
   ApiCaller.post('user/verify', {nonce, signature});
+
+export const verifyOtp = (data: any) =>
+  ApiCaller.post('user/device/verify', data);
+
+export const syncChannelKey = (data: any) =>
+  ApiCaller.post('user/device/sync', data);

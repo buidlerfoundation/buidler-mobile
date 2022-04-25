@@ -5,6 +5,9 @@ import ChannelScreen from 'screens/ChannelScreen';
 import ConversationScreen from 'screens/ConversationScreen';
 import TaskScreen from 'screens/TaskScreen';
 import {View} from 'react-native';
+import {useSelector} from 'react-redux';
+import NavigationServices from 'services/NavigationServices';
+import ModalOtp from 'components/ModalOtp';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -14,24 +17,36 @@ type HomeStackProps = {
 
 const HomeStack = ({route}: HomeStackProps) => {
   const {type} = route.params || {};
+  const openOTP = useSelector((state: any) => state.configs.openOTP);
+  const requestOtpCode = useSelector(
+    (state: any) => state.configs.requestOtpCode,
+  );
+  if (openOTP && !requestOtpCode) {
+    NavigationServices.pushToScreen(ScreenID.EnterOTPScreen);
+  }
   return (
-    <Tab.Navigator
-      initialRouteName={
-        type === 'task' ? ScreenID.TaskScreen : ScreenID.ConversationScreen
-      }
-      tabBar={() => <View />}
-      screenOptions={
-        {
-          // lazy: true,
+    <>
+      <Tab.Navigator
+        initialRouteName={
+          type === 'task' ? ScreenID.TaskScreen : ScreenID.ConversationScreen
         }
-      }>
-      <Tab.Screen name={ScreenID.ChannelScreen} component={ChannelScreen} />
-      <Tab.Screen
-        name={ScreenID.ConversationScreen}
-        component={ConversationScreen}
-      />
-      <Tab.Screen name={ScreenID.TaskScreen} component={TaskScreen} />
-    </Tab.Navigator>
+        tabBar={() => <View />}
+        screenOptions={
+          {
+            // lazy: true,
+          }
+        }>
+        <Tab.Screen name={ScreenID.ChannelScreen} component={ChannelScreen} />
+        <Tab.Screen
+          name={ScreenID.ConversationScreen}
+          component={ConversationScreen}
+        />
+        <Tab.Screen name={ScreenID.TaskScreen} component={TaskScreen} />
+      </Tab.Navigator>
+      {openOTP && requestOtpCode && (
+        <ModalOtp isOpen={openOTP} otp={requestOtpCode} />
+      )}
+    </>
   );
 };
 

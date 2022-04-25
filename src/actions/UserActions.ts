@@ -96,6 +96,7 @@ export const findTeamAndChannel = () => async (dispatch: Dispatch) => {
           directChannelUser,
           lastChannelId,
           resChannel,
+          teamUsersRes,
         },
       });
       if (resChannel.statusCode === 200) {
@@ -174,12 +175,9 @@ export const setCurrentTeam =
       });
     }
     SocketUtils.changeTeam(team.team_id);
-    const directChannelUser = teamUsersRes?.data?.find(
-      (u: any) => u.direct_channel === lastChannelId,
-    );
     dispatch({
       type: actionTypes.SET_CURRENT_TEAM,
-      payload: {team, resChannel, directChannelUser, lastChannelId},
+      payload: {team, resChannel, teamUsersRes, lastChannelId},
     });
     AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
     const resGroupChannel = await api.getGroupChannel(team.team_id);

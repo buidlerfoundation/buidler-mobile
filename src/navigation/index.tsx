@@ -11,6 +11,7 @@ import {ThemeType} from 'models';
 import themes from 'themes';
 import AuthStack from './AuthStack';
 import UnlockScreen from 'screens/UnlockScreen';
+import EnterOTP from 'screens/EnterOTP';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,12 @@ const RootNavigator = ({themeType}: RootNavigatorProps) => {
             animation: 'none',
           }}>
           <Stack.Screen name={ScreenID.UnlockScreen} component={UnlockScreen} />
+        </Stack.Group>
+        <Stack.Group
+          screenOptions={{
+            animation: 'default',
+          }}>
+          <Stack.Screen name={ScreenID.EnterOTPScreen} component={EnterOTP} />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
         <Stack.Screen name={StackID.AuthStack} component={AuthStack} />
