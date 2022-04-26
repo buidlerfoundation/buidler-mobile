@@ -16,7 +16,7 @@ export default (state = initialState, action) => {
     case actionTypes.TOGGLE_OTP: {
       return {
         ...state,
-        openOTP: payload.open != null ? payload.open : !state.openOTP,
+        openOTP: payload?.open != null ? payload?.open : !state.openOTP,
         requestOtpCode: payload?.otp || '',
       };
     }
