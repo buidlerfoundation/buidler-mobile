@@ -43,7 +43,7 @@ const HomeStack = ({route}: HomeStackProps) => {
         />
         <Tab.Screen name={ScreenID.TaskScreen} component={TaskScreen} />
       </Tab.Navigator>
-      {openOTP && requestOtpCode && (
+      {openOTP && !!requestOtpCode && (
         <ModalOtp isOpen={openOTP} otp={requestOtpCode} />
       )}
     </>

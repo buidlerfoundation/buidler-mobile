@@ -5,7 +5,6 @@ import {connect, useDispatch, useSelector} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import actions from 'actions';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
-import store from '../../store';
 import {Team} from 'models';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
@@ -32,6 +31,7 @@ const UnlockScreen = ({
   const {colors} = useTheme();
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.user.userData);
+  const team = useSelector((state: any) => state.user.team);
   const accessApp = async () => {
     await findTeamAndChannel?.();
     let params = {};
@@ -43,7 +43,6 @@ const UnlockScreen = ({
       params = {type};
       const {team_id} = data.notification_data;
       const {channel_id} = data.message_data;
-      const {team} = store.getState()?.user;
       const teamNotification = team?.find?.((t: Team) => t.team_id === team_id);
       if (teamNotification) {
         await setCurrentTeam(teamNotification, channel_id);
