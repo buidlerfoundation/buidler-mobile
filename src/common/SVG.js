@@ -25,6 +25,7 @@ import IconFile from '../assets/images/ic_file.svg';
 import IconDownload from '../assets/images/ic_download.svg';
 import IconArrowBack from '../assets/images/ic_arrow_back.svg';
 import IconCopy from '../assets/images/ic_copy.svg';
+import IconPrivate from '../assets/images/ic_private.svg';
 
 export default {
   IconExpand,
@@ -54,4 +55,5 @@ export default {
   IconCheckArchived,
   IconArrowBack,
   IconCopy,
+  IconPrivate,
 };

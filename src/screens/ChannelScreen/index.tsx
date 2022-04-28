@@ -1,7 +1,7 @@
 import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Channel, SpaceChannel, Team, ThemeType, User} from 'models';
-import React from 'react';
+import React, {useState} from 'react';
 import {View, FlatList, StyleSheet, Image, Text} from 'react-native';
 import {connect} from 'react-redux';
 import themes from 'themes';
@@ -9,11 +9,12 @@ import FastImage from 'react-native-fast-image';
 import ImageHelper from 'helpers/ImageHelper';
 import {bindActionCreators} from 'redux';
 import actions from 'actions';
-import SVG from 'common/SVG';
+import Collapsible from 'react-native-collapsible';
 import Fonts from 'common/Fonts';
 import MemberItem from './MemberItem';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
+import SpaceItem from './SpaceItem';
 
 type ChannelScreenProps = {
   themeType: ThemeType;
@@ -40,6 +41,8 @@ const ChannelScreen = ({
   userData,
   teamUserData,
 }: ChannelScreenProps) => {
+  const [isCollapsed, setCollapsed] = useState(false);
+  const toggleCollapsed = () => setCollapsed(!isCollapsed);
   const {colors} = themes[themeType];
   const user = teamUserData?.find?.(u => u.user_id === userData.user_id);
   const renderTeamItem = ({item}: {item: Team; index: number}) => {
@@ -69,121 +72,86 @@ const ChannelScreen = ({
   };
   const renderFooter = () => {
     return (
-      <View style={{paddingBottom: AppDimension.extraBottom + 26}}>
-        <View style={styles.groupHead}>
-          <SVG.IconCollapse fill={colors.subtext} />
-          <Text style={[styles.groupName, {color: colors.subtext}]}>
-            MEMBER
-          </Text>
-        </View>
-        {user && (
-          <Touchable
-            onPress={() => {
-              setCurrentChannel({
-                channel_id: user.direct_channel || '',
-                channel_name: '',
-                channel_type: 'Direct',
-                user,
-                seen: true,
-              });
-              NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-            }}>
-            <MemberItem
-              item={user}
-              themeType={themeType}
-              isUnSeen={
-                channel.find((c: any) => c.channel_id === user.direct_channel)
-                  ?.seen === false
-              }
-              isSelected={
-                currentChannel.channel_id === user.direct_channel ||
-                currentChannel?.user?.user_id === user.user_id
-              }
-            />
-          </Touchable>
-        )}
-        {teamUserData
-          ?.filter?.(u => u.user_id !== userData.user_id)
-          ?.map(u => (
+      <View
+        style={[
+          styles.space,
+          {
+            backgroundColor: colors.background,
+            marginTop: 10,
+            marginBottom: 10 + AppDimension.extraBottom,
+          },
+        ]}>
+        <Touchable style={styles.groupHead} onPress={toggleCollapsed}>
+          <Text style={[styles.groupName, {color: colors.text}]}>MEMBER</Text>
+        </Touchable>
+        <Collapsible collapsed={isCollapsed} duration={400} easing="linear">
+          {user && (
             <Touchable
-              key={u.user_id}
               onPress={() => {
                 setCurrentChannel({
-                  channel_id: u.direct_channel || '',
+                  channel_id: user.direct_channel || '',
                   channel_name: '',
                   channel_type: 'Direct',
-                  user: u,
+                  user,
                   seen: true,
                 });
                 NavigationServices.pushToScreen(ScreenID.ConversationScreen);
               }}>
               <MemberItem
-                item={u}
+                item={user}
                 themeType={themeType}
                 isUnSeen={
-                  channel.find((c: any) => c.channel_id === u.direct_channel)
+                  channel.find((c: any) => c.channel_id === user.direct_channel)
                     ?.seen === false
                 }
                 isSelected={
-                  currentChannel.channel_id === u.direct_channel ||
-                  currentChannel?.user?.user_id === u.user_id
+                  currentChannel.channel_id === user.direct_channel ||
+                  currentChannel?.user?.user_id === user.user_id
                 }
               />
             </Touchable>
-          ))}
+          )}
+          {teamUserData
+            ?.filter?.(u => u.user_id !== userData.user_id)
+            ?.map(u => (
+              <Touchable
+                key={u.user_id}
+                onPress={() => {
+                  setCurrentChannel({
+                    channel_id: u.direct_channel || '',
+                    channel_name: '',
+                    channel_type: 'Direct',
+                    user: u,
+                    seen: true,
+                  });
+                  NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+                }}>
+                <MemberItem
+                  item={u}
+                  themeType={themeType}
+                  isUnSeen={
+                    channel.find((c: any) => c.channel_id === u.direct_channel)
+                      ?.seen === false
+                  }
+                  isSelected={
+                    currentChannel.channel_id === u.direct_channel ||
+                    currentChannel?.user?.user_id === u.user_id
+                  }
+                />
+              </Touchable>
+            ))}
+        </Collapsible>
       </View>
     );
   };
   const renderSpaceChannelItem = ({item}: {item: SpaceChannel}) => {
     return (
-      <View>
-        <View style={styles.groupHead}>
-          <SVG.IconCollapse fill={colors.subtext} />
-          <Text style={[styles.groupName, {color: colors.subtext}]}>
-            {item.space_name}
-          </Text>
-        </View>
-        {channel
-          .filter(c => c.space_id === item.space_id)
-          .map(c => {
-            const isActive = currentChannel.channel_id === c.channel_id;
-            return (
-              <Touchable
-                style={[
-                  styles.channelItem,
-                  isActive && {backgroundColor: colors.activeBackgroundLight},
-                ]}
-                key={c.channel_id}
-                onPress={() => {
-                  setCurrentChannel(c);
-                  NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-                }}
-                onLongPress={() => {
-                  setCurrentChannel(c);
-                  NavigationServices.pushToScreen(ScreenID.TaskScreen);
-                }}>
-                <Text
-                  style={[
-                    styles.channelName,
-                    {color: isActive || !c.seen ? colors.text : colors.subtext},
-                  ]}>
-                  {c.channel_type === 'Private' ? (
-                    <Image
-                      style={{
-                        tintColor:
-                          isActive || !c.seen ? colors.text : colors.subtext,
-                      }}
-                      source={require('assets/images/ic_private.png')}
-                    />
-                  ) : (
-                    '#'
-                  )}{' '}
-                  {c.channel_name}
-                </Text>
-              </Touchable>
-            );
-          })}
-      </View>
+      <SpaceItem
+        item={item}
+        channel={channel}
+        currentChannel={currentChannel}
+        setCurrentChannel={setCurrentChannel}
+      />
     );
   };
   return (
@@ -204,6 +172,8 @@ const ChannelScreen = ({
             keyExtractor={item => item.space_id}
             renderItem={renderSpaceChannelItem}
             ListFooterComponent={renderFooter}
+            ListHeaderComponent={<View style={{height: 10}} />}
+            ItemSeparatorComponent={() => <View style={{height: 10}} />}
           />
         </View>
       </View>
@@ -220,23 +190,27 @@ const styles = StyleSheet.create({
   channelContainer: {
     flex: 1,
   },
+  space: {
+    marginHorizontal: 10,
+    padding: 10,
+    borderRadius: 5,
+  },
   groupHead: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 60,
-    paddingHorizontal: 20,
+    padding: 10,
   },
   groupName: {
     fontFamily: Fonts.Bold,
-    fontSize: 16,
-    lineHeight: 19,
-    marginLeft: 12,
+    fontSize: 20,
+    lineHeight: 24,
   },
   channelItem: {
-    paddingLeft: 40,
+    paddingHorizontal: 10,
     flexDirection: 'row',
     height: 40,
     alignItems: 'center',
+    borderRadius: 5,
   },
   channelName: {
     fontFamily: Fonts.SemiBold,

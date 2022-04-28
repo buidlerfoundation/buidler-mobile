@@ -25,7 +25,7 @@ const MemberItem = ({
     <View
       style={[
         styles.container,
-        isSelected && {backgroundColor: colors.activeBackgroundLight},
+        isSelected && {backgroundColor: colors.activeBackground},
       ]}>
       <View style={styles.avatarWrapper}>
         <AvatarView user={item} themeType={themeType} />
@@ -46,9 +46,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 40,
+    borderRadius: 5,
   },
   avatarWrapper: {
-    marginLeft: 30,
+    marginLeft: 10,
   },
   avatar: {
     width: 25,
