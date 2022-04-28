@@ -17,6 +17,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import {actionTypes} from 'actions/actionTypes';
 import {getPrivateChannel} from 'helpers/ChannelHelper';
+import KeyboardLayout from 'components/KeyboardLayout';
+import Touchable from 'components/Touchable';
 
 type UnlockScreenProps = {
   findTeamAndChannel?: () => any;
@@ -81,51 +83,67 @@ const UnlockScreen = ({
   if (!user) return <View style={styles.container} />;
   const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
   return (
-    <View style={styles.container}>
-      {typeof data === 'string' ? (
-        <FastImage
-          style={{width: 100, height: 100, borderRadius: 50, marginTop: 60}}
-          source={{
-            uri: data,
-          }}
-        />
-      ) : (
-        <Blockies
-          blockies={data.address}
-          size={8}
-          style={{width: 100, height: 100, borderRadius: 50}}
-        />
-      )}
-      <Text style={[styles.userName, {color: colors.text}]}>
-        {user?.user_name}
-      </Text>
-      <TextInput
-        autoFocus
-        placeholder="Password"
-        textAlign="center"
-        secureTextEntry
-        returnKeyType="done"
-        onSubmitEditing={checkPassword}
-        placeholderTextColor={colors.subtext}
-        value={pass}
-        onChangeText={text => setPass(text)}
-        style={[
-          styles.input,
-          {
-            color: colors.text,
-            backgroundColor: colors.activeBackgroundLight,
-            borderColor: colors.border,
-          },
-        ]}
-      />
-    </View>
+    <KeyboardLayout>
+      <View style={styles.container}>
+        <View style={styles.body}>
+          {typeof data === 'string' ? (
+            <FastImage
+              style={{width: 120, height: 120, borderRadius: 60}}
+              source={{
+                uri: data,
+              }}
+            />
+          ) : (
+            <Blockies
+              blockies={data.address}
+              size={8}
+              style={{width: 120, height: 120, borderRadius: 60}}
+            />
+          )}
+          <Text style={[styles.userName, {color: colors.text}]}>
+            {user?.user_name}
+          </Text>
+          <TextInput
+            autoFocus
+            placeholder="Password"
+            textAlign="center"
+            secureTextEntry
+            returnKeyType="done"
+            onSubmitEditing={checkPassword}
+            placeholderTextColor={colors.subtext}
+            value={pass}
+            onChangeText={text => setPass(text)}
+            style={[
+              styles.input,
+              {
+                color: colors.text,
+                backgroundColor: colors.activeBackgroundLight,
+                borderColor: colors.border,
+              },
+            ]}
+          />
+        </View>
+        <Touchable
+          style={[styles.buttonUnlock, {backgroundColor: colors.primary}]}
+          onPress={checkPassword}>
+          <Text style={[styles.textUnlock, {color: colors.text}]}>Unlock</Text>
+        </Touchable>
+      </View>
+    </KeyboardLayout>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
+    flex: 1,
+  },
+  body: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%',
     paddingHorizontal: 20,
+    justifyContent: 'center',
   },
   userName: {
     marginTop: 15,
@@ -141,6 +159,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     width: '100%',
+  },
+  buttonUnlock: {
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  textUnlock: {
+    fontSize: 16,
+    lineHeight: 19,
+    fontFamily: Fonts.SemiBold,
   },
 });
 

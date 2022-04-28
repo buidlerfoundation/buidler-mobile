@@ -13,11 +13,11 @@ const EnterOTP = () => {
   const dispatch = useDispatch();
   const {colors} = useTheme();
   const [otp, setOtp] = useState('');
-  const submitOtp = async () => {
+  const submitOtp = async (text: string) => {
     const deviceCode = await getDeviceCode();
     const body = {
       device_code: deviceCode,
-      otp_code: otp,
+      otp_code: text,
     };
     const res = await api.verifyOtp(body);
     if (res.statusCode === 200) {
@@ -49,10 +49,15 @@ const EnterOTP = () => {
           autoFocus
           maxLength={4}
           value={otp}
-          onChangeText={text => setOtp(text)}
+          onChangeText={text => {
+            if (text.length === 4) {
+              submitOtp(text);
+            }
+            setOtp(text);
+          }}
           keyboardType="number-pad"
           returnKeyType="done"
-          onSubmitEditing={submitOtp}
+          onSubmitEditing={() => submitOtp(otp)}
           blurOnSubmit={false}
         />
       </View>
