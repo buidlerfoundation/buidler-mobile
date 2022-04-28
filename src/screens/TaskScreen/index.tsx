@@ -6,7 +6,7 @@ import Touchable from 'components/Touchable';
 import {groupTaskByFiltered} from 'helpers/TaskHelper';
 import {
   Channel,
-  GroupChannel,
+  SpaceChannel,
   Message,
   ReactData,
   Task,
@@ -53,7 +53,7 @@ type TaskScreenProps = {
     isFresh?: boolean,
   ) => any;
   conversationData: {[key: string]: Array<Message>};
-  groupChannel: Array<GroupChannel>;
+  spaceChannel: Array<SpaceChannel>;
   route?: any;
   navigation?: any;
   setCurrentChannel?: (channel: Channel) => any;
@@ -75,7 +75,7 @@ const TaskScreen = ({
   updateTask,
   conversationData,
   getConversations,
-  groupChannel,
+  spaceChannel,
   route,
   navigation,
   setCurrentChannel,
@@ -304,7 +304,7 @@ const TaskScreen = ({
           teamUserData={teamUserData}
           currentTeam={currentTeam}
           createTask={createTask}
-          groupChannel={groupChannel}
+          spaceChannel={spaceChannel}
         />
       </Modal>
       <Modal
@@ -406,7 +406,7 @@ const mapPropsToState = (state: any) => {
     channels: state.user.channel,
     teamUserData: state.user.teamUserData,
     conversationData: state.message.conversationData,
-    groupChannel: state.user.groupChannel,
+    spaceChannel: state.user.spaceChannel,
   };
 };
 

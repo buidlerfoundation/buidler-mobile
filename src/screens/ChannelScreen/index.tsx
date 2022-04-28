@@ -1,6 +1,6 @@
 import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
-import {Channel, GroupChannel, Team, ThemeType, User} from 'models';
+import {Channel, SpaceChannel, Team, ThemeType, User} from 'models';
 import React from 'react';
 import {View, FlatList, StyleSheet, Image, Text} from 'react-native';
 import {connect} from 'react-redux';
@@ -20,7 +20,7 @@ type ChannelScreenProps = {
   team: Array<Team>;
   currentTeam: Team;
   setCurrentTeam: (team: Team) => any;
-  groupChannel: Array<GroupChannel>;
+  spaceChannel: Array<SpaceChannel>;
   channel: Array<Channel>;
   currentChannel: Channel;
   setCurrentChannel: (channel: Channel) => any;
@@ -35,7 +35,7 @@ const ChannelScreen = ({
   setCurrentTeam,
   channel,
   currentChannel,
-  groupChannel,
+  spaceChannel,
   setCurrentChannel,
   userData,
   teamUserData,
@@ -134,17 +134,17 @@ const ChannelScreen = ({
       </View>
     );
   };
-  const renderGroupChannelItem = ({item}: {item: GroupChannel}) => {
+  const renderSpaceChannelItem = ({item}: {item: SpaceChannel}) => {
     return (
       <View>
         <View style={styles.groupHead}>
           <SVG.IconCollapse fill={colors.subtext} />
           <Text style={[styles.groupName, {color: colors.subtext}]}>
-            {item.group_channel_name}
+            {item.space_name}
           </Text>
         </View>
         {channel
-          .filter(c => c.group_channel_id === item.group_channel_id)
+          .filter(c => c.space_id === item.space_id)
           .map(c => {
             const isActive = currentChannel.channel_id === c.channel_id;
             return (
@@ -200,9 +200,9 @@ const ChannelScreen = ({
         </View>
         <View style={styles.channelContainer}>
           <FlatList
-            data={groupChannel}
-            keyExtractor={item => item.group_channel_id}
-            renderItem={renderGroupChannelItem}
+            data={spaceChannel}
+            keyExtractor={item => item.space_id}
+            renderItem={renderSpaceChannelItem}
             ListFooterComponent={renderFooter}
           />
         </View>
@@ -250,7 +250,7 @@ const mapPropsToState = (state: any) => {
     themeType: state.configs.theme,
     team: state.user.team,
     currentTeam: state.user.currentTeam,
-    groupChannel: state.user.groupChannel,
+    spaceChannel: state.user.spaceChannel,
     channel: state.user.channel,
     currentChannel: state.user.currentChannel,
     userData: state.user.userData,

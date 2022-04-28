@@ -66,11 +66,11 @@ export const findTeamAndChannel = () => async (dispatch: Dispatch) => {
       const currentTeam =
         res.data.find((t: any) => t.team_id === lastTeamId) || res.data[0];
       const teamId = currentTeam.team_id;
-      const resGroupChannel = await api.getGroupChannel(teamId);
-      if (resGroupChannel.statusCode === 200) {
+      const resSpaceChannel = await api.getSpaceChannel(teamId);
+      if (resSpaceChannel.statusCode === 200) {
         dispatch({
           type: actionTypes.GROUP_CHANNEL,
-          payload: resGroupChannel.data,
+          payload: resSpaceChannel.data,
         });
       }
       const resChannel = await api.findChannel(teamId);
@@ -180,11 +180,11 @@ export const setCurrentTeam =
       payload: {team, resChannel, teamUsersRes, lastChannelId},
     });
     AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
-    const resGroupChannel = await api.getGroupChannel(team.team_id);
-    if (resGroupChannel.statusCode === 200) {
+    const resSpaceChannel = await api.getSpaceChannel(team.team_id);
+    if (resSpaceChannel.statusCode === 200) {
       dispatch({
         type: actionTypes.GROUP_CHANNEL,
-        payload: resGroupChannel.data,
+        payload: resSpaceChannel.data,
       });
     }
     if (resChannel.statusCode === 200) {

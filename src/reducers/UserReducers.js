@@ -6,7 +6,7 @@ const initialState = {
   userData: null,
   team: null,
   channel: [],
-  groupChannel: [],
+  spaceChannel: [],
   currentTeam: null,
   currentChannel: null,
   imgDomain: null,
@@ -57,7 +57,7 @@ const userReducers = (state = initialState, action) => {
         userData: null,
         team: null,
         channel: [],
-        groupChannel: [],
+        spaceChannel: [],
         currentTeam: null,
         currentChannel: null,
         lastChannel: {},
@@ -79,7 +79,7 @@ const userReducers = (state = initialState, action) => {
     case actionTypes.GROUP_CHANNEL: {
       return {
         ...state,
-        groupChannel: payload,
+        spaceChannel: payload,
       };
     }
     case actionTypes.SET_CURRENT_TEAM: {

@@ -9,8 +9,8 @@ export const findUser = async () => {
 
 export const findTeam = () => ApiCaller.get('user/team');
 
-export const getGroupChannel = (teamId: string) =>
-  ApiCaller.get(`group/${teamId}`);
+export const getSpaceChannel = (teamId: string) =>
+  ApiCaller.get(`space/${teamId}`);
 
 export const findChannel = (teamId: string) =>
   ApiCaller.get(`channel/${teamId}`);

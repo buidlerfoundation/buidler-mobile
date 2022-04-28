@@ -151,11 +151,11 @@ class PushNotificationHelper {
       payload: {team, resChannel, lastChannelId},
     });
     AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
-    const resGroupChannel = await api.getGroupChannel(team.team_id);
-    if (resGroupChannel.statusCode === 200) {
+    const resSpaceChannel = await api.getSpaceChannel(team.team_id);
+    if (resSpaceChannel.statusCode === 200) {
       dispatch({
         type: actionTypes.GROUP_CHANNEL,
-        payload: resGroupChannel.data,
+        payload: resSpaceChannel.data,
       });
     }
     if (resChannel.statusCode === 200) {

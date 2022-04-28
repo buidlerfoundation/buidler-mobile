@@ -2,7 +2,7 @@ import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {Channel, GroupChannel, Team, ThemeType, User} from 'models';
+import {Channel, SpaceChannel, Team, ThemeType, User} from 'models';
 import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
 import {View, StyleSheet, TextInput, Text, Keyboard} from 'react-native';
 import themes from 'themes';
@@ -32,7 +32,7 @@ type CreateTaskLayerProps = {
   teamUserData: Array<User>;
   currentTeam: Team;
   createTask: (channelId: string, body: any) => any;
-  groupChannel: Array<GroupChannel>;
+  spaceChannel: Array<SpaceChannel>;
 };
 
 const CreateTaskLayer = ({
@@ -44,7 +44,7 @@ const CreateTaskLayer = ({
   teamUserData,
   currentTeam,
   createTask,
-  groupChannel,
+  spaceChannel,
 }: CreateTaskLayerProps) => {
   const sheetChannelRef = useRef<BottomSheet>(null);
   const sheetAssigneeRef = useRef<BottomSheet>(null);
@@ -80,28 +80,28 @@ const CreateTaskLayer = ({
   const snapPoints = useMemo(() => ['-50%', '50%', '80%'], []);
 
   // callbacks
-  const handleSheetCalendarChange = useCallback(index => {
+  const handleSheetCalendarChange = useCallback((index: number) => {
     if (index === 0) {
       setSheetOpen(null);
     } else if (index === 1 || index === 2) {
       setSheetOpen('calendar');
     }
   }, []);
-  const handleSheetChange = useCallback(index => {
+  const handleSheetChange = useCallback((index: number) => {
     if (index === 0) {
       setSheetOpen(null);
     } else if (index === 1) {
       setSheetOpen('channel');
     }
   }, []);
-  const handleSheetGalleryChange = useCallback(index => {
+  const handleSheetGalleryChange = useCallback((index: number) => {
     if (index === 0) {
       setSheetOpen(null);
     } else if (index === 1) {
       setSheetOpen('gallery');
     }
   }, []);
-  const handleSheetAssigneeChange = useCallback(index => {
+  const handleSheetAssigneeChange = useCallback((index: number) => {
     if (index === 0) {
       setSheetOpen(null);
     } else if (index === 1) {
@@ -109,7 +109,7 @@ const CreateTaskLayer = ({
     }
   }, []);
   const renderAssigneeItem = useCallback(
-    ({item}) => {
+    ({item}: {item: User}) => {
       const isSelected = taskCreate.assignee?.user_id == item.user_id;
       return (
         <Touchable
@@ -138,17 +138,17 @@ const CreateTaskLayer = ({
     [taskCreate.assignee?.user_id],
   );
   const renderItem = useCallback(
-    ({item}) => {
+    ({item}: {item: SpaceChannel}) => {
       return (
         <View>
           <View style={styles.groupHead}>
             <SVG.IconCollapse fill={colors.subtext} />
             <Text style={[styles.groupName, {color: colors.subtext}]}>
-              {item.group_channel_name}
+              {item.space_name}
             </Text>
           </View>
           {channels
-            .filter(c => c.group_channel_id === item.group_channel_id)
+            .filter(c => c.space_id === item.space_id)
             .map(ch => {
               const isSelected = !!taskCreate.channels.find(
                 c => c.channel_id === ch.channel_id,
@@ -180,7 +180,7 @@ const CreateTaskLayer = ({
     },
     [taskCreate.channels.map(c => c.channel_id).join(',')],
   );
-  const handleSnapPress = useCallback(index => {
+  const handleSnapPress = useCallback((index: number) => {
     sheetChannelRef.current?.snapTo(index);
   }, []);
   if (!isOpen) return null;
@@ -459,8 +459,8 @@ const CreateTaskLayer = ({
         )}>
         <BottomSheetFlatList
           keyboardShouldPersistTaps="handled"
-          data={groupChannel}
-          keyExtractor={g => g.group_channel_id || g.group_channel_name}
+          data={spaceChannel}
+          keyExtractor={g => g.space_id || g.space_name}
           renderItem={renderItem}
           style={{backgroundColor: colors.background}}
           ListFooterComponent={

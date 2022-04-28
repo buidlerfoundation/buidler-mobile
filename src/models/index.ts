@@ -7,17 +7,18 @@ export type Team = {
   team_url: string;
 };
 
-export type GroupChannel = {
-  group_channel_name: string;
+export type SpaceChannel = {
+  space_name: string;
   order: number;
-  group_channel_id?: string;
+  space_id?: string;
+  space_type: 'Public' | 'Private';
 };
 
 export type Channel = {
   channel_id: string;
   channel_name: string;
-  group_channel?: GroupChannel;
-  group_channel_id?: string;
+  space?: SpaceChannel;
+  space_id?: string;
   channel_type: 'Direct' | 'Public' | 'Private';
   seen: boolean;
   user?: User;
