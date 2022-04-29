@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Text, TextInput} from 'react-native';
 import NavigationHeader from 'components/NavigationHeader';
 import {useTheme} from '@react-navigation/native';
@@ -21,13 +21,17 @@ const EnterOTP = () => {
     };
     const res = await api.verifyOtp(body);
     if (res.statusCode === 200) {
-      dispatch({type: actionTypes.TOGGLE_OTP});
       NavigationServices.goBack();
       alert('Your account was verified.');
     } else {
       alert(res.message);
     }
   };
+  useEffect(() => {
+    return () => {
+      dispatch({type: actionTypes.TOGGLE_OTP});
+    };
+  }, []);
   return (
     <View style={styles.container}>
       <NavigationHeader title="Enter OTP code" />
