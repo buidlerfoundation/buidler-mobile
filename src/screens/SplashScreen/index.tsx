@@ -11,6 +11,7 @@ import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import messaging from '@react-native-firebase/messaging';
 import api from 'services/api';
 import {Team} from 'models';
+import {uniqChannelPrivateKey} from 'helpers/ChannelHelper';
 
 type SplashScreenProps = {
   findUser?: () => any;
@@ -30,6 +31,7 @@ const SplashScreen = ({
   const privateKey = useSelector((state: any) => state.configs.privateKey);
   const team = useSelector((state: any) => state.user.team);
   const accessApp = async () => {
+    await uniqChannelPrivateKey();
     await findTeamAndChannel?.();
     let params = {};
     if (
