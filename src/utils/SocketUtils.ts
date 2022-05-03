@@ -11,6 +11,7 @@ import {
   getPrivateChannel,
   getRawPrivateChannel,
   normalizeMessageData,
+  normalizeMessageItem,
   storePrivateChannel,
 } from 'helpers/ChannelHelper';
 import {Dispatch} from 'redux';
@@ -282,7 +283,7 @@ class SocketUtil {
           type: actionTypes.TOGGLE_OTP,
           payload: !Object.keys(data).find(el => el === deviceCode)
             ? {otp: Object.values(data)?.[0], open: true}
-            : {},
+            : {open: true},
         });
         if (!Object.keys(data).find(el => el === deviceCode)) {
           this.socket.emit('ON_VERIFY_DEVICE_OTP_RECEIVED', {
@@ -432,11 +433,16 @@ class SocketUtil {
         payload: data,
       });
     });
-    this.socket.on('ON_NEW_MESSAGE', (data: any) => {
+    this.socket.on('ON_NEW_MESSAGE', async (data: any) => {
       const {message_data, notification_data} = data;
       const {userData, team, currentTeam, channel, currentChannel} =
         store.getState()?.user;
+      const configs: any = store.getState()?.configs;
+      const {channelPrivateKey} = configs;
       const messageData: any = store.getState()?.message.messageData;
+      const channelNotification = channel.find(
+        (c: any) => c.channel_id === message_data.channel_id,
+      );
       if (!currentChannel.channel_id) {
         store.dispatch({
           type: actionTypes.SET_CURRENT_CHANNEL,
@@ -466,9 +472,6 @@ class SocketUtil {
         const teamNotification = team.find(
           (t: any) => t.team_id === notification_data.team_id,
         );
-        const channelNotification = channel.find(
-          (c: any) => c.channel_id === message_data.channel_id,
-        );
         if (currentChannel.channel_id === message_data.channel_id) {
           const {scrollData} = messageData?.[currentChannel.channel_id] || {};
           if (scrollData?.showScrollDown) {
@@ -484,29 +487,27 @@ class SocketUtil {
             });
           }
         }
-        if (
-          teamNotification &&
-          currentChannel.channel_id !== message_data.channel_id
-        ) {
-          // ipcRenderer.on('notification-click', (_) => {
-          //   if (currentTeam.team_id === notification_data.team_id) {
-          //     store.dispatch({
-          //       type: actionTypes.SET_CURRENT_CHANNEL,
-          //       payload: { channel: channelNotification },
-          //     });
-          //   } else {
-          //     this.setTeamFromNotification(
-          //       teamNotification,
-          //       message_data.channel_id,
-          //       store.dispatch
-          //     );
-          //   }
-          // });
+      }
+      let res = message_data;
+      if (
+        !channelNotification ||
+        channelNotification?.channel_type === 'Private' ||
+        channelNotification?.channel_type === 'Direct'
+      ) {
+        const keys = channelPrivateKey[message_data.channel_id];
+        if (keys?.length > 0) {
+          res = await normalizeMessageItem(
+            message_data,
+            keys[keys.length - 1].key,
+            message_data.channel_id,
+          );
+        } else {
+          res = null;
         }
       }
       store.dispatch({
         type: actionTypes.RECEIVE_MESSAGE,
-        payload: {data: message_data},
+        payload: {data: res},
       });
     });
     this.socket.on('ON_EDIT_MESSAGE', (data: any) => {

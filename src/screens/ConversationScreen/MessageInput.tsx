@@ -12,6 +12,8 @@ import Spinner from 'components/Spinner';
 import api from 'services/api';
 import ImageHelper from 'helpers/ImageHelper';
 import Blockies from 'components/Blockies';
+import {useSelector} from 'react-redux';
+import {encryptMessage} from 'helpers/ChannelHelper';
 
 type MessageInputProps = {
   themeType: ThemeType;
@@ -47,6 +49,9 @@ const MessageInput = ({
   teamUserData,
 }: MessageInputProps) => {
   const [val, setVal] = useState('');
+  const channelPrivateKey = useSelector(
+    (state: any) => state.configs.channelPrivateKey,
+  );
   const {colors} = themes[themeType];
   useEffect(() => {
     if (messageEdit) {
@@ -60,7 +65,7 @@ const MessageInput = ({
       submitMessage();
     }
   };
-  const submitMessage = () => {
+  const submitMessage = async () => {
     if (!!attachments.find(el => el.loading)) {
       alert('Attachment is uploading');
       return;
@@ -69,6 +74,19 @@ const MessageInput = ({
       content: val,
       plain_text: val,
     };
+    if (
+      currentChannel.channel_type === 'Private' ||
+      (currentChannel.channel_type === 'Direct' && currentChannel.channel_id)
+    ) {
+      const {key} =
+        channelPrivateKey[currentChannel.channel_id][
+          channelPrivateKey[currentChannel.channel_id].length - 1
+        ];
+      const content = await encryptMessage(message.content, key);
+      const plain_text = await encryptMessage(message.plain_text, key);
+      message.content = content;
+      message.plain_text = plain_text;
+    }
     if (currentChannel.channel_id) {
       message.channel_id = currentChannel.channel_id;
     } else if (currentChannel.user) {
@@ -87,13 +105,23 @@ const MessageInput = ({
     setVal('');
     onClearAttachment?.();
   };
-  const editMessage = () => {
+  const editMessage = async () => {
     if (!!attachments.find(el => el.loading)) {
       alert('Attachment is uploading');
       return;
     }
     if (!val) return;
-    api.editMessage(messageEdit.message_id, val, val);
+    let content = val.trim();
+    let plain_text = val.trim();
+    if (currentChannel.channel_type === 'Private') {
+      const {key} =
+        channelPrivateKey[currentChannel.channel_id][
+          channelPrivateKey[currentChannel.channel_id].length - 1
+        ];
+      content = await encryptMessage(content, key);
+      plain_text = await encryptMessage(plain_text, key);
+    }
+    api.editMessage(messageEdit.message_id, content, plain_text);
     setVal('');
     onClearReply?.();
     onClearAttachment?.();
