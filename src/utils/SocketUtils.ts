@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import {actionTypes} from 'actions/actionTypes';
 import api from 'services/api';
-import {createRefreshSelector} from 'reducers/selectors';
 import {getDeviceCode} from 'helpers/GenerateUUID';
 import {
   getChannelPrivateKey,
@@ -175,6 +174,7 @@ class SocketUtil {
       this.firstLoad = true;
       this.listenSocket();
       this.socket.on('disconnect', (reason: string) => {
+        console.log('Disconnect: ', reason);
         this.socket.off('ON_NEW_MESSAGE');
         this.socket.off('ON_NEW_TASK');
         this.socket.off('ON_UPDATE_TASK');
@@ -435,8 +435,7 @@ class SocketUtil {
     });
     this.socket.on('ON_NEW_MESSAGE', async (data: any) => {
       const {message_data, notification_data} = data;
-      const {userData, team, currentTeam, channel, currentChannel} =
-        store.getState()?.user;
+      const {userData, channel, currentChannel} = store.getState()?.user;
       const configs: any = store.getState()?.configs;
       const {channelPrivateKey} = configs;
       const messageData: any = store.getState()?.message.messageData;
@@ -469,9 +468,6 @@ class SocketUtil {
             },
           });
         }
-        const teamNotification = team.find(
-          (t: any) => t.team_id === notification_data.team_id,
-        );
         if (currentChannel.channel_id === message_data.channel_id) {
           const {scrollData} = messageData?.[currentChannel.channel_id] || {};
           if (scrollData?.showScrollDown) {
@@ -543,6 +539,7 @@ class SocketUtil {
       });
     });
     this.socket.on('ON_ERROR', (data: any) => {
+      alert(data);
       // toast.error(data);
     });
   }
