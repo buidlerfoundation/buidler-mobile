@@ -29,6 +29,7 @@ const MessagePhoto = ({attachments, teamId, themeType}: MessagePhotoProps) => {
               controls={Platform.OS === 'ios'}
               paused
               resizeMode="contain"
+              key={att.file_id}
             />
           );
         }
@@ -43,7 +44,8 @@ const MessagePhoto = ({attachments, teamId, themeType}: MessagePhotoProps) => {
                 Linking.openURL(
                   ImageHelper.normalizeImage(att.file_url, teamId, {}, true),
                 );
-              }}>
+              }}
+              key={att.file_id}>
               <SVG.IconFile fill={colors.subtext} />
               <Text style={[styles.fileName, {color: colors.text}]}>
                 {att.original_name}

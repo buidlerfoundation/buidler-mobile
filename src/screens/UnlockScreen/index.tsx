@@ -19,6 +19,7 @@ import {actionTypes} from 'actions/actionTypes';
 import {getPrivateChannel} from 'helpers/ChannelHelper';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
+import store from '../../store';
 
 type UnlockScreenProps = {
   findTeamAndChannel?: () => any;
@@ -33,7 +34,6 @@ const UnlockScreen = ({
   const {colors} = useTheme();
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.user.userData);
-  const team = useSelector((state: any) => state.user.team);
   const accessApp = async () => {
     await findTeamAndChannel?.();
     let params = {};
@@ -41,6 +41,7 @@ const UnlockScreen = ({
       PushNotificationHelper.initialNotification &&
       PushNotificationHelper.initNotificationData
     ) {
+      const {team} = store.getState()?.user;
       const {data, type} = PushNotificationHelper.initNotificationData;
       params = {type};
       const {team_id} = data.notification_data;

@@ -1,6 +1,6 @@
 import actions from 'actions';
 import ScreenID, {StackID} from 'common/ScreenID';
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {View, Platform} from 'react-native';
 import {connect, useSelector} from 'react-redux';
 import {bindActionCreators} from 'redux';
@@ -30,7 +30,7 @@ const SplashScreen = ({
 }: SplashScreenProps) => {
   const privateKey = useSelector((state: any) => state.configs.privateKey);
   const team = useSelector((state: any) => state.user.team);
-  const accessApp = async () => {
+  const accessApp = useCallback(async () => {
     await uniqChannelPrivateKey();
     await findTeamAndChannel?.();
     let params = {};
@@ -49,8 +49,8 @@ const SplashScreen = ({
       PushNotificationHelper.reset();
     }
     NavigationServices.replace(StackID.HomeStack, params);
-  };
-  const initApp = async () => {
+  }, [findTeamAndChannel, setCurrentTeam, team]);
+  const initApp = useCallback(async () => {
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     if (accessToken) {
       await PushNotificationHelper.init();
@@ -68,10 +68,10 @@ const SplashScreen = ({
     } else {
       NavigationServices.replace(StackID.AuthStack);
     }
-  };
+  }, [privateKey, findUser, getInitial, accessApp]);
   useEffect(() => {
     initApp();
-  }, []);
+  }, [initApp]);
   return (
     <View
       style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}
@@ -79,11 +79,7 @@ const SplashScreen = ({
   );
 };
 
-const mapStateToProps = (state: any) => {
-  return {};
-};
-
 const mapActionsToProps = (dispatch: any) =>
   bindActionCreators(actions, dispatch);
 
-export default connect(mapStateToProps, mapActionsToProps)(SplashScreen);
+export default connect(undefined, mapActionsToProps)(SplashScreen);

@@ -2,7 +2,7 @@ import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Channel, SpaceChannel, Team, ThemeType, User} from 'models';
 import React, {useState} from 'react';
-import {View, FlatList, StyleSheet, Image, Text} from 'react-native';
+import {View, FlatList, StyleSheet, Text} from 'react-native';
 import {connect} from 'react-redux';
 import themes from 'themes';
 import FastImage from 'react-native-fast-image';

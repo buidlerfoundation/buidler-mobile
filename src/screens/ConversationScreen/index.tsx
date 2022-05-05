@@ -11,12 +11,11 @@ import {
   normalizeUserName,
 } from 'helpers/MessageHelper';
 import {Channel, Message, Team, ThemeType, User} from 'models';
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   ActivityIndicator,
   SectionList,
   Image,
@@ -35,7 +34,6 @@ import api from 'services/api';
 import {getUniqueId} from 'helpers/GenerateUUID';
 import {resizeImage} from 'helpers/ImageHelpers';
 import SocketUtils from 'utils/SocketUtils';
-import FastImage from 'react-native-fast-image';
 import MenuMessage from './MenuMessage';
 import AvatarView from 'components/AvatarView';
 import {titleMessageFromNow} from 'utils/DateUtils';
@@ -85,7 +83,7 @@ const ConversationScreen = ({
       undefined,
       true,
     );
-  }, [currentChannel]);
+  }, [currentChannel, getMessages]);
   const {colors} = themes[themeType];
   const renderItem = ({item}: {item: Message}) => {
     if (item.conversation_data.length > 0) {

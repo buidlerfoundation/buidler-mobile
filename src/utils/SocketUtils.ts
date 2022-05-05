@@ -14,8 +14,7 @@ import {
   storePrivateChannel,
 } from 'helpers/ChannelHelper';
 import {Dispatch} from 'redux';
-
-const SocketIO = require('socket.io-client');
+import {io} from 'socket.io-client';
 
 const getTasks = async (channelId: string, dispatch: Dispatch) => {
   dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
@@ -155,18 +154,13 @@ class SocketUtil {
   firstLoad = false;
   async init(teamId?: string) {
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
-    this.socket = SocketIO(
-      `${AppConfig.stagingBaseUrl}`,
-      {
-        query: {token: accessToken},
-      },
-      {
-        transports: ['websocket'],
-        upgrade: false,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 3000,
-      },
-    );
+    this.socket = io(`${AppConfig.stagingBaseUrl}`, {
+      query: {token: accessToken},
+      transports: ['websocket'],
+      upgrade: false,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 3000,
+    });
     this.socket.on('connect', () => {
       if (this.firstLoad) {
         this.reloadData();

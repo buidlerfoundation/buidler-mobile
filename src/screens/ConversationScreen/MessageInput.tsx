@@ -14,6 +14,7 @@ import ImageHelper from 'helpers/ImageHelper';
 import Blockies from 'components/Blockies';
 import {useSelector} from 'react-redux';
 import {encryptMessage} from 'helpers/ChannelHelper';
+import {normalizeUserName} from 'helpers/MessageHelper';
 
 type MessageInputProps = {
   themeType: ThemeType;
@@ -248,7 +249,12 @@ const MessageInput = ({
           <TextInput
             style={[styles.input, {color: colors.text}]}
             placeholder={
-              placeholder || `message to ${currentChannel.channel_name}`
+              placeholder ||
+              `message to ${
+                currentChannel?.user?.user_name
+                  ? normalizeUserName(currentChannel?.user?.user_name)
+                  : `# ${currentChannel?.channel_name}`
+              }`
             }
             multiline
             placeholderTextColor={colors.subtext}
