@@ -227,7 +227,7 @@ export const accessApp =
         const res = await api.verifyNonce(nonce, signature.compact);
         if (res.statusCode === 200) {
           dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
-          AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);
+          await AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);
           NavigationServices.reset(ScreenID.SplashScreen);
         } else {
           err = res.message;

@@ -12,6 +12,7 @@ import messaging from '@react-native-firebase/messaging';
 import api from 'services/api';
 import {Team} from 'models';
 import {uniqChannelPrivateKey} from 'helpers/ChannelHelper';
+import store from '../../store';
 
 type SplashScreenProps = {
   findUser?: () => any;
@@ -29,10 +30,10 @@ const SplashScreen = ({
   setCurrentTeam,
 }: SplashScreenProps) => {
   const privateKey = useSelector((state: any) => state.configs.privateKey);
-  const team = useSelector((state: any) => state.user.team);
   const accessApp = useCallback(async () => {
     await uniqChannelPrivateKey();
     await findTeamAndChannel?.();
+    const {team} = store.getState()?.user;
     let params = {};
     if (
       PushNotificationHelper.initialNotification &&
@@ -49,7 +50,7 @@ const SplashScreen = ({
       PushNotificationHelper.reset();
     }
     NavigationServices.replace(StackID.HomeStack, params);
-  }, [findTeamAndChannel, setCurrentTeam, team]);
+  }, [findTeamAndChannel, setCurrentTeam]);
   const initApp = useCallback(async () => {
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     if (accessToken) {
