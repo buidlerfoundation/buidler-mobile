@@ -5,39 +5,6 @@ import {AsyncKey} from 'common/AppStorage';
 import store from '../store';
 import {uniqBy} from 'lodash';
 
-const testData = {
-  'cc388ba9-bdee-44af-849e-4cc1b670b2b2': [
-    {
-      key: '{"iv":"099cfdb2852b525920220b1880d0922c","ephemPublicKey":"04a13cbbc47af728862e6061a8c091f267194ae4eee7dae556322bbec25e183381c5360e3f94a28b9d83dd889a7c78dfe73614bb575e4f8e9bff327aaa6c3810b2","ciphertext":"03151cf3164ea30fbc79362511260c5d207c2ff199690044110750bd8061b0ee89d1bb258776dbbcc9f892e7242e9233ec4c420bfa29b4f63ad5a4804b50f46a44d40ec4e6f444461a25ff06732b133a","mac":"013584bd513e19604b5fcdd599e22eb79843152f7dca1ef48a8a2b6e0f413db1"}',
-      timestamp: 1649670068309,
-    },
-    {
-      key: '{"iv":"099cfdb2852b525920220b1880d0922c","ephemPublicKey":"04a13cbbc47af728862e6061a8c091f267194ae4eee7dae556322bbec25e183381c5360e3f94a28b9d83dd889a7c78dfe73614bb575e4f8e9bff327aaa6c3810b2","ciphertext":"03151cf3164ea30fbc79362511260c5d207c2ff199690044110750bd8061b0ee89d1bb258776dbbcc9f892e7242e9233ec4c420bfa29b4f63ad5a4804b50f46a44d40ec4e6f444461a25ff06732b133a","mac":"013584bd513e19604b5fcdd599e22eb79843152f7dca1ef48a8a2b6e0f413db1"}',
-      timestamp: 1649670068309,
-    },
-  ],
-  'aa3532a9-ab39-4dc5-b167-29ef3da2fdef': [
-    {
-      key: '{"iv":"099cfdb2852b525920220b1880d0922c","ephemPublicKey":"04a13cbbc47af728862e6061a8c091f267194ae4eee7dae556322bbec25e183381c5360e3f94a28b9d83dd889a7c78dfe73614bb575e4f8e9bff327aaa6c3810b2","ciphertext":"03151cf3164ea30fbc79362511260c5d207c2ff199690044110750bd8061b0ee89d1bb258776dbbcc9f892e7242e9233ec4c420bfa29b4f63ad5a4804b50f46a44d40ec4e6f444461a25ff06732b133a","mac":"013584bd513e19604b5fcdd599e22eb79843152f7dca1ef48a8a2b6e0f413db1"}',
-      timestamp: 1649670068309,
-    },
-    {
-      key: '{"iv":"099cfdb2852b525920220b1880d0922c","ephemPublicKey":"04a13cbbc47af728862e6061a8c091f267194ae4eee7dae556322bbec25e183381c5360e3f94a28b9d83dd889a7c78dfe73614bb575e4f8e9bff327aaa6c3810b2","ciphertext":"03151cf3164ea30fbc79362511260c5d207c2ff199690044110750bd8061b0ee89d1bb258776dbbcc9f892e7242e9233ec4c420bfa29b4f63ad5a4804b50f46a44d40ec4e6f444461a25ff06732b133a","mac":"013584bd513e19604b5fcdd599e22eb79843152f7dca1ef48a8a2b6e0f413db1"}',
-      timestamp: 1649670068309,
-    },
-  ],
-  'd1489ab6-08b5-4319-a728-b3b29a408de0': [
-    {
-      key: '{"iv":"099cfdb2852b525920220b1880d0922c","ephemPublicKey":"04a13cbbc47af728862e6061a8c091f267194ae4eee7dae556322bbec25e183381c5360e3f94a28b9d83dd889a7c78dfe73614bb575e4f8e9bff327aaa6c3810b2","ciphertext":"03151cf3164ea30fbc79362511260c5d207c2ff199690044110750bd8061b0ee89d1bb258776dbbcc9f892e7242e9233ec4c420bfa29b4f63ad5a4804b50f46a44d40ec4e6f444461a25ff06732b133a","mac":"013584bd513e19604b5fcdd599e22eb79843152f7dca1ef48a8a2b6e0f413db1"}',
-      timestamp: 1649670068309,
-    },
-    {
-      key: '{"iv":"099cfdb2852b525920220b1880d0922c","ephemPublicKey":"04a13cbbc47af728862e6061a8c091f267194ae4eee7dae556322bbec25e183381c5360e3f94a28b9d83dd889a7c78dfe73614bb575e4f8e9bff327aaa6c3810b2","ciphertext":"03151cf3164ea30fbc79362511260c5d207c2ff199690044110750bd8061b0ee89d1bb258776dbbcc9f892e7242e9233ec4c420bfa29b4f63ad5a4804b50f46a44d40ec4e6f444461a25ff06732b133a","mac":"013584bd513e19604b5fcdd599e22eb79843152f7dca1ef48a8a2b6e0f413db1"}',
-      timestamp: 1649670068309,
-    },
-  ],
-};
-
 export const encryptMessage = async (str: string, key: string) => {
   const pubKey = utils.computePublicKey(key, true);
   const res = await EthCrypto.encryptWithPublicKey(pubKey.slice(2), str);
@@ -162,16 +129,30 @@ export const normalizeMessageItem = async (
   const content = await decryptMessage(item.content, key);
   const plain_text = await decryptMessage(item.plain_text, key);
   if (item?.conversation_data?.length > 0) {
-    item.conversation_data = await normalizeMessageData(
-      item.conversation_data,
-      channelId,
-    );
+    if (channelId) {
+      item.conversation_data = await normalizeMessageData(
+        item.conversation_data,
+        channelId,
+      );
+    } else {
+      item.conversation_data = await normalizePublicMessageData(
+        item.conversation_data,
+      );
+    }
   }
   return {
     ...item,
     content,
     plain_text,
   };
+};
+
+export const normalizePublicMessageData = async (messages: Array<any>) => {
+  const configs: any = store.getState()?.configs;
+  const {privateKey} = configs;
+  const req = messages?.map?.(el => normalizeMessageItem(el, privateKey)) || [];
+  const res = await Promise.all(req);
+  return res.filter(el => !!el.content);
 };
 
 export const normalizeMessageData = async (

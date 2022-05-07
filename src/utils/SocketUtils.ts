@@ -11,6 +11,7 @@ import {
   getRawPrivateChannel,
   normalizeMessageData,
   normalizeMessageItem,
+  normalizePublicMessageData,
   storePrivateChannel,
 } from 'helpers/ChannelHelper';
 import {Dispatch} from 'redux';
@@ -84,7 +85,7 @@ const getMessages = async (
   const isPrivate = channelType === 'Private' || channelType === 'Direct';
   const messageData = isPrivate
     ? await normalizeMessageData(messageRes.data, channelId)
-    : messageRes.data;
+    : await normalizePublicMessageData(messageRes.data);
   if (messageRes.statusCode === 200) {
     dispatch({
       type: actionTypes.MESSAGE_SUCCESS,
