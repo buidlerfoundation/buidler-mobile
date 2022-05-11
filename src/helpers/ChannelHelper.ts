@@ -148,11 +148,12 @@ export const normalizeMessageItem = async (
 };
 
 export const normalizePublicMessageData = async (messages: Array<any>) => {
-  const configs: any = store.getState()?.configs;
-  const {privateKey} = configs;
-  const req = messages?.map?.(el => normalizeMessageItem(el, privateKey)) || [];
-  const res = await Promise.all(req);
-  return res.filter(el => !!el.content);
+  return messages;
+  // const configs: any = store.getState()?.configs;
+  // const {privateKey} = configs;
+  // const req = messages?.map?.(el => normalizeMessageItem(el, privateKey)) || [];
+  // const res = await Promise.all(req);
+  // return res.filter(el => !!el.content);
 };
 
 export const normalizeMessageData = async (

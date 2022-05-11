@@ -8,12 +8,16 @@ import Touchable from 'components/Touchable';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
+import Emoji from 'react-native-emoji';
+import FastImage from 'react-native-fast-image';
+import ImageHelper from 'helpers/ImageHelper';
 
 type SpaceItemProps = {
   item: SpaceChannel;
   channel: Array<Channel>;
   currentChannel: Channel;
   setCurrentChannel: (channel: Channel) => any;
+  teamId: string;
 };
 
 const SpaceItem = ({
@@ -21,10 +25,30 @@ const SpaceItem = ({
   channel,
   currentChannel,
   setCurrentChannel,
+  teamId,
 }: SpaceItemProps) => {
   const {colors} = useTheme();
   const [isCollapsed, setCollapsed] = useState(false);
   const toggleCollapsed = () => setCollapsed(!isCollapsed);
+  const renderSpaceIcon = () => {
+    if (item.space_image_url) {
+      return (
+        <FastImage
+          style={styles.logoSpace}
+          src={ImageHelper.normalizeImage(item.space_image_url, teamId)}
+          alt=""
+        />
+      );
+    }
+    if (item.space_emoji) {
+      return <Emoji name={item.space_emoji} style={styles.emojiIcon} />;
+    }
+    return (
+      <View style={styles.logoSpace}>
+        <SVG.LogoDarkSquare width={30} height={30} />
+      </View>
+    );
+  };
   return (
     <View
       style={[
@@ -35,6 +59,10 @@ const SpaceItem = ({
         },
       ]}>
       <Touchable style={styles.groupHead} onPress={toggleCollapsed}>
+        <View
+          style={[styles.logoSpaceWrapper, {backgroundColor: colors.border}]}>
+          {renderSpaceIcon()}
+        </View>
         <Text style={[styles.groupName, {color: colors.text}]}>
           {item.space_name}
         </Text>
@@ -97,8 +125,8 @@ const styles = StyleSheet.create({
   },
   groupName: {
     fontFamily: Fonts.Bold,
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: 16,
+    lineHeight: 19,
   },
   channelItem: {
     paddingHorizontal: 10,
@@ -111,6 +139,21 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
     fontSize: 16,
     lineHeight: 19,
+  },
+  emojiIcon: {fontSize: 20},
+  logoSpace: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  logoSpaceWrapper: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    marginRight: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

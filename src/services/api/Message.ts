@@ -6,7 +6,7 @@ export const getMessages = (
   before = new Date().toISOString(),
   after?: string,
 ) => {
-  let uri = `messages/${channelId}?page[size]=${limit}&page[before]=${before}`;
+  let uri = `messages/${channelId}?page[size]=${limit}&page[before]=${before}&disable_encrypt=1`;
   if (after) {
     uri += `&page[after]=${after}`;
   }
@@ -19,7 +19,7 @@ export const getConversation = (
   before = new Date().toISOString(),
 ) => {
   return ApiCaller.get(
-    `messages/conversation/${parentId}?page[size]=${limit}&page[before]=${before}`,
+    `messages/conversation/${parentId}?page[size]=${limit}&page[before]=${before}&disable_encrypt=1`,
   );
 };
 

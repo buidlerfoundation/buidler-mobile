@@ -15,6 +15,7 @@ import MemberItem from './MemberItem';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import SpaceItem from './SpaceItem';
+import SVG from 'common/SVG';
 
 type ChannelScreenProps = {
   themeType: ThemeType;
@@ -57,16 +58,22 @@ const ChannelScreen = ({
           setCurrentTeam(item);
           NavigationServices.pushToScreen(ScreenID.ConversationScreen);
         }}>
-        <FastImage
-          style={{width: 50, height: 50, borderRadius: 12.5}}
-          source={{
-            uri: ImageHelper.normalizeImage(item.team_icon, item.team_id, {
-              w: 50,
-              h: 50,
-              radius: 12.5,
-            }),
-          }}
-        />
+        {item.team_icon ? (
+          <FastImage
+            style={styles.logoTeam}
+            source={{
+              uri: ImageHelper.normalizeImage(item.team_icon, item.team_id, {
+                w: 50,
+                h: 50,
+                radius: 12.5,
+              }),
+            }}
+          />
+        ) : (
+          <View style={styles.logoTeam}>
+            <SVG.LogoDarkSquare width={50} height={50} />
+          </View>
+        )}
       </Touchable>
     );
   };
@@ -82,6 +89,9 @@ const ChannelScreen = ({
           },
         ]}>
         <Touchable style={styles.groupHead} onPress={toggleCollapsed}>
+          <View style={styles.logoSpaceWrapper}>
+            <SVG.LogoLightSquare width={30} height={30} />
+          </View>
           <Text style={[styles.groupName, {color: colors.text}]}>MEMBER</Text>
         </Touchable>
         <Collapsible collapsed={isCollapsed} duration={400} easing="linear">
@@ -151,6 +161,7 @@ const ChannelScreen = ({
         channel={channel}
         currentChannel={currentChannel}
         setCurrentChannel={setCurrentChannel}
+        teamId={currentTeam.team_id}
       />
     );
   };
@@ -183,6 +194,12 @@ const ChannelScreen = ({
 
 const styles = StyleSheet.create({
   container: {flex: 1, paddingTop: AppDimension.extraTop},
+  logoTeam: {
+    width: 50,
+    height: 50,
+    borderRadius: 12.5,
+    overflow: 'hidden',
+  },
   mainView: {flexDirection: 'row', flex: 1},
   teamContainer: {
     width: 70,
@@ -202,8 +219,8 @@ const styles = StyleSheet.create({
   },
   groupName: {
     fontFamily: Fonts.Bold,
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: 16,
+    lineHeight: 19,
   },
   channelItem: {
     paddingHorizontal: 10,
@@ -216,6 +233,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
     fontSize: 16,
     lineHeight: 19,
+  },
+  logoSpaceWrapper: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginRight: 15,
   },
 });
 

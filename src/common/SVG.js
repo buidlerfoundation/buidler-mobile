@@ -26,6 +26,8 @@ import IconDownload from '../assets/images/ic_download.svg';
 import IconArrowBack from '../assets/images/ic_arrow_back.svg';
 import IconCopy from '../assets/images/ic_copy.svg';
 import IconPrivate from '../assets/images/ic_private.svg';
+import LogoDarkSquare from '../assets/images/logo_dark_square.svg';
+import LogoLightSquare from '../assets/images/logo_light_square.svg';
 
 export default {
   IconExpand,
@@ -56,4 +58,6 @@ export default {
   IconArrowBack,
   IconCopy,
   IconPrivate,
+  LogoDarkSquare,
+  LogoLightSquare,
 };
