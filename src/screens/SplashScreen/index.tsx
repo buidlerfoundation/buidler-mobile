@@ -31,7 +31,6 @@ const SplashScreen = ({
 }: SplashScreenProps) => {
   const privateKey = useSelector((state: any) => state.configs.privateKey);
   const accessApp = useCallback(async () => {
-    await uniqChannelPrivateKey();
     await findTeamAndChannel?.();
     const {team} = store.getState()?.user;
     let params = {};
@@ -52,6 +51,7 @@ const SplashScreen = ({
     NavigationServices.replace(StackID.HomeStack, params);
   }, [findTeamAndChannel, setCurrentTeam]);
   const initApp = useCallback(async () => {
+    await uniqChannelPrivateKey();
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     if (accessToken) {
       await PushNotificationHelper.init();
