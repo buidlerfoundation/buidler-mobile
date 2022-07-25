@@ -25,8 +25,11 @@ export const addDeviceToken = (data: {
 export const requestNonce = (pubKey: string) =>
   ApiCaller.post('user/nonce', {public_key: pubKey});
 
-export const verifyNonce = (nonce: string, signature: string) =>
-  ApiCaller.post('user/verify', {nonce, signature});
+export const requestNonceWithAddress = (address: string) =>
+  ApiCaller.post('user/address', {address});
+
+export const verifyNonce = (message: string, signature: string) =>
+  ApiCaller.post('user', {message, signature});
 
 export const verifyOtp = (data: any) =>
   ApiCaller.post('user/device/verify', data);

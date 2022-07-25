@@ -18,6 +18,7 @@ async function requestAPI(
   const headers: any = {
     Accept: '*/*',
     'Access-Control-Allow-Origin': '*',
+    'Chain-Id': 1,
   };
   if (body instanceof FormData) {
     // headers['Content-Type'] = 'multipart/form-data';
@@ -31,7 +32,7 @@ async function requestAPI(
   if (serviceBaseUrl) {
     apiUrl = serviceBaseUrl + uri;
   } else {
-    apiUrl = AppConfig.stagingBaseUrl + uri;
+    apiUrl = AppConfig.baseUrl + uri;
   }
 
   // Get access token and attach it to API request's header

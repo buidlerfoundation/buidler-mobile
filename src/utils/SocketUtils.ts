@@ -156,7 +156,7 @@ class SocketUtil {
   firstLoad = false;
   async init(teamId?: string) {
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
-    this.socket = io(`${AppConfig.stagingBaseUrl}`, {
+    this.socket = io(`${AppConfig.baseUrl}`, {
       query: {token: accessToken},
       transports: ['websocket'],
       upgrade: false,

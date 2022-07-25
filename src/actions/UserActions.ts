@@ -215,16 +215,20 @@ export const accessApp =
       dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: private_key});
       const publicKey = utils.computePublicKey(`0x${private_key}`, true);
       const data = {[publicKey]: private_key};
+      const address = utils.computeAddress(publicKey);
       const encryptedData = encryptString(JSON.stringify(data), password, iv);
       AsyncStorage.setItem(AsyncKey.encryptedDataKey, encryptedData);
-      const {nonce, message} = await api.requestNonce(publicKey);
+      const nonceRes = await api.requestNonceWithAddress(address);
       let err = null;
-      if (nonce) {
-        const msgHash = utils.hashMessage(nonce);
+      if (nonceRes.success) {
+        const msgHash = utils.hashMessage(nonceRes.data.message);
         const msgHashBytes = utils.arrayify(msgHash);
         const signingKey = new utils.SigningKey(`0x${private_key}`);
         const signature = signingKey.signDigest(msgHashBytes);
-        const res = await api.verifyNonce(nonce, signature.compact);
+        const res = await api.verifyNonce(
+          nonceRes.data.message,
+          signature.compact,
+        );
         if (res.statusCode === 200) {
           dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
           await AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);
@@ -233,7 +237,7 @@ export const accessApp =
           err = res.message;
         }
       } else {
-        err = message;
+        err = nonceRes.message;
       }
       if (err) {
         dispatch({type: actionTypes.ACCESS_APP_FAIL, message: err});
