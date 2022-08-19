@@ -8,6 +8,9 @@ import TaskReducers from './TaskReducers';
 import ReactReducers from './ReactReducers';
 import MessageReducer from './MessageReducer';
 import refreshReducer from './refreshReducer';
+import networkReducer from './NetworkReducer';
+import transactionReducer from './TransactionReducer';
+import collectibleReducer from './CollectibleReducers';
 
 const appReducer = combineReducers({
   configs: configReducers,
@@ -19,12 +22,12 @@ const appReducer = combineReducers({
   message: MessageReducer,
   loadmore: LoadMoreReducer,
   refresh: refreshReducer,
+  network: networkReducer,
+  transaction: transactionReducer,
+  collectible: collectibleReducer,
 });
 
 const rootReducer = (state, action) => {
-  // if (action.type === actions.userTypes.LOG_OUT) {
-  //   state = undefined;
-  // }
   return appReducer(state, action);
 };
 

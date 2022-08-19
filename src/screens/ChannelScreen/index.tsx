@@ -1,83 +1,47 @@
 import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
-import {Channel, SpaceChannel, Team, ThemeType, User} from 'models';
-import React, {useState} from 'react';
+import {Community, Space} from 'models';
+import React, {memo, useCallback, useState} from 'react';
 import {View, FlatList, StyleSheet, Text} from 'react-native';
-import {connect} from 'react-redux';
-import themes from 'themes';
-import FastImage from 'react-native-fast-image';
-import ImageHelper from 'helpers/ImageHelper';
-import {bindActionCreators} from 'redux';
-import actions from 'actions';
 import Collapsible from 'react-native-collapsible';
 import Fonts from 'common/Fonts';
 import MemberItem from './MemberItem';
-import NavigationServices from 'services/NavigationServices';
-import ScreenID from 'common/ScreenID';
 import SpaceItem from './SpaceItem';
 import SVG from 'common/SVG';
+import useThemeColor from 'hook/useThemeColor';
+import useCurrentCommunity from 'hook/useCurrentCommunity';
+import useSpaceChannel from 'hook/useSpaceChannel';
+import useAppSelector from 'hook/useAppSelector';
+import useCurrentChannel from 'hook/useCurrentChannel';
+import useTeamUserData from 'hook/useTeamUserData';
+import TeamItem from './TeamItem';
+import {useMemo} from 'react';
 
-type ChannelScreenProps = {
-  themeType: ThemeType;
-  team: Array<Team>;
-  currentTeam: Team;
-  setCurrentTeam: (team: Team) => any;
-  spaceChannel: Array<SpaceChannel>;
-  channel: Array<Channel>;
-  currentChannel: Channel;
-  setCurrentChannel: (channel: Channel) => any;
-  userData: User;
-  teamUserData: Array<User>;
-};
-
-const ChannelScreen = ({
-  themeType,
-  team,
-  currentTeam,
-  setCurrentTeam,
-  channel,
-  currentChannel,
-  spaceChannel,
-  setCurrentChannel,
-  userData,
-  teamUserData,
-}: ChannelScreenProps) => {
+const ChannelScreen = () => {
+  const team = useAppSelector(state => state.user.team || []);
+  const userData = useAppSelector(state => state.user.userData);
+  const teamUserData = useTeamUserData();
+  const spaceChannel = useSpaceChannel();
+  const currentTeam = useCurrentCommunity();
+  const currentChannel = useCurrentChannel();
   const [isCollapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = () => setCollapsed(!isCollapsed);
-  const {colors} = themes[themeType];
-  const user = teamUserData?.find?.(u => u.user_id === userData.user_id);
-  const renderTeamItem = ({item}: {item: Team; index: number}) => {
-    const isActive = currentTeam.team_id === item.team_id;
-    return (
-      <Touchable
-        style={[
-          {padding: 10},
-          isActive && {backgroundColor: colors.backgroundHeader},
-        ]}
-        onPress={() => {
-          setCurrentTeam(item);
-          NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-        }}>
-        {item.team_icon ? (
-          <FastImage
-            style={styles.logoTeam}
-            source={{
-              uri: ImageHelper.normalizeImage(item.team_icon, item.team_id, {
-                w: 50,
-                h: 50,
-                radius: 12.5,
-              }),
-            }}
-          />
-        ) : (
-          <View style={styles.logoTeam}>
-            <SVG.LogoDarkSquare width={50} height={50} />
-          </View>
-        )}
-      </Touchable>
-    );
-  };
-  const renderFooter = () => {
+  const toggleCollapsed = useCallback(
+    () => setCollapsed(current => !current),
+    [],
+  );
+  const {colors} = useThemeColor();
+  const user = useMemo(
+    () => teamUserData?.find?.(u => u.user_id === userData.user_id),
+    [teamUserData, userData.user_id],
+  );
+  const renderTeamItem = useCallback(
+    ({item}: {item: Community; index: number}) => {
+      const isActive = currentTeam.team_id === item.team_id;
+      return <TeamItem item={item} isActive={isActive} />;
+    },
+    [currentTeam.team_id],
+  );
+  const renderFooter = useCallback(() => {
     return (
       <View
         style={[
@@ -95,76 +59,40 @@ const ChannelScreen = ({
           <Text style={[styles.groupName, {color: colors.text}]}>MEMBER</Text>
         </Touchable>
         <Collapsible collapsed={isCollapsed} duration={400} easing="linear">
-          {user && (
-            <Touchable
-              onPress={() => {
-                setCurrentChannel({
-                  channel_id: user.direct_channel || '',
-                  channel_name: '',
-                  channel_type: 'Direct',
-                  user,
-                  seen: true,
-                });
-                NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-              }}>
-              <MemberItem
-                item={user}
-                themeType={themeType}
-                isUnSeen={
-                  channel.find((c: any) => c.channel_id === user.direct_channel)
-                    ?.seen === false
-                }
-                isSelected={
-                  currentChannel.channel_id === user.direct_channel ||
-                  currentChannel?.user?.user_id === user.user_id
-                }
-              />
-            </Touchable>
-          )}
+          {user && <MemberItem item={user} />}
           {teamUserData
             ?.filter?.(u => u.user_id !== userData.user_id)
             ?.map(u => (
-              <Touchable
-                key={u.user_id}
-                onPress={() => {
-                  setCurrentChannel({
-                    channel_id: u.direct_channel || '',
-                    channel_name: '',
-                    channel_type: 'Direct',
-                    user: u,
-                    seen: true,
-                  });
-                  NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-                }}>
-                <MemberItem
-                  item={u}
-                  themeType={themeType}
-                  isUnSeen={
-                    channel.find((c: any) => c.channel_id === u.direct_channel)
-                      ?.seen === false
-                  }
-                  isSelected={
-                    currentChannel.channel_id === u.direct_channel ||
-                    currentChannel?.user?.user_id === u.user_id
-                  }
-                />
-              </Touchable>
+              <MemberItem item={u} key={u.user_id} />
             ))}
         </Collapsible>
       </View>
     );
-  };
-  const renderSpaceChannelItem = ({item}: {item: SpaceChannel}) => {
-    return (
-      <SpaceItem
-        item={item}
-        channel={channel}
-        currentChannel={currentChannel}
-        setCurrentChannel={setCurrentChannel}
-        teamId={currentTeam.team_id}
-      />
-    );
-  };
+  }, [
+    colors.background,
+    colors.text,
+    isCollapsed,
+    teamUserData,
+    toggleCollapsed,
+    user,
+    userData.user_id,
+  ]);
+  const renderSpaceChannelItem = useCallback(
+    ({item}: {item: Space}) => {
+      return (
+        <SpaceItem
+          item={item}
+          currentChannel={currentChannel}
+          teamId={currentTeam.team_id}
+        />
+      );
+    },
+    [currentChannel, currentTeam.team_id],
+  );
+  const renderItemSeparate = useCallback(
+    () => <View style={{height: 10}} />,
+    [],
+  );
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -184,7 +112,7 @@ const ChannelScreen = ({
             renderItem={renderSpaceChannelItem}
             ListFooterComponent={renderFooter}
             ListHeaderComponent={<View style={{height: 10}} />}
-            ItemSeparatorComponent={() => <View style={{height: 10}} />}
+            ItemSeparatorComponent={renderItemSeparate}
           />
         </View>
       </View>
@@ -194,12 +122,6 @@ const ChannelScreen = ({
 
 const styles = StyleSheet.create({
   container: {flex: 1, paddingTop: AppDimension.extraTop},
-  logoTeam: {
-    width: 50,
-    height: 50,
-    borderRadius: 12.5,
-    overflow: 'hidden',
-  },
   mainView: {flexDirection: 'row', flex: 1},
   teamContainer: {
     width: 70,
@@ -243,20 +165,4 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapPropsToState = (state: any) => {
-  return {
-    themeType: state.configs.theme,
-    team: state.user.team,
-    currentTeam: state.user.currentTeam,
-    spaceChannel: state.user.spaceChannel,
-    channel: state.user.channel,
-    currentChannel: state.user.currentChannel,
-    userData: state.user.userData,
-    teamUserData: state.user.teamUserData,
-  };
-};
-
-const mapActionsToProps = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(mapPropsToState, mapActionsToProps)(ChannelScreen);
+export default memo(ChannelScreen);

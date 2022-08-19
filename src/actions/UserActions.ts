@@ -16,8 +16,8 @@ import ScreenID from 'common/ScreenID';
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
     const res = await api.getInitial();
-    ImageHelper.initial(res.img_domain, res.img_config);
-    dispatch({type: actionTypes.GET_INITIAL, payload: {data: res}});
+    ImageHelper.initial(res.data.img_domain, res.data.img_config);
+    dispatch({type: actionTypes.GET_INITIAL, payload: {data: res.data}});
   };
 
 export const logout: ActionCreator<any> = () => (dispatch: Dispatch) => {
@@ -51,75 +51,70 @@ export const findUser = () => async (dispatch: Dispatch) => {
   dispatch({type: actionTypes.USER_REQUEST});
   const res = await api.findUser();
   if (res.statusCode === 200) {
-    dispatch({type: actionTypes.USER_SUCCESS, payload: {user: res}});
+    dispatch({type: actionTypes.USER_SUCCESS, payload: {user: res.data}});
   } else {
-    dispatch({type: actionTypes.USER_FAIL});
+    dispatch({type: actionTypes.USER_FAIL, payload: res});
   }
 };
 
-export const findTeamAndChannel = () => async (dispatch: Dispatch) => {
-  dispatch({type: actionTypes.TEAM_REQUEST});
-  const res = await api.findTeam();
-  const lastTeamId = await AsyncStorage.getItem(AsyncKey.lastTeamId);
-  if (res.statusCode === 200) {
-    if (res.data.length > 0) {
-      const currentTeam =
-        res.data.find((t: any) => t.team_id === lastTeamId) || res.data[0];
-      const teamId = currentTeam.team_id;
-      const resSpaceChannel = await api.getSpaceChannel(teamId);
-      if (resSpaceChannel.statusCode === 200) {
-        dispatch({
-          type: actionTypes.GROUP_CHANNEL,
-          payload: resSpaceChannel.data,
-        });
-      }
-      const resChannel = await api.findChannel(teamId);
-      const lastChannelId = await AsyncStorage.getItem(AsyncKey.lastChannelId);
-      const teamUsersRes = await api.getTeamUsers(currentTeam.team_id);
-      if (teamUsersRes.statusCode === 200) {
-        dispatch({
-          type: actionTypes.GET_TEAM_USER,
-          payload: {
-            teamUsers: teamUsersRes.data,
-            teamId: currentTeam.team_id,
-          },
-        });
-      }
-      SocketUtils.init(currentTeam.team_id);
-      const directChannelUser = teamUsersRes?.data?.find(
-        (u: any) => u.direct_channel === lastChannelId,
-      );
-      dispatch({
-        type: actionTypes.SET_CURRENT_TEAM,
-        payload: {
-          team: currentTeam,
-          directChannelUser,
-          lastChannelId,
-          resChannel,
-          teamUsersRes,
-        },
-      });
-      if (resChannel.statusCode === 200) {
-        if (resChannel.data.length > 0) {
+export const findTeamAndChannel =
+  (initCommunityId?: string) => async (dispatch: Dispatch) => {
+    dispatch({type: actionTypes.TEAM_REQUEST, payload: {initCommunityId}});
+    const res = await api.findTeam();
+    let lastTeamId = '';
+    if (initCommunityId && initCommunityId !== 'user') {
+      lastTeamId = initCommunityId;
+    } else {
+      lastTeamId = await AsyncStorage.getItem(AsyncKey.lastTeamId);
+    }
+    if (res.statusCode === 200) {
+      const communities = res.data || [];
+      if (communities.length > 0) {
+        const currentTeam =
+          communities.find((t: Community) => t.team_id === lastTeamId) ||
+          communities[0];
+        const teamId = currentTeam.team_id;
+        const resSpace = await api.getSpaceChannel(teamId);
+        const resChannel = await api.findChannel(teamId);
+        const lastChannelId = await AsyncStorage.getItem(
+          AsyncKey.lastChannelId,
+        );
+        const teamUsersRes = await api.getTeamUsers(currentTeam.team_id);
+        if (teamUsersRes.statusCode === 200) {
           dispatch({
-            type: actionTypes.CHANNEL_SUCCESS,
-            payload: {channel: resChannel.data},
+            type: actionTypes.GET_TEAM_USER,
+            payload: {
+              teamUsers: teamUsersRes,
+              teamId: currentTeam.team_id,
+            },
           });
         }
-      } else {
+        SocketUtils.init(currentTeam.team_id);
+        const directChannelUser = teamUsersRes?.data?.find(
+          (u: UserData) => u.direct_channel === lastChannelId,
+        );
         dispatch({
-          type: actionTypes.CHANNEL_FAIL,
+          type: actionTypes.CURRENT_TEAM_SUCCESS,
+          payload: {
+            team: currentTeam,
+            lastChannelId,
+            directChannelUser,
+            resChannel,
+            teamUsersRes,
+            resSpace,
+          },
         });
+      } else {
+        SocketUtils.init();
       }
+      dispatch({type: actionTypes.TEAM_SUCCESS, payload: {team: res.data}});
+    } else {
+      dispatch({type: actionTypes.TEAM_FAIL, payload: {message: res}});
+      dispatch({
+        type: actionTypes.CHANNEL_FAIL,
+      });
     }
-    dispatch({type: actionTypes.TEAM_SUCCESS, payload: {team: res.data}});
-  } else {
-    dispatch({type: actionTypes.TEAM_FAIL, payload: {message: res}});
-    dispatch({
-      type: actionTypes.CHANNEL_FAIL,
-    });
-  }
-};
+  };
 
 export const setCurrentChannel = (channel: any) => (dispatch: Dispatch) => {
   AsyncStorage.setItem(AsyncKey.lastChannelId, channel.channel_id);
@@ -155,51 +150,60 @@ export const createNewChannel =
     }
   };
 
-export const setCurrentTeam =
-  (team: any, channelId?: string) => async (dispatch: Dispatch) => {
-    dispatch({
-      type: actionTypes.CHANNEL_REQUEST,
-    });
-    const teamUsersRes = await api.getTeamUsers(team.team_id);
-    let lastChannelId: string = null;
+const actionSetCurrentTeam = async (
+  team: any,
+  dispatch: Dispatch,
+  channelId?: string,
+  getState?: any,
+) => {
+  const lastController = getState?.().user?.apiTeamController;
+  lastController?.abort?.();
+  const controller = new AbortController();
+  dispatch({
+    type: actionTypes.CURRENT_TEAM_REQUEST,
+    payload: {controller, team},
+  });
+  try {
+    const teamUsersRes = await api.getTeamUsers(team.team_id, controller);
+    let lastChannelId: any = null;
+    const resSpace = await api.getSpaceChannel(team.team_id, controller);
+    const resChannel = await api.findChannel(team.team_id, controller);
+    const lastChannel = getState?.().user?.lastChannel?.[team.team_id];
     if (channelId) {
       lastChannelId = channelId;
+    } else if (lastChannel) {
+      lastChannelId = lastChannel.channel_id;
     } else {
-      lastChannelId = await AsyncStorage.getItem(AsyncKey.lastChannelId);
+      lastChannelId = resChannel.data?.find(
+        el => el.channel_type !== 'Direct',
+      )?.[0]?.channel_id;
     }
-    const resChannel = await api.findChannel(team.team_id);
+    if (lastChannelId) {
+      await AsyncStorage.setItem(AsyncKey.lastChannelId, lastChannelId);
+    }
     if (teamUsersRes.statusCode === 200) {
       dispatch({
         type: actionTypes.GET_TEAM_USER,
-        payload: {teamUsers: teamUsersRes.data, teamId: team.team_id},
+        payload: {teamUsers: teamUsersRes, teamId: team.team_id},
       });
     }
     SocketUtils.changeTeam(team.team_id);
     dispatch({
-      type: actionTypes.SET_CURRENT_TEAM,
-      payload: {team, resChannel, teamUsersRes, lastChannelId},
+      type: actionTypes.CURRENT_TEAM_SUCCESS,
+      payload: {team, resChannel, lastChannelId, teamUsersRes, resSpace},
     });
     AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
-    const resSpaceChannel = await api.getSpaceChannel(team.team_id);
-    if (resSpaceChannel.statusCode === 200) {
-      dispatch({
-        type: actionTypes.GROUP_CHANNEL,
-        payload: resSpaceChannel.data,
-      });
-    }
-    if (resChannel.statusCode === 200) {
-      if (resChannel.data.length > 0) {
-        dispatch({
-          type: actionTypes.CHANNEL_SUCCESS,
-          payload: {channel: resChannel.data},
-        });
-      } else {
-        dispatch({
-          type: actionTypes.CHANNEL_FAIL,
-        });
-      }
-    }
-  };
+  } catch (error) {
+    dispatch({
+      type: actionTypes.CURRENT_TEAM_FAIL,
+      payload: {message: error},
+    });
+  }
+};
+
+export const setCurrentTeam =
+  (team: any, channelId?: string) => async (dispatch: Dispatch, getState) =>
+    actionSetCurrentTeam(team, dispatch, channelId, getState);
 
 export const accessApp =
   (seed: string, password: string) => async (dispatch: Dispatch) => {
@@ -246,3 +250,26 @@ export const accessApp =
       dispatch({type: actionTypes.ACCESS_APP_FAIL, message: error});
     }
   };
+
+export const actionFetchWalletBalance = async (dispatch: Dispatch) => {
+  dispatch({type: actionTypes.WALLET_BALANCE_REQUEST});
+  try {
+    const res = await api.fetchWalletBalance();
+    if (res.statusCode === 200) {
+      dispatch({type: actionTypes.WALLET_BALANCE_SUCCESS, payload: res.data});
+    } else {
+      dispatch({
+        type: actionTypes.WALLET_BALANCE_FAIL,
+        payload: {message: res.message},
+      });
+    }
+  } catch (error: any) {
+    dispatch({
+      type: actionTypes.WALLET_BALANCE_FAIL,
+      payload: {message: error.message},
+    });
+  }
+};
+
+export const fetchWalletBalance = () => async (dispatch: Dispatch) =>
+  actionFetchWalletBalance(dispatch);

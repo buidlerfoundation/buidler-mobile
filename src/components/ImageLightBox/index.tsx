@@ -1,6 +1,5 @@
 import Touchable from 'components/Touchable';
-import React from 'react';
-import {} from 'react-native';
+import React, {memo, useCallback} from 'react';
 import NavigationServices from 'services/NavigationServices';
 
 type ImageLightBoxProps = {
@@ -9,14 +8,10 @@ type ImageLightBoxProps = {
 };
 
 const ImageLightBox = ({children, originUrl}: ImageLightBoxProps) => {
-  return (
-    <Touchable
-      onPress={() => {
-        NavigationServices.showImageViewer([{url: originUrl}], 0);
-      }}>
-      {children}
-    </Touchable>
-  );
+  const onPress = useCallback(() => {
+    NavigationServices.showImageViewer([{url: originUrl}], 0);
+  }, [originUrl]);
+  return <Touchable onPress={onPress}>{children}</Touchable>;
 };
 
-export default ImageLightBox;
+export default memo(ImageLightBox);

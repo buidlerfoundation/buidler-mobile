@@ -1,36 +1,31 @@
-import React, {useState} from 'react';
+import React, {memo, useState} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import Collapsible from 'react-native-collapsible';
-import {useTheme} from '@react-navigation/native';
 import Fonts from 'common/Fonts';
-import {Channel, SpaceChannel} from 'models';
+import {Channel, Space} from 'models';
 import Touchable from 'components/Touchable';
-import NavigationServices from 'services/NavigationServices';
-import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import Emoji from 'react-native-emoji';
 import FastImage from 'react-native-fast-image';
 import ImageHelper from 'helpers/ImageHelper';
+import useThemeColor from 'hook/useThemeColor';
+import {useCallback} from 'react';
+import ChannelItem from './ChannelItem';
 
 type SpaceItemProps = {
-  item: SpaceChannel;
-  channel: Array<Channel>;
+  item: Space;
   currentChannel: Channel;
-  setCurrentChannel: (channel: Channel) => any;
   teamId: string;
 };
 
-const SpaceItem = ({
-  item,
-  channel,
-  currentChannel,
-  setCurrentChannel,
-  teamId,
-}: SpaceItemProps) => {
-  const {colors} = useTheme();
+const SpaceItem = ({item, currentChannel, teamId}: SpaceItemProps) => {
+  const {colors} = useThemeColor();
   const [isCollapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = () => setCollapsed(!isCollapsed);
-  const renderSpaceIcon = () => {
+  const toggleCollapsed = useCallback(
+    () => setCollapsed(current => !current),
+    [],
+  );
+  const renderSpaceIcon = useCallback(() => {
     if (item.space_image_url) {
       return (
         <FastImage
@@ -48,7 +43,7 @@ const SpaceItem = ({
         <SVG.LogoDarkSquare width={30} height={30} />
       </View>
     );
-  };
+  }, [item.space_emoji, item.space_image_url, teamId]);
   return (
     <View
       style={[
@@ -68,44 +63,16 @@ const SpaceItem = ({
         </Text>
       </Touchable>
       <Collapsible collapsed={isCollapsed} duration={400} easing="linear">
-        {channel
-          .filter(c => c.space_id === item.space_id)
-          .map(c => {
-            const isActive = currentChannel.channel_id === c.channel_id;
-            return (
-              <Touchable
-                style={[
-                  styles.channelItem,
-                  isActive && {backgroundColor: colors.activeBackground},
-                ]}
-                key={c.channel_id}
-                onPress={() => {
-                  setCurrentChannel(c);
-                  NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-                }}
-                onLongPress={() => {
-                  setCurrentChannel(c);
-                  NavigationServices.pushToScreen(ScreenID.TaskScreen);
-                }}>
-                <Text
-                  style={[
-                    styles.channelName,
-                    {
-                      color: isActive || !c.seen ? colors.text : colors.subtext,
-                    },
-                  ]}>
-                  {c.channel_type === 'Private' ? (
-                    <SVG.IconPrivate
-                      fill={isActive || !c.seen ? colors.text : colors.subtext}
-                    />
-                  ) : (
-                    '#'
-                  )}{' '}
-                  {c.channel_name}
-                </Text>
-              </Touchable>
-            );
-          })}
+        {item.channel_ids.map(channelId => {
+          const isActive = currentChannel.channel_id === channelId;
+          return (
+            <ChannelItem
+              channelId={channelId}
+              isActive={isActive}
+              key={channelId}
+            />
+          );
+        })}
       </Collapsible>
     </View>
   );
@@ -128,18 +95,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
   },
-  channelItem: {
-    paddingHorizontal: 10,
-    flexDirection: 'row',
-    height: 40,
-    alignItems: 'center',
-    borderRadius: 5,
-  },
-  channelName: {
-    fontFamily: Fonts.SemiBold,
-    fontSize: 16,
-    lineHeight: 19,
-  },
   emojiIcon: {fontSize: 20},
   logoSpace: {
     width: 30,
@@ -157,4 +112,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SpaceItem;
+export default memo(SpaceItem);

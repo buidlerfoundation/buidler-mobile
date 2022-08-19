@@ -1,40 +1,23 @@
 import Fonts from 'common/Fonts';
 import AvatarView from 'components/AvatarView';
 import {normalizeUserName} from 'helpers/MessageHelper';
-import {ThemeType, User} from 'models';
-import React from 'react';
+import useThemeColor from 'hook/useThemeColor';
+import {UserData} from 'models';
+import React, {memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import FastImage from 'react-native-fast-image';
-import themes from 'themes';
 
 type MemberItemProps = {
-  item: User;
-  themeType: ThemeType;
-  isUnSeen?: boolean;
-  isSelected?: boolean;
+  item: UserData;
 };
 
-const MemberItem = ({
-  item,
-  themeType,
-  isUnSeen,
-  isSelected,
-}: MemberItemProps) => {
-  const {colors} = themes[themeType];
+const MemberItem = ({item}: MemberItemProps) => {
+  const {colors} = useThemeColor();
   return (
-    <View
-      style={[
-        styles.container,
-        isSelected && {backgroundColor: colors.activeBackground},
-      ]}>
+    <View style={[styles.container]}>
       <View style={styles.avatarWrapper}>
-        <AvatarView user={item} themeType={themeType} />
+        <AvatarView user={item} />
       </View>
-      <Text
-        style={[
-          styles.userName,
-          {color: isUnSeen || isSelected ? colors.text : colors.subtext},
-        ]}>
+      <Text style={[styles.userName, {color: colors.subtext}]}>
         {normalizeUserName(item.user_name)}
       </Text>
     </View>
@@ -64,4 +47,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MemberItem;
+export default memo(MemberItem);

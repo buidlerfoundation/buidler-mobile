@@ -1,4 +1,3 @@
-import actions from 'actions';
 import {actionTypes} from 'actions/actionTypes';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
@@ -10,8 +9,8 @@ import {
   normalizeMessages,
   normalizeUserName,
 } from 'helpers/MessageHelper';
-import {Channel, Message, Team, ThemeType, User} from 'models';
-import React, {useEffect, useState} from 'react';
+import {MessageData} from 'models';
+import React, {memo, useEffect, useState, useMemo, useCallback} from 'react';
 import {
   View,
   Text,
@@ -20,10 +19,7 @@ import {
   SectionList,
   Image,
 } from 'react-native';
-import {connect} from 'react-redux';
 import {createLoadMoreSelector} from 'reducers/selectors';
-import {bindActionCreators} from 'redux';
-import themes from 'themes';
 import MessageInput from './MessageInput';
 import MessageItem from './MessageItem';
 import MessageReplyItem from './MessageReplyItem';
@@ -37,141 +33,156 @@ import SocketUtils from 'utils/SocketUtils';
 import MenuMessage from './MenuMessage';
 import AvatarView from 'components/AvatarView';
 import {titleMessageFromNow} from 'utils/DateUtils';
+import useThemeColor from 'hook/useThemeColor';
+import useCurrentChannel from 'hook/useCurrentChannel';
+import useTeamUserData from 'hook/useTeamUserData';
+import useCurrentCommunity from 'hook/useCurrentCommunity';
+import useAppSelector from 'hook/useAppSelector';
+import useAppDispatch from 'hook/useAppDispatch';
+import {getMessages} from 'actions/MessageActions';
+import useMessageData from 'hook/useMessageData';
+import {createTask} from 'actions/TaskActions';
 
-type ConversationScreenProps = {
-  themeType: ThemeType;
-  currentChannel: Channel;
-  getMessages: (
-    channelId: string,
-    channelType: string,
-    before?: string,
-    isFresh?: boolean,
-  ) => any;
-  messages: Array<Message>;
-  teamUserData: Array<User>;
-  currentTeam: Team;
-  messageCanMore: boolean;
-  loadMoreMessage: boolean;
-  userData: User;
-  createTask: (channelId: string, body: any) => any;
-  setCurrentChannel?: (channel: Channel) => any;
-};
-
-const ConversationScreen = ({
-  themeType,
-  currentChannel,
-  getMessages,
-  messages,
-  teamUserData,
-  currentTeam,
-  messageCanMore,
-  loadMoreMessage,
-  userData,
-  createTask,
-  setCurrentChannel,
-}: ConversationScreenProps) => {
-  const [messageReply, setMessageReply] = useState<Message>(null);
-  const [messageEdit, setMessageEdit] = useState<Message>(null);
-  const [selectedMessage, setSelectedMessage] = useState<Message>(null);
+const ConversationScreen = () => {
+  const messageData = useMessageData();
+  const loadMoreMessage = useAppSelector(state =>
+    loadMoreMessageSelector(state),
+  );
+  const messages = useMemo(() => messageData?.data || [], [messageData?.data]);
+  const messageCanMore = useMemo(
+    () => messageData?.canMore,
+    [messageData?.canMore],
+  );
+  const userData = useAppSelector(state => state.user.userData);
+  const currentTeam = useCurrentCommunity();
+  const currentChannel = useCurrentChannel();
+  const teamUserData = useTeamUserData();
+  const [messageReply, setMessageReply] = useState<MessageData>(null);
+  const [messageEdit, setMessageEdit] = useState<MessageData>(null);
+  const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
   const [isOpenGallery, setOpenGallery] = useState(false);
   const [attachments, setAttachments] = useState([]);
-  const toggleGallery = () => setOpenGallery(!isOpenGallery);
+  const dispatch = useAppDispatch();
+  const toggleGallery = useCallback(
+    () => setOpenGallery(current => !current),
+    [],
+  );
   useEffect(() => {
-    getMessages(
-      currentChannel.channel_id,
-      currentChannel.channel_type,
-      undefined,
-      true,
-    );
-  }, [currentChannel, getMessages]);
-  const {colors} = themes[themeType];
-  const renderItem = ({item}: {item: Message}) => {
-    if (item.conversation_data.length > 0) {
-      return (
-        <Touchable onLongPress={openMenuMessage(item)}>
+    dispatch(getMessages(currentChannel.channel_id, 'Public', undefined, true));
+  }, [currentChannel.channel_id, dispatch]);
+  const {colors} = useThemeColor();
+  const onRemoveAttachment = useCallback(
+    id =>
+      setAttachments(current =>
+        current.filter(attachment => attachment.randomId !== id),
+      ),
+    [],
+  );
+  const onClearAttachment = useCallback(() => setAttachments([]), []);
+  const onMoveShouldSetResponderCapture = useCallback(() => false, []);
+  const renderItem = useCallback(
+    ({item}: {item: MessageData}) => {
+      if (item.conversation_data.length > 0) {
+        return (
           <MessageReplyItem
             item={item}
-            themeType={themeType}
-            teamUserData={teamUserData}
+            sender={teamUserData.find(el => el.user_id === item.sender_id)}
             teamId={currentTeam.team_id}
-            setCurrentChannel={setCurrentChannel}
+            onLongPress={openMenuMessage}
           />
-        </Touchable>
-      );
-    }
-    return (
-      <Touchable onLongPress={openMenuMessage(item)}>
+        );
+      }
+      return (
         <MessageItem
           item={item}
-          themeType={themeType}
-          teamUserData={teamUserData}
+          sender={teamUserData.find(el => el.user_id === item.sender_id)}
           teamId={currentTeam.team_id}
-          setCurrentChannel={setCurrentChannel}
+          onLongPress={openMenuMessage}
         />
-      </Touchable>
-    );
-  };
-  const openMenuMessage = (message: Message) => () => {
+      );
+    },
+    [currentTeam.team_id, openMenuMessage, teamUserData],
+  );
+  const renderFooter = useCallback(
+    ({section: {title}}) => (
+      <View style={styles.dateHeader}>
+        <View style={[styles.line, {backgroundColor: colors.separator}]} />
+        <Text style={[styles.dateText, {color: colors.secondary}]}>
+          {titleMessageFromNow(title)}
+        </Text>
+        <View style={[styles.line, {backgroundColor: colors.separator}]} />
+      </View>
+    ),
+    [colors.secondary, colors.separator],
+  );
+  const openMenuMessage = useCallback((message: MessageData) => {
     setSelectedMessage(message);
-  };
-  const onEndReached = () => {
+  }, []);
+  const onEndReached = useCallback(() => {
     if (!messageCanMore || loadMoreMessage) return;
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
-    getMessages(
-      currentChannel.channel_id,
-      currentChannel.channel_type,
-      lastMsg.createdAt,
+    dispatch(
+      getMessages(currentChannel.channel_id, 'Public', lastMsg.createdAt),
     );
-  };
-  const onSelectPhoto = async (items: Array<any>) => {
-    if (!SocketUtils.generateId) {
-      SocketUtils.generateId = getUniqueId();
-    }
-    toggleGallery();
-    const imagesResized = await Promise.all(
-      items.map(image => {
-        return resizeImage(image);
-      }),
-    );
-    imagesResized.forEach(img => {
-      const randomId = Math.random();
-      setAttachments(current => [
-        ...current,
-        {uri: img.uri, randomId, loading: true},
-      ]);
-      api
-        .uploadFile(currentTeam.team_id, SocketUtils.generateId, {
-          uri: img.uri,
-          name: img.name,
-          type: 'multipart/form-data',
-        })
-        .then(res => {
-          if (res.statusCode === 200) {
-            setAttachments(current =>
-              current.map(el => {
-                if (el.randomId === randomId) {
-                  el.url = res.file_url;
-                  el.loading = false;
-                }
-                return el;
-              }),
-            );
-          } else {
-            setAttachments(current =>
-              current.filter(el => el.randomId !== randomId),
-            );
-          }
-        });
-    });
-  };
-  const onCloseMenuMessage = () => {
+  }, [
+    currentChannel.channel_id,
+    dispatch,
+    loadMoreMessage,
+    messageCanMore,
+    messages,
+  ]);
+  const onSelectPhoto = useCallback(
+    async (items: Array<any>) => {
+      if (!SocketUtils.generateId) {
+        SocketUtils.generateId = getUniqueId();
+      }
+      toggleGallery();
+      const imagesResized = await Promise.all(
+        items.map(image => {
+          return resizeImage(image);
+        }),
+      );
+      imagesResized.forEach(img => {
+        const randomId = Math.random();
+        setAttachments(current => [
+          ...current,
+          {uri: img.uri, randomId, loading: true},
+        ]);
+        api
+          .uploadFile(currentTeam.team_id, SocketUtils.generateId, {
+            uri: img.uri,
+            name: img.name,
+            type: 'multipart/form-data',
+          })
+          .then(res => {
+            if (res.statusCode === 200) {
+              setAttachments(current =>
+                current.map(el => {
+                  if (el.randomId === randomId) {
+                    el.url = res.file_url;
+                    el.loading = false;
+                  }
+                  return el;
+                }),
+              );
+            } else {
+              setAttachments(current =>
+                current.filter(el => el.randomId !== randomId),
+              );
+            }
+          });
+      });
+    },
+    [currentTeam.team_id, toggleGallery],
+  );
+  const onCloseMenuMessage = useCallback(() => {
     setSelectedMessage(null);
-  };
-  const onCreateTask = () => {
+  }, []);
+  const onCreateTask = useCallback(() => {
     const body: any = {
       title: selectedMessage?.plain_text,
-      status: 'todo',
+      status: 'pinned',
       channel_ids: [currentChannel?.channel_id],
       file_ids: selectedMessage?.message_attachment?.map?.(
         (a: any) => a.file_id,
@@ -179,23 +190,30 @@ const ConversationScreen = ({
       task_id: selectedMessage.message_id,
       team_id: currentTeam.team_id,
     };
-    createTask(currentChannel?.channel_id, body);
+    dispatch(createTask(currentChannel?.channel_id, body));
     setSelectedMessage(null);
-  };
-  const onClearReply = () => {
+  }, [
+    currentChannel?.channel_id,
+    currentTeam.team_id,
+    dispatch,
+    selectedMessage?.message_attachment,
+    selectedMessage?.message_id,
+    selectedMessage?.plain_text,
+  ]);
+  const onClearReply = useCallback(() => {
     setMessageEdit(null);
     setMessageReply(null);
-  };
-  const onReplyMessage = () => {
+  }, []);
+  const onReplyMessage = useCallback(() => {
     setMessageEdit(null);
     setMessageReply(selectedMessage);
     setSelectedMessage(null);
-  };
-  const onEditMessage = () => {
+  }, [selectedMessage]);
+  const onEditMessage = useCallback(() => {
     setMessageReply(null);
     setMessageEdit(selectedMessage);
     setSelectedMessage(null);
-  };
+  }, [selectedMessage]);
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom}>
       <View style={styles.container}>
@@ -211,7 +229,6 @@ const ConversationScreen = ({
                 user={teamUserData.find(
                   u => u.user_id === currentChannel.user?.user_id,
                 )}
-                themeType={themeType}
                 size={32}
               />
               <Text style={[styles.title, {color: colors.text}]}>
@@ -250,19 +267,7 @@ const ConversationScreen = ({
             initialNumToRender={20}
             ListHeaderComponent={<View style={{height: 15}} />}
             onEndReached={onEndReached}
-            renderSectionFooter={({section: {title}}) => (
-              <View style={styles.dateHeader}>
-                <View
-                  style={[styles.line, {backgroundColor: colors.separator}]}
-                />
-                <Text style={[styles.dateText, {color: colors.secondary}]}>
-                  {titleMessageFromNow(title)}
-                </Text>
-                <View
-                  style={[styles.line, {backgroundColor: colors.separator}]}
-                />
-              </View>
-            )}
+            renderSectionFooter={renderFooter}
             ListFooterComponent={
               loadMoreMessage ? (
                 <View style={styles.footerMessage}>
@@ -273,37 +278,14 @@ const ConversationScreen = ({
               )
             }
           />
-          {/* <FlatList
-            data={normalizeMessage(messages)}
-            keyExtractor={item => item.message_id}
-            renderItem={renderItem}
-            inverted
-            initialNumToRender={20}
-            ListHeaderComponent={<View style={{height: 15}} />}
-            onEndReached={onEndReached}
-            ListFooterComponent={
-              loadMoreMessage ? (
-                <View style={styles.footerMessage}>
-                  <ActivityIndicator />
-                </View>
-              ) : (
-                <View />
-              )
-            }
-          /> */}
         </View>
         <View style={styles.bottomView}>
           <MessageInput
-            themeType={themeType}
             currentChannel={currentChannel}
             openGallery={toggleGallery}
-            onRemoveAttachment={id =>
-              setAttachments(current =>
-                current.filter(attachment => attachment.randomId !== id),
-              )
-            }
+            onRemoveAttachment={onRemoveAttachment}
             attachments={attachments}
-            onClearAttachment={() => setAttachments([])}
+            onClearAttachment={onClearAttachment}
             teamId={currentTeam.team_id}
             messageReply={messageReply}
             messageEdit={messageEdit}
@@ -315,14 +297,13 @@ const ConversationScreen = ({
           isVisible={!!selectedMessage}
           style={styles.modalMenuMessage}
           avoidKeyboard
-          onMoveShouldSetResponderCapture={() => false}
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
           backdropColor={colors.backdrop}
           backdropOpacity={0.9}
           swipeDirection={['down']}
           onSwipeComplete={onCloseMenuMessage}
           onBackdropPress={onCloseMenuMessage}>
           <MenuMessage
-            themeType={themeType}
             onCreateTask={onCreateTask}
             onReply={onReplyMessage}
             onEdit={onEditMessage}
@@ -333,23 +314,15 @@ const ConversationScreen = ({
           isVisible={isOpenGallery}
           style={styles.modalGallery}
           avoidKeyboard
-          onMoveShouldSetResponderCapture={() => false}
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
           backdropColor={colors.backdrop}
           backdropOpacity={0.9}
           onSwipeComplete={toggleGallery}
           swipeDirection={['down']}>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
-            <BottomSheetHandle
-              title="Photos"
-              themeType={themeType}
-              onClosePress={toggleGallery}
-            />
-            <GalleryView
-              themeType={themeType}
-              useFlatList
-              onSelectPhoto={onSelectPhoto}
-            />
+            <BottomSheetHandle title="Photos" onClosePress={toggleGallery} />
+            <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
           </View>
         </Modal>
       </View>
@@ -420,25 +393,4 @@ const loadMoreMessageSelector = createLoadMoreSelector([
   actionTypes.MESSAGE_PREFIX,
 ]);
 
-const mapPropsToState = (state: any) => {
-  const channelId = state.user?.currentChannel?.channel_id;
-  return {
-    themeType: state.configs.theme,
-    userData: state.user.userData,
-    currentChannel: state.user.currentChannel,
-    teamUserData: state.user.teamUserData,
-    currentTeam: state.user.currentTeam,
-    messages: channelId
-      ? state.message.messageData?.[channelId]?.data || []
-      : [],
-    loadMoreMessage: loadMoreMessageSelector(state),
-    messageCanMore: channelId
-      ? state.message.messageData?.[channelId]?.canMore || false
-      : false,
-  };
-};
-
-const mapActionsToProps = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(mapPropsToState, mapActionsToProps)(ConversationScreen);
+export default memo(ConversationScreen);

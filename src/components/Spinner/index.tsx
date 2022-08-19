@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import {View, StyleSheet, ActivityIndicator, ViewStyle} from 'react-native';
-import PropTypes from 'prop-types';
 
 const styles = StyleSheet.create({
   container: {

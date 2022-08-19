@@ -1,7 +1,6 @@
 import NavigationHeader from 'components/NavigationHeader';
-import React, {useMemo, useState} from 'react';
+import React, {memo, useCallback, useMemo, useState} from 'react';
 import {View, StyleSheet, TextInput, Text} from 'react-native';
-import {useTheme} from '@react-navigation/native';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
 import {passwordRules} from 'helpers/PasswordHelper';
@@ -12,25 +11,19 @@ import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {AuthStackParamsList} from 'navigation/AuthStack';
-import {bindActionCreators} from 'redux';
-import actions from 'actions';
-import {connect} from 'react-redux';
+import useThemeColor from 'hook/useThemeColor';
+import useAppDispatch from 'hook/useAppDispatch';
+import {accessApp} from 'actions/UserActions';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
   'CreatePasswordScreen'
 >;
 
-interface CreatePasswordScreenProps extends Props {
-  accessApp: (seed: string, password: string) => any;
-}
-
-const CreatePasswordScreen = ({
-  route,
-  accessApp,
-}: CreatePasswordScreenProps) => {
-  const seed = route.params?.seed || '';
-  const {colors, dark} = useTheme();
+const CreatePasswordScreen = ({route}: Props) => {
+  const dispatch = useAppDispatch();
+  const seed = useMemo(() => route.params?.seed || '', [route.params?.seed]);
+  const {colors, dark} = useThemeColor();
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const togglePassword = () => setShowPassword(!showPassword);
@@ -46,16 +39,17 @@ const CreatePasswordScreen = ({
       return 0;
     return passwordRules().filter(el => el.regex.test(password)).length;
   }, [password]);
-  const onNextPress = () => {
+  const onNextPress = useCallback(() => {
     if (seed) {
       // logged on
-      accessApp(seed, password);
+      dispatch(accessApp(seed, password));
     } else {
       NavigationServices.pushToScreen(ScreenID.StoreSeedPhraseScreen, {
         password,
       });
     }
-  };
+  }, [dispatch, password, seed]);
+  const onChangePassword = useCallback(text => setPassword(text), []);
   return (
     <KeyboardLayout>
       <View style={styles.container}>
@@ -78,7 +72,7 @@ const CreatePasswordScreen = ({
               autoFocus
               autoCorrect={false}
               value={password}
-              onChangeText={text => setPassword(text)}
+              onChangeText={onChangePassword}
             />
             <Touchable style={styles.buttonSecure} onPress={togglePassword}>
               <Text style={[styles.secureText, {color: colors.subtext}]}>
@@ -194,7 +188,4 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapActionsToProps: any = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(undefined, mapActionsToProps)(CreatePasswordScreen);
+export default memo(CreatePasswordScreen);

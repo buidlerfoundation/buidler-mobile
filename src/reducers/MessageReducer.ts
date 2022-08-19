@@ -1,15 +1,33 @@
 import {actionTypes} from 'actions/actionTypes';
+import {MessageData} from 'models';
+import {AnyAction, Reducer} from 'redux';
 
-const initialState = {
-  messageData: {},
-  conversationData: {},
+type MessageReducerState = {
+  conversationData: {[key: string]: Array<MessageData>};
+  messageData: {
+    [key: string]: {
+      canMore: boolean;
+      data: Array<MessageData>;
+      scrollData: {showScrollDown: boolean; unreadCount?: number};
+    };
+  };
+  apiController?: AbortController | null;
 };
 
-const messageReducers = (state = initialState, action) => {
+const initialState: MessageReducerState = {
+  messageData: {},
+  conversationData: {},
+  apiController: null,
+};
+
+const messageReducers: Reducer<MessageReducerState, AnyAction> = (
+  state = initialState,
+  action,
+) => {
   const {type, payload} = action;
   switch (type) {
     case actionTypes.CONVERSATION_SUCCESS: {
-      const {parentId, data, before, isFresh} = payload;
+      const {parentId, data, before} = payload;
       let cvs = data;
       if (before && state.conversationData?.[parentId]) {
         cvs = [...state.conversationData[parentId], ...data];
@@ -63,7 +81,7 @@ const messageReducers = (state = initialState, action) => {
       }
       newMessageData[channel_id] = {
         ...newMessageData[channel_id],
-        data: newMessageData[channel_id].data.map(msg => {
+        data: newMessageData[channel_id]?.data?.map?.(msg => {
           if (msg.message_id === message_id) {
             msg.plain_text = plain_text;
             msg.content = content;
@@ -85,8 +103,15 @@ const messageReducers = (state = initialState, action) => {
         messageData: newMessageData,
       };
     }
+    case actionTypes.MESSAGE_FRESH:
+    case actionTypes.MESSAGE_REQUEST: {
+      return {
+        ...state,
+        apiController: payload.controller,
+      };
+    }
     case actionTypes.MESSAGE_SUCCESS: {
-      const {channelId, data, before, isFresh} = payload;
+      const {channelId, data, before} = payload;
       let msg = data;
       let scrollData = state.messageData?.[channelId]?.scrollData;
       if (
@@ -109,6 +134,7 @@ const messageReducers = (state = initialState, action) => {
             scrollData,
           },
         },
+        apiController: null,
       };
     }
     case actionTypes.SET_CHANNEL_SCROLL_DATA: {
@@ -159,8 +185,8 @@ const messageReducers = (state = initialState, action) => {
       }
       return {
         ...state,
-        messageData: newMessageData,
-        conversationData: newConversationData,
+        messageData: {...newMessageData},
+        conversationData: {...newConversationData},
       };
     }
     default:

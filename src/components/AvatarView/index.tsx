@@ -1,20 +1,22 @@
 import ImageHelper from 'helpers/ImageHelper';
-import {ThemeType, User} from 'models';
-import React from 'react';
+import {UserData} from 'models';
+import React, {useMemo, memo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import themes from 'themes';
 import Blockies from 'components/Blockies';
+import useThemeColor from 'hook/useThemeColor';
 
 type AvatarViewProps = {
-  themeType: ThemeType;
-  user: User;
+  user: UserData;
   size?: number;
 };
 
-const AvatarView = ({themeType, user, size = 25}: AvatarViewProps) => {
-  const {colors} = themes[themeType];
-  const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
+const AvatarView = ({user, size = 25}: AvatarViewProps) => {
+  const {colors} = useThemeColor();
+  const data = useMemo(
+    () => ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id),
+    [user?.avatar_url, user?.user_id],
+  );
   return (
     <View style={styles.container}>
       {typeof data === 'string' ? (
@@ -59,4 +61,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AvatarView;
+export default memo(AvatarView);

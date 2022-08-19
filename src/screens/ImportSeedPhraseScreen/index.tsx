@@ -1,8 +1,7 @@
 import KeyboardLayout from 'components/KeyboardLayout';
 import NavigationHeader from 'components/NavigationHeader';
-import React, {useState} from 'react';
+import React, {memo, useCallback, useState} from 'react';
 import {View, StyleSheet, TextInput, Text} from 'react-native';
-import {useTheme} from '@react-navigation/native';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
 import AppDevice from 'common/AppDevice';
@@ -10,22 +9,24 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import RNGoldenKeystore from 'react-native-golden-keystore';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
+import useThemeColor from 'hook/useThemeColor';
 
 const ImportSeedPhraseScreen = () => {
-  const {colors, dark} = useTheme();
+  const {colors, dark} = useThemeColor();
   const [seed, setSeed] = useState('');
-  const fetchCopiedText = async () => {
+  const fetchCopiedText = useCallback(async () => {
     const text = await Clipboard.getString();
     setSeed(text.toLowerCase());
-  };
-  const onNextPress = async () => {
+  }, []);
+  const onNextPress = useCallback(async () => {
     const isValid = await RNGoldenKeystore.mnemonicIsValid(seed);
-    if (isValid == 0) {
+    if (isValid === 0) {
       alert('Invalid seed phrase');
       return;
     }
     NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {seed});
-  };
+  }, [seed]);
+  const onChangeSeed = useCallback(text => setSeed(text), []);
   return (
     <KeyboardLayout>
       <View style={styles.container}>
@@ -46,7 +47,7 @@ const ImportSeedPhraseScreen = () => {
             autoFocus
             autoCorrect={false}
             value={seed}
-            onChangeText={text => setSeed(text)}
+            onChangeText={onChangeSeed}
             multiline
             autoCapitalize="none"
           />
@@ -109,4 +110,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImportSeedPhraseScreen;
+export default memo(ImportSeedPhraseScreen);

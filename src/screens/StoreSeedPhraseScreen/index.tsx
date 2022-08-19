@@ -1,7 +1,6 @@
 import NavigationHeader from 'components/NavigationHeader';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
-import {useTheme} from '@react-navigation/native';
 import Fonts from 'common/Fonts';
 import RNGoldenKeystore from 'react-native-golden-keystore';
 import AppDevice from 'common/AppDevice';
@@ -12,42 +11,36 @@ import ScreenID from 'common/ScreenID';
 import AppDimension from 'common/AppDimension';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {AuthStackParamsList} from 'navigation/AuthStack';
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-import actions from 'actions';
+import useThemeColor from 'hook/useThemeColor';
+import useAppDispatch from 'hook/useAppDispatch';
+import {accessApp} from 'actions/UserActions';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
   'StoreSeedPhraseScreen'
 >;
 
-interface StoreSeedPhraseScreenProps extends Props {
-  accessApp: (seed: string, password: string) => any;
-}
-
-const StoreSeedPhraseScreen = ({
-  route,
-  accessApp,
-}: StoreSeedPhraseScreenProps) => {
-  const {password} = route.params;
+const StoreSeedPhraseScreen = ({route}: Props) => {
+  const dispatch = useAppDispatch();
+  const {password} = useMemo(() => route.params, [route.params]);
   const [seed, setSeed] = useState('');
   const {width} = useWindowDimensions();
-  const initialSeed = async () => {
+  const initialSeed = useCallback(async () => {
     const res = await RNGoldenKeystore.generateMnemonic();
     setSeed(res);
-  };
+  }, []);
   useEffect(() => {
     initialSeed();
-  }, []);
-  const {colors} = useTheme();
-  const space = AppDevice.isIphoneX ? 12 : 6;
-  const seedWidth = useMemo(() => (width - 40 - space * 2) / 3, [width]);
-  const onNextPress = () => {
+  }, [initialSeed]);
+  const {colors} = useThemeColor();
+  const space = useMemo(() => (AppDevice.isIphoneX ? 12 : 6), []);
+  const seedWidth = useMemo(() => (width - 40 - space * 2) / 3, [space, width]);
+  const onNextPress = useCallback(() => {
     NavigationServices.pushToScreen(ScreenID.BackupScreen, {seed, password});
-  };
-  const onLaterPress = () => {
-    accessApp?.(seed, password);
-  };
+  }, [password, seed]);
+  const onLaterPress = useCallback(() => {
+    dispatch(accessApp?.(seed, password));
+  }, [dispatch, password, seed]);
   return (
     <View style={styles.container}>
       <NavigationHeader title="Store seed phrase" />
@@ -165,7 +158,4 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapActionsToProps: any = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(undefined, mapActionsToProps)(StoreSeedPhraseScreen);
+export default memo(StoreSeedPhraseScreen);

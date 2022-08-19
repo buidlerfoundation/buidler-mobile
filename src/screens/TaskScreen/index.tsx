@@ -1,24 +1,11 @@
-import actions from 'actions';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import {groupTaskByFiltered} from 'helpers/TaskHelper';
-import {
-  Channel,
-  SpaceChannel,
-  Message,
-  ReactData,
-  Task,
-  Team,
-  ThemeType,
-  User,
-} from 'models';
-import React, {useEffect, useState} from 'react';
+import {TaskData} from 'models';
+import React, {memo, useEffect, useState} from 'react';
 import {Image, View, Text, StyleSheet, SectionList} from 'react-native';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import themes from 'themes';
 import CreateTaskLayer from './CreateTaskLayer';
 import TaskItem from './TaskItem';
 import Modal from 'react-native-modal';
@@ -28,135 +15,144 @@ import HapticUtils from 'utils/HapticUtils';
 import {normalizeUserName} from 'helpers/MessageHelper';
 import ImageHelper from 'helpers/ImageHelper';
 import Blockies from 'components/Blockies';
+import useThemeColor from 'hook/useThemeColor';
+import useCurrentChannel from 'hook/useCurrentChannel';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {useMemo} from 'react';
+import useTaskData from 'hook/useTaskData';
+import useAppDispatch from 'hook/useAppDispatch';
+import {getConversations} from 'actions/MessageActions';
+import useCurrentCommunity from 'hook/useCurrentCommunity';
+import {getArchivedTasks, getTasks, updateTask} from 'actions/TaskActions';
+import useChannel from 'hook/useChannel';
+import useTeamUserData from 'hook/useTeamUserData';
+import useAppSelector from 'hook/useAppSelector';
+import useSpaceChannel from 'hook/useSpaceChannel';
+import {useCallback} from 'react';
+import TitleItem from './TitleItem';
 
-type TaskScreenProps = {
-  themeType: ThemeType;
-  currentChannel: Channel;
-  getArchivedTasks: (
-    channelId: string,
-    userId?: string,
-    teamId?: string,
-  ) => any;
-  getTasks: (channelId: string) => any;
-  getTaskFromUser: (userId: string, channelId: string, teamId: string) => any;
-  tasks: Array<Task>;
-  archivedTasks: Array<Task>;
-  currentTeam: Team;
-  reactData: {[key: string]: Array<ReactData>};
-  channels: Array<Channel>;
-  teamUserData: Array<User>;
-  createTask: (channelId: string, body: any) => any;
-  updateTask: (taskId: string, channelId: string, data: any) => any;
-  getConversations: (
-    parentId: string,
-    before?: string,
-    isFresh?: boolean,
-  ) => any;
-  conversationData: {[key: string]: Array<Message>};
-  spaceChannel: Array<SpaceChannel>;
-  route?: any;
-  navigation?: any;
-  setCurrentChannel?: (channel: Channel) => any;
-  archivedCount?: number;
-};
-
-const TaskScreen = ({
-  themeType,
-  currentChannel,
-  getTasks,
-  getTaskFromUser,
-  getArchivedTasks,
-  tasks,
-  currentTeam,
-  reactData,
-  channels,
-  teamUserData,
-  createTask,
-  updateTask,
-  conversationData,
-  getConversations,
-  spaceChannel,
-  route,
-  navigation,
-  setCurrentChannel,
-  archivedTasks,
-  archivedCount,
-}: TaskScreenProps) => {
-  const [selectedTask, setSelectedTask] = useState<Task>(null);
+const TaskScreen = () => {
+  const dispatch = useAppDispatch();
+  const [selectedTask, setSelectedTask] = useState<TaskData | null>(null);
   const [isOpen, setOpen] = useState(false);
-  const {colors} = themes[themeType];
-  const {taskId} = route?.params || {};
+  const {colors} = useThemeColor();
+  const channels = useChannel();
+  const teamUserData = useTeamUserData();
+  const currentChannel = useCurrentChannel();
+  const currentTeam = useCurrentCommunity();
+  const route = useRoute();
+  const navigation = useNavigation();
+  const reactData = useAppSelector(state => state.reactReducer.reactData);
+  const conversationData = useAppSelector(
+    state => state.message.conversationData,
+  );
+  const spaceChannel = useSpaceChannel();
+  const taskId = useMemo(() => route.params?.taskId, [route.params?.taskId]);
+  const taskData = useTaskData();
+  const tasks = useMemo(() => taskData?.tasks || [], [taskData?.tasks]);
+  const archivedCount = useMemo(
+    () => taskData?.archivedCount,
+    [taskData?.archivedCount],
+  );
+  const archivedTasks = useMemo(
+    () => taskData?.archivedTasks || [],
+    [taskData?.archivedTasks],
+  );
   useEffect(() => {
     if (taskId && tasks) {
       const t = tasks.find(el => el.task_id === taskId);
       if (t) {
-        getConversations(taskId);
+        dispatch(getConversations(taskId));
         setSelectedTask(t);
         navigation.setParams({taskId: null});
       }
     }
-  }, [taskId, tasks]);
+  }, [dispatch, navigation, taskId, tasks]);
   useEffect(() => {
-    if (currentChannel.user) {
-      getTaskFromUser(
-        currentChannel.user.user_id,
-        currentChannel.channel_id || currentChannel.user.user_id,
-        currentTeam?.team_id,
-      );
-    } else {
-      getTasks(currentChannel.channel_id);
-    }
-  }, [currentChannel, currentTeam?.team_id]);
-  const toggleCreateTask = () => setOpen(!isOpen);
+    dispatch(getTasks(currentChannel.channel_id));
+  }, [currentChannel.channel_id, dispatch]);
+  const toggleCreateTask = useCallback(() => setOpen(current => !current), []);
   const [taskMapped, setTaskMapped] = useState<
-    Array<{title: string; data: Array<Task>; show: boolean}>
+    Array<{title: string; data: Array<TaskData>; show: boolean}>
   >([]);
   useEffect(() => {
     if (tasks != null) {
       const taskGrouped = groupTaskByFiltered('Status', tasks);
-      const prevArchived = taskMapped?.find(el => el.title === 'archived');
-      setTaskMapped([
-        ...Object.keys(taskGrouped).map(k => {
-          const prev = taskMapped?.find(el => el.title === k);
-          return {
-            title: k,
-            data: taskGrouped[k],
-            show: prev ? prev.show : true,
-          };
-        }),
-        {
-          title: 'archived',
-          data: archivedTasks,
-          show: prevArchived ? prevArchived.show : false,
-        },
-      ]);
+      setTaskMapped(current => {
+        const prevArchived = current?.find(el => el.title === 'archived');
+        return [
+          ...Object.keys(taskGrouped).map(k => {
+            const prev = current?.find(el => el.title === k);
+            return {
+              title: k,
+              data: taskGrouped[k],
+              show: prev ? prev.show : true,
+            };
+          }),
+          {
+            title: 'archived',
+            data: archivedTasks,
+            show: prevArchived ? prevArchived.show : false,
+          },
+        ];
+      });
     }
   }, [tasks, archivedTasks]);
-  const onUpdateStatus = (task: Task) => {
-    if (!currentChannel?.channel_id) return;
-    updateTask(task.task_id, currentChannel?.channel_id, {
-      status: task.status !== 'done' ? 'done' : 'todo',
-    });
-  };
-  const onCloseTask = () => setSelectedTask(null);
-  const onTitlePress = (title: string) => () => {
-    setTaskMapped(taskMap =>
-      taskMap.map(el => {
-        if (el.title === title) {
-          el.show = !el.show;
-        }
-        return el;
-      }),
-    );
-    getArchivedTasks(
+  const onUpdateStatus = useCallback(
+    (task: TaskData) => {
+      if (!currentChannel?.channel_id) return;
+      dispatch(
+        updateTask(task.task_id, currentChannel?.channel_id, {
+          status: task.status !== 'done' ? 'done' : 'todo',
+        }),
+      );
+    },
+    [currentChannel?.channel_id, dispatch],
+  );
+  const onPressTask = useCallback(
+    (item: TaskData) => {
+      dispatch(getConversations(item.task_id));
+      setSelectedTask(item);
+    },
+    [dispatch],
+  );
+  const onCloseTask = useCallback(() => setSelectedTask(null), []);
+  const onTitlePress = useCallback(
+    (title: string) => {
+      setTaskMapped(taskMap =>
+        taskMap.map(el => {
+          if (el.title === title) {
+            el.show = !el.show;
+          }
+          return el;
+        }),
+      );
+      dispatch(
+        getArchivedTasks(
+          currentChannel.channel_id,
+          currentChannel?.user?.user_id,
+          currentTeam?.team_id,
+        ),
+      );
+    },
+    [
       currentChannel.channel_id,
       currentChannel?.user?.user_id,
       currentTeam?.team_id,
-    );
-  };
-  const data = ImageHelper.normalizeAvatar(
-    currentChannel?.user?.avatar_url,
-    currentChannel?.user?.user_id,
+      dispatch,
+    ],
+  );
+  const handleCreateTask = useCallback(() => {
+    HapticUtils.trigger();
+    toggleCreateTask();
+  }, [toggleCreateTask]);
+  const data = useMemo(
+    () =>
+      ImageHelper.normalizeAvatar(
+        currentChannel?.user?.avatar_url,
+        currentChannel?.user?.user_id,
+      ),
+    [currentChannel?.user?.avatar_url, currentChannel?.user?.user_id],
   );
   return (
     <View style={styles.container}>
@@ -209,7 +205,7 @@ const TaskScreen = ({
       <View style={styles.body}>
         <SectionList
           sections={taskMapped}
-          keyExtractor={(item, index) => item.task_id}
+          keyExtractor={item => item.task_id}
           ListFooterComponent={
             <View style={{paddingBottom: AppDimension.extraBottom + 26}} />
           }
@@ -220,71 +216,27 @@ const TaskScreen = ({
             return (
               <TaskItem
                 task={item}
-                themeType={themeType}
                 teamId={currentTeam.team_id}
                 reacts={reactData[item.task_id]}
                 onUpdateStatus={onUpdateStatus}
-                onPressTask={() => {
-                  getConversations(item.task_id);
-                  setSelectedTask(item);
-                }}
-                setCurrentChannel={setCurrentChannel}
+                onPressTask={onPressTask}
               />
             );
           }}
-          renderSectionHeader={({section: {title, show, data}}) => {
-            const colorTitle: any = {
-              todo: colors.todo,
-              doing: colors.doing,
-              done: colors.done,
-              archived: colors.subtext,
-            };
+          renderSectionHeader={({section}) => {
             return (
-              <View
-                style={{
-                  paddingHorizontal: 20,
-                  backgroundColor: colors.background,
-                  paddingVertical: 10,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                <Touchable
-                  style={[
-                    styles.titleWrapper,
-                    {backgroundColor: colors.activeBackgroundLight},
-                  ]}
-                  onPress={onTitlePress(title)}>
-                  <Text style={[styles.titleText, {color: colorTitle[title]}]}>
-                    {title}
-                  </Text>
-                </Touchable>
-                {!show && (
-                  <Touchable
-                    style={[
-                      styles.taskCountWrapper,
-                      {backgroundColor: colors.activeBackgroundLight},
-                    ]}
-                    onPress={onTitlePress(title)}>
-                    <Text
-                      style={[styles.taskCountText, {color: colors.subtext}]}>
-                      {title === 'archived'
-                        ? archivedTasks.length || archivedCount
-                        : data.length}
-                    </Text>
-                  </Touchable>
-                )}
-              </View>
+              <TitleItem
+                archivedCount={archivedTasks.length || archivedCount}
+                section={section}
+                onTitlePress={onTitlePress}
+              />
             );
           }}
         />
       </View>
       <Touchable
         style={styles.createButton}
-        onPress={() => {
-          HapticUtils.trigger();
-          toggleCreateTask();
-        }}
+        onPress={handleCreateTask}
         activeOpacity={1}>
         <SVG.IconCreateTask />
       </Touchable>
@@ -298,12 +250,10 @@ const TaskScreen = ({
         <CreateTaskLayer
           isOpen={isOpen}
           toggle={toggleCreateTask}
-          themeType={themeType}
           currentChannel={currentChannel}
           channels={channels}
           teamUserData={teamUserData}
           currentTeam={currentTeam}
-          createTask={createTask}
           spaceChannel={spaceChannel}
         />
       </Modal>
@@ -319,14 +269,12 @@ const TaskScreen = ({
         onBackdropPress={onCloseTask}>
         <TaskItemDetail
           task={selectedTask}
-          themeType={themeType}
           onClose={onCloseTask}
           teamUserData={teamUserData}
           teamId={currentTeam.team_id}
           conversations={conversationData?.[selectedTask?.task_id] || []}
           currentChannel={currentChannel}
           onUpdateStatus={onUpdateStatus}
-          setCurrentChannel={setCurrentChannel}
         />
       </Modal>
     </View>
@@ -354,18 +302,6 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
   },
-  titleText: {
-    fontSize: 16,
-    lineHeight: 19,
-    fontFamily: Fonts.SemiBold,
-    textTransform: 'capitalize',
-  },
-  titleWrapper: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 5,
-    alignSelf: 'flex-start',
-  },
   createButton: {
     position: 'absolute',
     right: 15,
@@ -375,42 +311,5 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     margin: 0,
   },
-  taskCountWrapper: {
-    height: 30,
-    minWidth: 18,
-    borderRadius: 5,
-    paddingHorizontal: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  taskCountText: {
-    fontSize: 14,
-    fontFamily: Fonts.Medium,
-  },
 });
-
-const mapPropsToState = (state: any) => {
-  const channelId = state.user?.currentChannel?.channel_id;
-  return {
-    themeType: state.configs.theme,
-    tasks: channelId ? state.task.taskData?.[channelId]?.tasks || [] : [],
-    archivedTasks: channelId
-      ? state.task.taskData?.[channelId]?.archivedTasks || []
-      : [],
-    archivedCount: channelId
-      ? state.task.taskData?.[channelId]?.archivedCount || null
-      : null,
-    currentChannel: state.user.currentChannel,
-    currentTeam: state.user.currentTeam,
-    reactData: state.reactReducer.reactData,
-    channels: state.user.channel,
-    teamUserData: state.user.teamUserData,
-    conversationData: state.message.conversationData,
-    spaceChannel: state.user.spaceChannel,
-  };
-};
-
-const mapActionsToProps = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(mapPropsToState, mapActionsToProps)(TaskScreen);
+export default memo(TaskScreen);

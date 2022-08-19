@@ -1,23 +1,16 @@
-import {ThemeType} from 'models';
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import themes from 'themes';
 import {Calendar} from 'react-native-calendars';
 import Fonts from 'common/Fonts';
 import moment from 'moment';
+import useThemeColor from 'hook/useThemeColor';
 
 type CalendarPickerProps = {
-  themeType: ThemeType;
   onDateChange: (date: string) => void;
   currentDate?: Date;
 };
 
-const CalendarPicker = ({
-  themeType,
-  onDateChange,
-  currentDate,
-}: CalendarPickerProps) => {
-  const {colors} = themes[themeType];
+const CalendarPicker = ({onDateChange, currentDate}: CalendarPickerProps) => {
+  const {colors} = useThemeColor();
   const [markedDate, setMarkedDate] = useState<{
     [key: string]: {selected: boolean};
   }>({});

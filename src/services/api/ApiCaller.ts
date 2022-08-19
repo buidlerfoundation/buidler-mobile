@@ -1,3 +1,5 @@
+import {BaseDataApi} from 'models';
+import store from 'store';
 import AppConfig from 'common/AppConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
@@ -8,17 +10,17 @@ const METHOD_PUT = 'put';
 const METHOD_DELETE = 'delete';
 const METHOD_PATCH = 'patch';
 
-async function requestAPI(
+async function requestAPI<T = any>(
   method: string,
   uri: string,
   body?: any,
   serviceBaseUrl?: string,
-) {
+  controller?: AbortController,
+): Promise<BaseDataApi<T>> {
   // Build API header
   const headers: any = {
     Accept: '*/*',
     'Access-Control-Allow-Origin': '*',
-    'Chain-Id': 1,
   };
   if (body instanceof FormData) {
     // headers['Content-Type'] = 'multipart/form-data';
@@ -47,8 +49,14 @@ async function requestAPI(
     console.log(e);
   }
 
+  const chainId = store.getState().network.chainId;
+
+  if (chainId) {
+    headers['Chain-Id'] = chainId;
+  }
+
   // Build API body
-  let contentBody = null;
+  let contentBody: any = null;
   if (
     method.toLowerCase() === METHOD_POST ||
     method.toLowerCase() === METHOD_PUT ||
@@ -64,93 +72,86 @@ async function requestAPI(
     }
   }
   // Construct fetch options
-  const fetchOptions = {method, headers, body: contentBody};
+  const fetchOptions: RequestInit = {method, headers, body: contentBody};
+  if (controller) {
+    fetchOptions.signal = controller.signal;
+  }
   // Run the fetching
   return fetch(apiUrl, fetchOptions)
     .then(res => {
-      return res.json().then(data => {
-        if (data.length >= 0) {
+      return res
+        .json()
+        .then(data => {
+          if (res.status !== 200) {
+            // alert error
+          }
+          if (data.data) {
+            return {...data, statusCode: res.status};
+          }
+          if (data.success || data.message) {
+            return {
+              data: data.data,
+              success: data.success,
+              message: data.message,
+              statusCode: res.status,
+            };
+          }
           return {data, statusCode: res.status};
-        }
-        return {...data, statusCode: res.status};
-      });
+        })
+        .catch(err => {
+          return {message: err, statusCode: res.status};
+        });
     })
     .catch(err => {
+      const msg = err.message || err;
+      if (!msg.includes('aborted')) {
+        // alert error
+      }
       return {
-        message: err,
+        message: msg,
       };
     });
 }
 
-const timeRequestMap: {[key: string]: any} = {};
-
 const ApiCaller = {
-  get(url: string, baseUrl?: string): Promise<any> {
-    return requestAPI(METHOD_GET, url, undefined, baseUrl);
+  get<T>(url: string, baseUrl?: string, controller?: AbortController) {
+    return requestAPI<T>(METHOD_GET, url, undefined, baseUrl, controller);
   },
 
-  post(url: string, data?: any, baseUrl?: string): Promise<any> {
-    return requestAPI(METHOD_POST, url, data, baseUrl);
-  },
-
-  patch(url: string, data?: any, baseUrl?: string): Promise<any> {
-    return requestAPI(METHOD_PATCH, url, data, baseUrl);
-  },
-
-  put(url: string, data?: any, baseUrl?: string): Promise<any> {
-    return requestAPI(METHOD_PUT, url, data, baseUrl);
-  },
-
-  delete(url: string, data?: any, baseUrl?: string): Promise<any> {
-    return requestAPI(METHOD_DELETE, url, data, baseUrl);
-  },
-
-  getWithLatestResponse(url: string, baseUrl?: string): Promise<any> {
-    const currentTime = new Date().getTime();
-    if (!timeRequestMap[url]) {
-      timeRequestMap[url] = {
-        requestTime: currentTime,
-      };
-    } else {
-      timeRequestMap[url].requestTime = currentTime;
-    }
-    return new Promise(resolve => {
-      return requestAPI(METHOD_GET, url, undefined, baseUrl).then(
-        (res: any) => {
-          const {requestTime} = timeRequestMap[url] || {};
-          if (requestTime !== currentTime) {
-            return resolve({statusCode: 400, cancelled: true});
-          }
-          delete timeRequestMap[url];
-          return resolve(res);
-        },
-      );
-    });
-  },
-
-  postWithLatestResponse(
+  post<T>(
     url: string,
     data?: any,
     baseUrl?: string,
-  ): Promise<any> {
-    const currentTime = new Date().getTime();
-    if (!timeRequestMap[url]) {
-      timeRequestMap[url] = {
-        requestTime: currentTime,
-      };
-    } else {
-      timeRequestMap[url].requestTime = currentTime;
-    }
-    return new Promise(resolve => {
-      return requestAPI(METHOD_POST, url, data, baseUrl).then((res: any) => {
-        const {requestTime} = timeRequestMap[url] || {};
-        if (requestTime !== currentTime) {
-          return resolve({statusCode: 400, cancelled: true});
-        }
-        delete timeRequestMap[url];
-        return resolve(res);
-      });
-    });
+    controller?: AbortController,
+  ) {
+    return requestAPI<T>(METHOD_POST, url, data, baseUrl, controller);
+  },
+
+  patch<T>(
+    url: string,
+    data?: any,
+    baseUrl?: string,
+    controller?: AbortController,
+  ) {
+    return requestAPI<T>(METHOD_PATCH, url, data, baseUrl, controller);
+  },
+
+  put<T>(
+    url: string,
+    data?: any,
+    baseUrl?: string,
+    controller?: AbortController,
+  ) {
+    return requestAPI<T>(METHOD_PUT, url, data, baseUrl, controller);
+  },
+
+  delete<T>(
+    url: string,
+    data?: any,
+    baseUrl?: string,
+    controller?: AbortController,
+  ) {
+    return requestAPI<T>(METHOD_DELETE, url, data, baseUrl, controller);
   },
 };
 

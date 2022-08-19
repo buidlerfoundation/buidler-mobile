@@ -3,6 +3,7 @@ import moment from 'moment';
 import {actionTypes} from './actionTypes';
 import api from 'services/api';
 import {isFilterStatus} from 'helpers/TaskHelper';
+import {AppGetState} from 'store';
 
 export const getTaskFromUser =
   (userId: string, channelId: string, teamId: string) =>
@@ -33,32 +34,39 @@ export const getTaskFromUser =
     }
   };
 
-export const getTasks = (channelId: string) => async (dispatch: Dispatch) => {
-  dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
-  try {
-    const [taskRes, archivedCountRes] = await Promise.all([
-      api.getTasks(channelId),
-      api.getArchivedTaskCount(channelId),
-    ]);
-    if (taskRes.statusCode === 200 && archivedCountRes.statusCode === 200) {
-      dispatch({
-        type: actionTypes.TASK_SUCCESS,
-        payload: {
-          channelId,
-          tasks: taskRes.data,
-          archivedCount: archivedCountRes.total,
-        },
-      });
-    } else {
-      dispatch({
-        type: actionTypes.TASK_FAIL,
-        payload: {message: 'Error', taskRes, archivedCountRes},
-      });
+export const getTasks =
+  (channelId: string) => async (dispatch: Dispatch, getState: AppGetState) => {
+    const lastController = getState().task.apiController;
+    lastController?.abort?.();
+    const controller = new AbortController();
+    dispatch({
+      type: actionTypes.TASK_REQUEST,
+      payload: {channelId, controller: controller},
+    });
+    try {
+      const [taskRes, archivedCountRes] = await Promise.all([
+        api.getTasks(channelId, controller),
+        api.getArchivedTaskCount(channelId, controller),
+      ]);
+      if (taskRes.statusCode === 200 && archivedCountRes.statusCode === 200) {
+        dispatch({
+          type: actionTypes.TASK_SUCCESS,
+          payload: {
+            channelId,
+            tasks: taskRes.data,
+            archivedCount: archivedCountRes.data?.total,
+          },
+        });
+      } else {
+        dispatch({
+          type: actionTypes.TASK_FAIL,
+          payload: {message: 'Error', taskRes, archivedCountRes},
+        });
+      }
+    } catch (e) {
+      dispatch({type: actionTypes.TASK_FAIL, payload: {message: e}});
     }
-  } catch (e) {
-    dispatch({type: actionTypes.TASK_FAIL, payload: {message: e}});
-  }
-};
+  };
 
 export const dropTask =
   (result: any, channelId: string, upVote: number) =>

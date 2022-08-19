@@ -1,16 +1,15 @@
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import {useTheme} from '@react-navigation/native';
 import Fonts from 'common/Fonts';
+import useThemeColor from 'hook/useThemeColor';
 
 type PasswordLevelProps = {
   level: number;
 };
 
 const PasswordLevel = ({level}: PasswordLevelProps) => {
-  const {colors} = useTheme();
-  if (level === 0) return null;
-  const levelObj = () => {
+  const {colors} = useThemeColor();
+  const levelObj = useCallback(() => {
     if (level <= 2) {
       return {
         label: 'Weak',
@@ -30,8 +29,9 @@ const PasswordLevel = ({level}: PasswordLevelProps) => {
       size: 200,
       color: colors.success,
     };
-  };
-  const {label, color, size} = levelObj();
+  }, [colors.success, colors.text, level]);
+  const {label, color, size} = useMemo(() => levelObj(), [levelObj]);
+  if (level === 0) return null;
   return (
     <View style={styles.container}>
       <Text style={[styles.text, {color}]}>{label}</Text>

@@ -9,7 +9,6 @@ import {
 import ImgViewer from 'react-native-image-zoom-viewer';
 import {View} from 'react-native-animatable';
 import {connect} from 'react-redux';
-import themes from 'themes';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import {ThemeType} from 'models';
@@ -51,9 +50,7 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
   isShow = () => this.state.visible;
 
   render() {
-    const {themeType} = this.props;
     const {images, visible, index} = this.state;
-    const {colors} = themes[themeType];
     if (!visible || images.length === 0) {
       return null;
     }

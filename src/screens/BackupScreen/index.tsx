@@ -1,34 +1,122 @@
 import NavigationHeader from 'components/NavigationHeader';
-import React, {useMemo, useState} from 'react';
+import React, {memo, useCallback, useMemo, useState} from 'react';
 import {View, StyleSheet, useWindowDimensions, Text} from 'react-native';
 import {shuffle} from 'lodash';
 import {createConfirmSeedState} from 'helpers/SeedHelper';
 import AppDevice from 'common/AppDevice';
 import Fonts from 'common/Fonts';
-import {useTheme} from '@react-navigation/native';
 import Touchable from 'components/Touchable';
 import AppDimension from 'common/AppDimension';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {AuthStackParamsList} from 'navigation/AuthStack';
-import {bindActionCreators} from 'redux';
-import actions from 'actions';
-import {connect} from 'react-redux';
+import useThemeColor from 'hook/useThemeColor';
+import useAppDispatch from 'hook/useAppDispatch';
+import {accessApp} from 'actions/UserActions';
+
+type ShuffleSeedItemProps = {
+  title: string;
+  seedWidth: number;
+  disabled: boolean;
+  margin: number;
+  space: number;
+  onPress: (title: string) => void;
+};
+
+const ShuffleSeedItem = ({
+  margin,
+  space,
+  seedWidth,
+  disabled,
+  title,
+  onPress,
+}: ShuffleSeedItemProps) => {
+  const {colors} = useThemeColor();
+  const handlePress = useCallback(() => onPress(title), [title, onPress]);
+  return (
+    <Touchable
+      style={[
+        styles.seedItem,
+        {
+          backgroundColor: colors.border,
+          width: seedWidth,
+          marginLeft: margin,
+          marginBottom: space,
+          justifyContent: 'center',
+        },
+      ]}
+      disabled={disabled}
+      onPress={handlePress}>
+      <Text
+        style={[
+          styles.seedText,
+          {color: disabled ? colors.activeBackground : colors.text},
+        ]}>
+        {title}
+      </Text>
+    </Touchable>
+  );
+};
+
+type ConfirmSeedItemProps = {
+  seedWidth: number;
+  disabled: boolean;
+  margin: number;
+  space: number;
+  index: number;
+  title: string;
+  onPress: (index: number) => void;
+};
+
+const ConfirmSeedItem = ({
+  seedWidth,
+  space,
+  margin,
+  index,
+  title,
+  disabled,
+  onPress,
+}: ConfirmSeedItemProps) => {
+  const {colors} = useThemeColor();
+  const handlePress = useCallback(() => onPress(index), [index, onPress]);
+  return (
+    <Touchable
+      style={[
+        styles.seedItem,
+        {
+          width: seedWidth,
+          justifyContent: !disabled ? 'flex-start' : 'center',
+          backgroundColor: !disabled
+            ? colors.border
+            : colors.activeBackgroundLight,
+          marginLeft: margin,
+          marginBottom: space,
+        },
+      ]}
+      disabled={disabled}
+      onPress={handlePress}>
+      <Text
+        style={[
+          styles.seedText,
+          {color: !disabled ? colors.text : colors.subtext},
+        ]}>
+        {title ? `${index + 1}. ${title}` : index + 1}
+      </Text>
+    </Touchable>
+  );
+};
 
 type Props = NativeStackScreenProps<AuthStackParamsList, 'BackupScreen'>;
 
-interface BackupScreenProps extends Props {
-  accessApp: (seed: string, password: string) => any;
-}
-
-const BackupScreen = ({route, accessApp}: BackupScreenProps) => {
-  const {colors} = useTheme();
-  const {seed, password} = route.params;
+const BackupScreen = ({route}: Props) => {
+  const dispatch = useAppDispatch();
+  const {colors} = useThemeColor();
+  const {seed, password} = useMemo(() => route.params, [route.params]);
   const {width} = useWindowDimensions();
   const [confirmSeed, setConfirmSeed] = useState(createConfirmSeedState());
   const shuffleSeedData = useMemo(() => shuffle(seed.split(' ')), [seed]);
-  const space = AppDevice.isIphoneX ? 12 : 6;
-  const seedWidth = useMemo(() => (width - 40 - space * 2) / 3, [width]);
-  const onNextPress = () => {
+  const space = useMemo(() => (AppDevice.isIphoneX ? 12 : 6), []);
+  const seedWidth = useMemo(() => (width - 40 - space * 2) / 3, [space, width]);
+  const onNextPress = useCallback(() => {
     if (
       seed ===
       confirmSeed
@@ -36,17 +124,40 @@ const BackupScreen = ({route, accessApp}: BackupScreenProps) => {
         .join(' ')
         .trim()
     ) {
-      accessApp?.(seed, password);
+      dispatch(accessApp?.(seed, password));
     } else {
       alert('Invalid seed phrase');
     }
-  };
+  }, [confirmSeed, dispatch, password, seed]);
+  const onClearBackup = useCallback(
+    () => setConfirmSeed(createConfirmSeedState()),
+    [],
+  );
+  const onConfirmItemPress = useCallback((index: number) => {
+    setConfirmSeed(current =>
+      current.map((item, idx) => {
+        if (idx === index) {
+          item.title = '';
+        }
+        return item;
+      }),
+    );
+  }, []);
+  const handleShufflePress = useCallback((title: string) => {
+    setConfirmSeed(current => {
+      const emptyIndex = current.findIndex(el => !el.title);
+      return current.map((item, index) => {
+        if (index === emptyIndex) {
+          item.title = title;
+        }
+        return item;
+      });
+    });
+  }, []);
   return (
     <View style={styles.container}>
       <NavigationHeader title="Store seed phrase" />
-      <Touchable
-        style={styles.buttonClear}
-        onPress={() => setConfirmSeed(createConfirmSeedState())}>
+      <Touchable style={styles.buttonClear} onPress={onClearBackup}>
         <Text style={[styles.textClear, {color: colors.subtext}]}>Clear</Text>
       </Touchable>
       <View style={styles.body}>
@@ -55,39 +166,15 @@ const BackupScreen = ({route, accessApp}: BackupScreenProps) => {
             const disabled = !el.title;
             const margin = index % 3 === 0 ? 0 : space;
             return (
-              <Touchable
-                style={[
-                  styles.seedItem,
-                  {
-                    width: seedWidth,
-                    justifyContent: !disabled ? 'flex-start' : 'center',
-                    backgroundColor: !disabled
-                      ? colors.border
-                      : colors.activeBackgroundLight,
-                    marginLeft: margin,
-                    marginBottom: space,
-                  },
-                ]}
+              <ConfirmSeedItem
                 key={el.title || index}
+                seedWidth={seedWidth}
+                margin={margin}
                 disabled={disabled}
-                onPress={() => {
-                  setConfirmSeed(current =>
-                    current.map((item, idx) => {
-                      if (idx === index) {
-                        item.title = '';
-                      }
-                      return item;
-                    }),
-                  );
-                }}>
-                <Text
-                  style={[
-                    styles.seedText,
-                    {color: !disabled ? colors.text : colors.subtext},
-                  ]}>
-                  {el.title ? `${index + 1}. ${el.title}` : index + 1}
-                </Text>
-              </Touchable>
+                index={index}
+                title={el.title}
+                onPress={onConfirmItemPress}
+              />
             );
           })}
         </View>
@@ -96,38 +183,14 @@ const BackupScreen = ({route, accessApp}: BackupScreenProps) => {
             const margin = index % 3 === 0 ? 0 : space;
             const disabled = !!confirmSeed.find(item => item.title === el);
             return (
-              <Touchable
-                style={[
-                  styles.seedItem,
-                  {
-                    backgroundColor: colors.border,
-                    width: seedWidth,
-                    marginLeft: margin,
-                    marginBottom: space,
-                    justifyContent: 'center',
-                  },
-                ]}
+              <ShuffleSeedItem
                 key={el}
+                title={el}
+                seedWidth={seedWidth}
+                margin={margin}
                 disabled={disabled}
-                onPress={() => {
-                  setConfirmSeed(current => {
-                    const emptyIndex = current.findIndex(el => !el.title);
-                    return current.map((item, index) => {
-                      if (index === emptyIndex) {
-                        item.title = el;
-                      }
-                      return item;
-                    });
-                  });
-                }}>
-                <Text
-                  style={[
-                    styles.seedText,
-                    {color: disabled ? colors.activeBackground : colors.text},
-                  ]}>
-                  {el}
-                </Text>
-              </Touchable>
+                onPress={handleShufflePress}
+              />
             );
           })}
         </View>
@@ -186,7 +249,4 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapActionsToProps: any = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(undefined, mapActionsToProps)(BackupScreen);
+export default memo(BackupScreen);

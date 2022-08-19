@@ -26,7 +26,8 @@
       "themes": ["themes"],
       "models": ["models"],
       "helpers": ["helpers"],
-      "utils": ["utils"]
+      "utils": ["utils"],
+      "hook": ["hook"]
     }
   },
   "exclude": [

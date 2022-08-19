@@ -1,6 +1,18 @@
+import {AnyAction, Reducer} from 'redux';
 import {actionTypes} from 'actions/actionTypes';
+import {ThemeType} from 'models';
 
-const initialState = {
+interface ConfigReducerState {
+  theme: ThemeType;
+  realHeight: null;
+  privateKey: string;
+  seed: string;
+  channelPrivateKey: {[key: string]: Array<{key: string; timestamp: number}>};
+  openOTP: boolean;
+  requestOtpCode: string;
+}
+
+const initialState: ConfigReducerState = {
   theme: 'dark',
   realHeight: 0,
   privateKey: '',
@@ -10,7 +22,10 @@ const initialState = {
   requestOtpCode: '',
 };
 
-export default (state = initialState, action) => {
+const configReducer: Reducer<ConfigReducerState, AnyAction> = (
+  state = initialState,
+  action,
+) => {
   const {type, payload} = action;
   switch (type) {
     case actionTypes.TOGGLE_OTP: {
@@ -53,3 +68,5 @@ export default (state = initialState, action) => {
       return state;
   }
 };
+
+export default configReducer;

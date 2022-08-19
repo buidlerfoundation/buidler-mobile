@@ -1,7 +1,6 @@
-import {Channel, Message, ThemeType, User} from 'models';
-import React from 'react';
+import {MessageData, UserData} from 'models';
+import React, {useMemo, useCallback, memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import themes from 'themes';
 import FastImage from 'react-native-fast-image';
 import Fonts from 'common/Fonts';
 import MessagePhoto from './MessagePhoto';
@@ -10,39 +9,46 @@ import {normalizeMessageText, normalizeUserName} from 'helpers/MessageHelper';
 import {messageFromNow} from 'utils/DateUtils';
 import ImageHelper from 'helpers/ImageHelper';
 import Blockies from 'components/Blockies';
+import useThemeColor from 'hook/useThemeColor';
+import Touchable from 'components/Touchable';
 
 type MessageItemProps = {
-  item: Message;
-  themeType: ThemeType;
-  teamUserData: Array<User>;
+  item: MessageData;
   teamId: string;
-  setCurrentChannel?: (channel: Channel) => any;
+  sender: UserData;
+  onLongPress?: (message: MessageData) => void;
 };
 
-const MessageItem = ({
-  item,
-  teamUserData,
-  themeType,
-  teamId,
-  setCurrentChannel,
-}: MessageItemProps) => {
-  const sender = teamUserData?.find?.(u => u.user_id === item.sender_id);
-  const {colors} = themes[themeType];
+const MessageItem = ({item, sender, teamId, onLongPress}: MessageItemProps) => {
+  console.log('Render Message');
+  const {colors} = useThemeColor();
+  const data = useMemo(
+    () => ImageHelper.normalizeAvatar(sender?.avatar_url, sender?.user_id),
+    [sender?.avatar_url, sender?.user_id],
+  );
+  const Avatar = useMemo(
+    () =>
+      typeof data === 'string' ? (
+        <FastImage
+          source={{
+            uri: data,
+          }}
+          style={styles.avatar}
+        />
+      ) : (
+        <Blockies blockies={data.address} size={8} style={styles.avatar} />
+      ),
+    [data],
+  );
+  const handleLongPress = useCallback(
+    () => onLongPress?.(item),
+    [item, onLongPress],
+  );
   if (!sender) return null;
-  const data = ImageHelper.normalizeAvatar(sender?.avatar_url, sender?.user_id);
-  const Avatar =
-    typeof data === 'string' ? (
-      <FastImage
-        source={{
-          uri: data,
-        }}
-        style={styles.avatar}
-      />
-    ) : (
-      <Blockies blockies={data.address} size={8} style={styles.avatar} />
-    );
   return (
-    <View style={[styles.container, {marginTop: item.isHead ? 20 : 0}]}>
+    <Touchable
+      style={[styles.container, {marginTop: item.isHead ? 20 : 0}]}
+      onLongPress={handleLongPress}>
       {item.isHead ? Avatar : <View style={{width: 35}} />}
       <View style={styles.bodyMessage}>
         {item.isHead && (
@@ -56,21 +62,18 @@ const MessageItem = ({
           </View>
         )}
         {(!!item.content && (
-          // <Text>{item.content}</Text>
           <RenderHTML
             html={`<div class='message-text'>${normalizeMessageText(
               item.content,
             )}</div>`}
-            setCurrentChannel={setCurrentChannel}
           />
         )) || <View style={{height: 8}} />}
         <MessagePhoto
           attachments={item?.message_attachment || []}
           teamId={teamId}
-          themeType={themeType}
         />
       </View>
-    </View>
+    </Touchable>
   );
 };
 
@@ -112,4 +115,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MessageItem;
+export default memo(MessageItem);

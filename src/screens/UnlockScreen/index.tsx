@@ -1,9 +1,12 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, Text, TextInput} from 'react-native';
-import {useTheme} from '@react-navigation/native';
-import {connect, useDispatch, useSelector} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import actions from 'actions';
+import React, {memo, useState} from 'react';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  ActivityIndicator,
+} from 'react-native';
+import {useDispatch} from 'react-redux';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import {Team} from 'models';
 import NavigationServices from 'services/NavigationServices';
@@ -20,22 +23,19 @@ import {getPrivateChannel} from 'helpers/ChannelHelper';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
 import store from '../../store';
+import useAppSelector from 'hook/useAppSelector';
+import {findTeamAndChannel, setCurrentTeam} from 'actions/UserActions';
+import {useCallback} from 'react';
+import useThemeColor from 'hook/useThemeColor';
 
-type UnlockScreenProps = {
-  findTeamAndChannel?: () => any;
-  setCurrentTeam?: (team: Team, channelId?: string) => any;
-};
-
-const UnlockScreen = ({
-  findTeamAndChannel,
-  setCurrentTeam,
-}: UnlockScreenProps) => {
+const UnlockScreen = () => {
   const [pass, setPass] = useState('');
-  const {colors} = useTheme();
+  const {colors} = useThemeColor();
   const dispatch = useDispatch();
-  const user = useSelector((state: any) => state.user.userData);
-  const accessApp = async () => {
-    await findTeamAndChannel?.();
+  const user = useAppSelector(state => state.user.userData);
+  const [loading, setLoading] = useState(false);
+  const accessApp = useCallback(async () => {
+    await dispatch(findTeamAndChannel?.());
     let params = {};
     if (
       PushNotificationHelper.initialNotification &&
@@ -48,13 +48,15 @@ const UnlockScreen = ({
       const {channel_id} = data.message_data;
       const teamNotification = team?.find?.((t: Team) => t.team_id === team_id);
       if (teamNotification) {
-        await setCurrentTeam(teamNotification, channel_id);
+        await dispatch(setCurrentTeam(teamNotification, channel_id));
       }
       PushNotificationHelper.reset();
     }
     NavigationServices.replace(StackID.HomeStack, params);
-  };
-  const checkPassword = async () => {
+  }, [dispatch]);
+  const checkPassword = useCallback(async () => {
+    if (loading) return;
+    setLoading(true);
     try {
       const iv = await getIV();
       const encryptedStr: any = await AsyncStorage.getItem(
@@ -75,12 +77,13 @@ const UnlockScreen = ({
           type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
           payload: privateKeyChannel,
         });
-        accessApp();
+        await accessApp();
       }
     } catch (error) {
       alert('Invalid Password');
     }
-  };
+    setLoading(false);
+  }, [accessApp, dispatch, pass, user.user_id, loading]);
   if (!user) return <View style={styles.container} />;
   const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
   return (
@@ -126,8 +129,15 @@ const UnlockScreen = ({
         </View>
         <Touchable
           style={[styles.buttonUnlock, {backgroundColor: colors.primary}]}
+          disabled={loading}
           onPress={checkPassword}>
-          <Text style={[styles.textUnlock, {color: colors.text}]}>Unlock</Text>
+          {loading ? (
+            <ActivityIndicator color={colors.text} />
+          ) : (
+            <Text style={[styles.textUnlock, {color: colors.text}]}>
+              Unlock
+            </Text>
+          )}
         </Touchable>
       </View>
     </KeyboardLayout>
@@ -174,7 +184,4 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapActionsToProps = (dispatch: any) =>
-  bindActionCreators(actions, dispatch);
-
-export default connect(undefined, mapActionsToProps)(UnlockScreen);
+export default memo(UnlockScreen);

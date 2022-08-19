@@ -2,38 +2,26 @@ import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import React from 'react';
+import React, {memo, useCallback} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import {useTheme} from '@react-navigation/native';
-import {utils} from 'ethers';
-import RNGoldenKeystore from 'react-native-golden-keystore';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
+import useThemeColor from 'hook/useThemeColor';
 
 const LoginScreen = () => {
-  const {colors} = useTheme();
-  const title = 'Your chats is\nYour tasks';
-  const onCreatePress = async () => {
+  const {colors} = useThemeColor();
+  const onCreatePress = useCallback(() => {
     NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen);
-    // const seed = await RNGoldenKeystore.generateMnemonic();
-    // const {private_key} = await RNGoldenKeystore.createHDKeyPair(
-    //   seed,
-    //   '',
-    //   RNGoldenKeystore.CoinType.ETH.path,
-    //   0,
-    // );
-    // const publicKey = utils.computePublicKey(`0x${private_key}`, true);
-    // console.log(seed);
-    // console.log(private_key);
-    // console.log(publicKey);
-  };
-  const onImportPress = () => {
+  }, []);
+  const onImportPress = useCallback(() => {
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
-  };
+  }, []);
   return (
     <View style={styles.container}>
       <SVG.Logo width={80} height={80} />
-      <Text style={[styles.title, {color: colors.text}]}>{title}</Text>
+      <Text style={[styles.title, {color: colors.text}]}>
+        {'Your chats is\nYour tasks'}
+      </Text>
       <Text style={[styles.description, {color: colors.text}]}>
         Buidler is a daily tool for chat, tasks, meeting for remote working.
       </Text>
@@ -111,4 +99,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default memo(LoginScreen);

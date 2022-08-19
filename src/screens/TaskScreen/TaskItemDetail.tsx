@@ -1,7 +1,6 @@
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import BottomSheetHandle from 'components/BottomSheetHandle';
-import ImageLightBox from 'components/ImageLightBox';
 import RenderHTML from 'components/RenderHTML';
 import Touchable from 'components/Touchable';
 import ImageHelper from 'helpers/ImageHelper';
@@ -10,30 +9,27 @@ import {
   normalizeMessageText,
   normalizeUserName,
 } from 'helpers/MessageHelper';
-import {Channel, Message, Task, ThemeType, User} from 'models';
-import React from 'react';
+import {Channel, MessageData, TaskData, UserData} from 'models';
+import React, {memo, useCallback, useMemo} from 'react';
 import {StyleSheet, View, FlatList, Text} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import MessageInput from 'screens/ConversationScreen/MessageInput';
 import MessageItem from 'screens/ConversationScreen/MessageItem';
-import themes from 'themes';
 import {fromNow, isOverDate} from 'utils/DateUtils';
 import Blockies from 'components/Blockies';
+import useThemeColor from 'hook/useThemeColor';
 
 type TaskItemDetailProps = {
-  themeType: ThemeType;
-  task?: Task;
+  task?: TaskData;
   onClose: () => void;
-  teamUserData: Array<User>;
+  teamUserData: Array<UserData>;
   teamId: string;
-  conversations: Array<Message>;
+  conversations: Array<MessageData>;
   currentChannel: Channel;
-  onUpdateStatus: (task: Task) => void;
-  setCurrentChannel?: (channel: Channel) => any;
+  onUpdateStatus: (task: TaskData) => void;
 };
 
 const TaskItemDetail = ({
-  themeType,
   task,
   onClose,
   teamUserData,
@@ -41,19 +37,20 @@ const TaskItemDetail = ({
   conversations,
   currentChannel,
   onUpdateStatus,
-  setCurrentChannel,
 }: TaskItemDetailProps) => {
-  const {colors} = themes[themeType];
-  if (!task)
-    return (
-      <View style={[styles.container, {backgroundColor: colors.background}]} />
-    );
-  const creator = teamUserData?.find?.(u => u.user_id === task.creator);
-  const onCheckPress = (task: Task) => () => {
-    onUpdateStatus(task);
-    onClose();
-  };
-  const renderStatusIcon = () => {
+  const {colors} = useThemeColor();
+  const creator = useMemo(
+    () => teamUserData?.find?.(u => u.user_id === task?.creator),
+    [task?.creator, teamUserData],
+  );
+  const onCheckPress = useCallback(
+    (task: TaskData) => () => {
+      onUpdateStatus(task);
+      onClose();
+    },
+    [onClose, onUpdateStatus],
+  );
+  const renderStatusIcon = useCallback(() => {
     if (task.status === 'todo') {
       return (
         <Touchable style={{padding: 10}} onPress={onCheckPress(task)}>
@@ -75,15 +72,18 @@ const TaskItemDetail = ({
         </Touchable>
       );
     }
-  };
-  const data = ImageHelper.normalizeAvatar(
-    creator?.avatar_url,
-    creator?.user_id,
+  }, [colors.subtext, onCheckPress, task]);
+  const data = useMemo(
+    () => ImageHelper.normalizeAvatar(creator?.avatar_url, creator?.user_id),
+    [creator?.avatar_url, creator?.user_id],
   );
+  if (!task)
+    return (
+      <View style={[styles.container, {backgroundColor: colors.background}]} />
+    );
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <BottomSheetHandle
-        themeType={themeType}
         onClosePress={onClose}
         titleComponent={
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -109,9 +109,8 @@ const TaskItemDetail = ({
             <Touchable activeOpacity={1}>
               <MessageItem
                 teamId={teamId}
-                teamUserData={teamUserData}
                 item={item}
-                themeType={themeType}
+                sender={teamUserData.find(el => el.user_id === item.sender_id)}
               />
             </Touchable>
           )}
@@ -123,7 +122,6 @@ const TaskItemDetail = ({
                   html={`<div class='task-text' style='margin-top: 10px;'>${normalizeMessageText(
                     task.title,
                   )}</div>`}
-                  setCurrentChannel={setCurrentChannel}
                   onLinkPress={onClose}
                 />
                 {!!task.notes && (
@@ -251,7 +249,6 @@ const TaskItemDetail = ({
       </View>
       <View style={styles.bottomView}>
         <MessageInput
-          themeType={themeType}
           currentChannel={currentChannel}
           parentId={task.task_id}
           placeholder="Add comment"
@@ -329,4 +326,4 @@ const styles = StyleSheet.create({
   bottomView: {},
 });
 
-export default TaskItemDetail;
+export default memo(TaskItemDetail);

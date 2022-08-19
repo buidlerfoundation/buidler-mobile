@@ -1,10 +1,4 @@
-import AppConfig from 'common/AppConfig';
-import store from '../store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {AsyncKey} from 'common/AppStorage';
-import {actionTypes} from 'actions/actionTypes';
-import api from 'services/api';
-import {getDeviceCode} from 'helpers/GenerateUUID';
+import {Dispatch} from 'redux';
 import {
   getChannelPrivateKey,
   getPrivateChannel,
@@ -14,9 +8,24 @@ import {
   normalizePublicMessageData,
   storePrivateChannel,
 } from 'helpers/ChannelHelper';
-import {Dispatch} from 'redux';
 import {io} from 'socket.io-client';
 import {uniqBy} from 'lodash';
+import {TransactionApiData, UserData} from 'models';
+import {utils} from 'ethers';
+import {actionTypes} from 'actions/actionTypes';
+import store from 'store';
+import api from 'services/api';
+import {createRefreshSelector} from 'reducers/selectors';
+import {actionFetchWalletBalance} from 'actions/UserActions';
+import {getTransactions} from 'actions/TransactionActions';
+import {formatTokenValue} from 'helpers/TokenHelper';
+import {normalizeUserName} from 'helpers/MessageHelper';
+import {getCurrentChannel, getCurrentCommunity} from 'helpers/StoreHelper';
+import {getCollectibles} from 'actions/CollectibleActions';
+import {getDeviceCode} from 'helpers/GenerateUUID';
+import AppConfig from 'common/AppConfig';
+import {AsyncKey} from 'common/AppStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const getTasks = async (channelId: string, dispatch: Dispatch) => {
   dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
@@ -85,12 +94,12 @@ const getMessages = async (
   const messageRes = await api.getMessages(channelId, 50);
   const isPrivate = channelType === 'Private' || channelType === 'Direct';
   const messageData = isPrivate
-    ? await normalizeMessageData(messageRes.data, channelId)
-    : await normalizePublicMessageData(messageRes.data);
+    ? await normalizeMessageData(messageRes.data || [], channelId)
+    : normalizePublicMessageData(messageRes.data || []);
   if (messageRes.statusCode === 200) {
     dispatch({
       type: actionTypes.MESSAGE_SUCCESS,
-      payload: {data: messageData, channelId},
+      payload: {data: messageData, channelId, reloadSocket: true},
     });
   }
 };
@@ -107,70 +116,80 @@ const actionSetCurrentTeam = async (
   } else {
     lastChannelId = await AsyncStorage.getItem(AsyncKey.lastChannelId);
   }
+  const resSpace = await api.getSpaceChannel(team.team_id);
   const resChannel = await api.findChannel(team.team_id);
   if (teamUsersRes.statusCode === 200) {
     dispatch({
       type: actionTypes.GET_TEAM_USER,
-      payload: {teamUsers: teamUsersRes.data, teamId: team.team_id},
+      payload: {teamUsers: teamUsersRes, teamId: team.team_id},
     });
   }
   const directChannelUser = teamUsersRes?.data?.find(
     (u: any) => u.direct_channel === lastChannelId,
   );
   dispatch({
-    type: actionTypes.SET_CURRENT_TEAM,
-    payload: {team, resChannel, directChannelUser, lastChannelId},
+    type: actionTypes.CURRENT_TEAM_SUCCESS,
+    payload: {team, resChannel, directChannelUser, lastChannelId, resSpace},
   });
   AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
-  const resSpaceChannel = await api.getSpaceChannel(team.team_id);
-  if (resSpaceChannel.statusCode === 200) {
-    dispatch({
-      type: actionTypes.GROUP_CHANNEL,
-      payload: resSpaceChannel.data,
+};
+
+const loadMessageIfNeeded = async () => {
+  const refreshSelector = createRefreshSelector([actionTypes.MESSAGE_PREFIX]);
+  const currentChannel = getCurrentChannel();
+  const refresh = refreshSelector(store.getState());
+  if (!currentChannel || refresh || currentChannel.channel_type === 'Public')
+    return;
+  store.dispatch({
+    type: actionTypes.MESSAGE_FRESH,
+    payload: {channelId: currentChannel.channel_id},
+  });
+  const messageRes = await api.getMessages(currentChannel.channel_id);
+  const messageData =
+    currentChannel.channel_type === 'Private' ||
+    currentChannel.channel_type === 'Direct'
+      ? await normalizeMessageData(
+          messageRes.data || [],
+          currentChannel.channel_id,
+        )
+      : normalizePublicMessageData(messageRes.data || []);
+  if (messageRes.statusCode === 200) {
+    store.dispatch({
+      type: actionTypes.MESSAGE_SUCCESS,
+      payload: {
+        data: messageData,
+        channelId: currentChannel.channel_id,
+        isFresh: true,
+      },
     });
-  }
-  if (resChannel.statusCode === 200) {
-    if (resChannel.data.length > 0) {
-      dispatch({
-        type: actionTypes.CHANNEL_SUCCESS,
-        payload: {
-          channel: resChannel.data.map((c: any) => {
-            if (c.channel_id === lastChannelId) {
-              c.seen = true;
-            }
-            return c;
-          }),
-        },
-      });
-    } else {
-      dispatch({
-        type: actionTypes.CHANNEL_FAIL,
-      });
-    }
   }
 };
 
 class SocketUtil {
-  generateId: string = null;
   socket: any = null;
   firstLoad = false;
+  generateId: string | null = null;
   async init(teamId?: string) {
+    this.firstLoad = false;
+    if (this.socket?.connected) return;
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
+    const deviceCode = await getDeviceCode();
     this.socket = io(`${AppConfig.baseUrl}`, {
-      query: {token: accessToken},
+      query: {token: accessToken, device_code: deviceCode},
       transports: ['websocket'],
       upgrade: false,
       reconnectionAttempts: 5,
-      reconnectionDelay: 3000,
+      reconnectionDelay: 1000,
     });
     this.socket.on('connect', () => {
+      console.log('socket connected');
       if (this.firstLoad) {
         this.reloadData();
       }
       this.firstLoad = true;
       this.listenSocket();
       this.socket.on('disconnect', (reason: string) => {
-        console.log('Disconnect: ', reason);
+        console.log(`socket disconnect: ${reason}`);
         this.socket.off('ON_NEW_MESSAGE');
         this.socket.off('ON_NEW_TASK');
         this.socket.off('ON_UPDATE_TASK');
@@ -182,37 +201,36 @@ class SocketUtil {
         this.socket.off('ON_DELETE_MESSAGE');
         this.socket.off('ON_REACTION_ADDED');
         this.socket.off('ON_REACTION_REMOVED');
-        this.socket.off('ON_USER_JOIN_TEAM');
+        this.socket.off('ON_NEW_USER_JOIN_TEAM');
         this.socket.off('ON_CREATE_NEW_CHANNEL');
+        this.socket.off('ON_CREATE_NEW_SPACE');
+        this.socket.off('ON_ADD_NEW_MEMBER_TO_PRIVATE_CHANNEL');
+        this.socket.off('ON_REMOVE_NEW_MEMBER_FROM_PRIVATE_CHANNEL');
         this.socket.off('ON_UPDATE_MEMBER_IN_PRIVATE_CHANNEL');
         this.socket.off('ON_CHANNEL_KEY_SEND');
         this.socket.off('ON_VERIFY_DEVICE_OTP_SEND');
         this.socket.off('ON_SYNC_DATA_SEND');
+        this.socket.off('ON_UPDATE_CHANNEL');
+        this.socket.off('ON_DELETE_CHANNEL');
+        this.socket.off('ON_UPDATE_SPACE');
+        this.socket.off('ON_DELETE_SPACE');
+        this.socket.off('ON_USER_UPDATE_PROFILE');
+        this.socket.off('ON_ADD_USER_TO_SPACE');
+        this.socket.off('ON_REMOVE_USER_FROM_SPACE');
+        this.socket.off('ON_NEW_TRANSACTION');
+        this.socket.off('ON_REMOVE_USER_FROM_TEAM');
+        this.socket.off('ON_VIEW_MESSAGE_IN_CHANNEL');
+        this.socket.off('ON_USER_LEAVE_TEAM');
         this.socket.off('disconnect');
-        console.log('Disconnect!!!');
       });
-      const user: any = store.getState()?.user;
-      const {currentTeam} = user || {};
-      this.emitOnline(teamId || currentTeam?.team_id);
+      // this.emitOnline(teamId || store.getState().user?.currentTeamId);
     });
   }
-  async emitOnline(teamId: string) {
-    const deviceCode = await getDeviceCode();
-    this.socket.emit('ONLINE', {team_id: teamId, device_code: deviceCode});
-  }
-  async emitReceivedKey(channelId: string, timestamp: number) {
-    const deviceCode = await getDeviceCode();
-    this.socket.emit('ON_CHANNEL_KEY_RECEIVED', {
-      channel_id: channelId,
-      device_code: deviceCode,
-      timestamp,
-    });
-  }
-  reloadData = () => {
-    const user: any = store.getState()?.user;
-    const {currentTeam, currentChannel} = user;
-    if (currentTeam && currentChannel) {
-      actionSetCurrentTeam(
+  reloadData = async () => {
+    const currentChannel = getCurrentChannel();
+    const currentTeam = getCurrentCommunity();
+    if (!!currentTeam && !!currentChannel) {
+      await actionSetCurrentTeam(
         currentTeam,
         store.dispatch,
         currentChannel.channel_id,
@@ -258,6 +276,167 @@ class SocketUtil {
     });
   };
   listenSocket() {
+    this.socket.on('ON_VIEW_MESSAGE_IN_CHANNEL', data => {
+      store.dispatch({
+        type: actionTypes.MARK_SEEN_CHANNEL,
+        payload: data,
+      });
+    });
+    this.socket.on('ON_USER_LEAVE_TEAM', data => {
+      const {user_id, team_id} = data;
+      const {userData, team, lastChannel, currentTeamId} =
+        store.getState().user;
+      if (team_id === currentTeamId && user_id === userData.user_id) {
+        store.dispatch({
+          type: actionTypes.LEAVE_TEAM_SUCCESS,
+          payload: {
+            teamId: team_id,
+            userId: user_id,
+          },
+        });
+        const nextTeam =
+          currentTeamId === team_id
+            ? team?.filter?.(el => el.team_id !== currentTeamId)?.[0]
+            : null;
+        if (nextTeam) {
+          const channelId = lastChannel?.[nextTeam.team_id]?.channel_id;
+          if (channelId) {
+            // Update screen
+          } else {
+            // Update screen
+          }
+        } else if (currentTeamId === team_id) {
+          AsyncStorage.removeItem(AsyncKey.lastTeamId);
+          AsyncStorage.removeItem(AsyncKey.lastChannelId);
+          // Update screen
+        }
+      } else {
+        store.dispatch({
+          type: actionTypes.REMOVE_MEMBER_SUCCESS,
+          payload: {
+            teamId: team_id,
+            userId: user_id,
+          },
+        });
+      }
+    });
+    this.socket.on('ON_REMOVE_USER_FROM_TEAM', data => {
+      const {user_id, team_id} = data;
+      const {userData, currentTeamId} = store.getState().user;
+      if (team_id === currentTeamId && user_id === userData.user_id) {
+        window.location.reload();
+      } else {
+        store.dispatch({
+          type: actionTypes.REMOVE_MEMBER_SUCCESS,
+          payload: {
+            teamId: team_id,
+            userId: user_id,
+          },
+        });
+      }
+    });
+    this.socket.on('ON_NEW_TRANSACTION', async (data: TransactionApiData) => {
+      const userData = store.getState().user.userData;
+      const address = utils.computeAddress(userData.user_id);
+      const {hash, receipt_status, from, input, value, to} = data;
+      const amount = formatTokenValue({value: parseInt(value), decimal: 18});
+      const txType =
+        address.toLowerCase() === from.toLowerCase() ? 'sent' : 'received';
+      const txPrefix =
+        address.toLowerCase() === from.toLowerCase()
+          ? `to ${normalizeUserName(to, 7)}`
+          : `from ${normalizeUserName(from, 7)}`;
+      const toastData = {
+        title: '',
+        message: '',
+        hash,
+        type: 'success',
+      };
+
+      if (receipt_status === '1') {
+        if (input !== '0x') {
+          toastData.title = 'Success !';
+          toastData.message = 'Transaction complete.';
+        } else if (from === to) {
+          toastData.title = 'Transaction self !';
+          toastData.message = `You sent yourself ${amount} ETH`;
+        } else {
+          toastData.title = `Transaction ${txType} !`;
+          toastData.message = `You ${txType} ${amount} ETH ${txPrefix}`;
+        }
+      }
+      if (receipt_status === '0') {
+        toastData.title = `Failed !`;
+        toastData.message = `Transaction failed to complete. Please try again.`;
+        toastData.type = 'error';
+      }
+      store.dispatch({
+        type: actionTypes.UPDATE_TRANSACTION_TOAST,
+        payload: toastData,
+      });
+      store.dispatch(getTransactions(1));
+      store.dispatch(getCollectibles());
+      actionFetchWalletBalance(store.dispatch);
+    });
+    this.socket.on('ON_ADD_USER_TO_SPACE', async (data: {space_id: string}) => {
+      const channelFromSpaceRes = await api.getChannelFromSpace(data.space_id);
+      store.dispatch({
+        type: actionTypes.ADD_USER_TO_SPACE,
+        payload: {
+          channelFromSpace: channelFromSpaceRes.data || [],
+          space_id: data.space_id,
+        },
+      });
+    });
+    this.socket.on('ON_REMOVE_USER_FROM_SPACE', (data: {space_id: string}) => {
+      const {channelMap, currentTeamId} = store.getState().user;
+      const currentChannel = getCurrentChannel();
+      if (!currentChannel) return;
+      const channel = channelMap[currentTeamId] || [];
+      if (data.space_id === currentChannel.space_id) {
+        const nextChannelId =
+          channel?.filter(el => el.channel_type !== 'Direct')?.[0]
+            ?.channel_id || '';
+        console.log(nextChannelId);
+        // Update screen
+      }
+      store.dispatch({
+        type: actionTypes.REMOVE_USER_FROM_SPACE,
+        payload: {
+          space_id: data.space_id,
+        },
+      });
+    });
+    this.socket.on('ON_USER_UPDATE_PROFILE', (data: UserData) => {
+      store.dispatch({
+        type: actionTypes.UPDATE_USER_SUCCESS,
+        payload: data,
+      });
+    });
+    this.socket.on('ON_DELETE_SPACE', (data: any) => {
+      store.dispatch({
+        type: actionTypes.DELETE_GROUP_CHANNEL_SUCCESS,
+        payload: {spaceId: data.space_id},
+      });
+    });
+    this.socket.on('ON_UPDATE_SPACE', (data: any) => {
+      store.dispatch({
+        type: actionTypes.UPDATE_GROUP_CHANNEL_SUCCESS,
+        payload: data,
+      });
+    });
+    this.socket.on('ON_DELETE_CHANNEL', (data: any) => {
+      store.dispatch({
+        type: actionTypes.DELETE_CHANNEL_SUCCESS,
+        payload: {channelId: data.channel_id},
+      });
+    });
+    this.socket.on('ON_UPDATE_CHANNEL', (data: any) => {
+      store.dispatch({
+        type: actionTypes.UPDATE_CHANNEL_SUCCESS,
+        payload: {...data, attachment: null},
+      });
+    });
     this.socket.on('ON_SYNC_DATA_SEND', async (data: any) => {
       const dataKey = await getRawPrivateChannel();
       const deviceCode = await getDeviceCode();
@@ -297,7 +476,11 @@ class SocketUtil {
       if (typeof current === 'string') {
         dataLocal = JSON.parse(current);
       }
-      Object.keys(data).forEach(k => {
+      const dataKeys = Object.keys(data);
+      if (dataKeys.length === 0) {
+        return null;
+      }
+      dataKeys.forEach(k => {
         const arr = data[k];
         dataLocal[k] = uniqBy([...(dataLocal?.[k] || []), ...arr], 'key');
         arr.forEach((el: any) => {
@@ -314,13 +497,15 @@ class SocketUtil {
         type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
         payload: res,
       });
+      loadMessageIfNeeded();
+      return null;
     });
     this.socket.on('ON_UPDATE_MEMBER_IN_PRIVATE_CHANNEL', async (data: any) => {
-      const user: any = store.getState()?.user;
+      const user = store.getState()?.user;
       const {channel, key, timestamp} = data;
-      if (user.currentTeam.team_id === channel.team_id) {
-        const isExistChannel = !!user.channel.find(
-          (el: any) => el.channel_id === channel.channel_id,
+      if (user.currentTeamId === channel.team_id) {
+        const isExistChannel = !!user.channelMap?.[user.currentTeamId]?.find(
+          el => el.channel_id === channel.channel_id,
         );
         if (
           isExistChannel &&
@@ -350,24 +535,75 @@ class SocketUtil {
       }
       this.handleChannelPrivateKey(channel.channel_id, key, timestamp);
     });
+    this.socket.on('ON_CREATE_NEW_SPACE', (data: any) => {
+      const user = store.getState()?.user;
+      if (user?.currentTeamId === data?.team_id) {
+        store.dispatch({
+          type: actionTypes.CREATE_GROUP_CHANNEL_SUCCESS,
+          payload: data,
+        });
+      }
+    });
     this.socket.on('ON_CREATE_NEW_CHANNEL', (data: any) => {
       const {channel, key, timestamp} = data;
       if (key && timestamp) {
         this.handleChannelPrivateKey(channel.channel_id, key, timestamp);
       }
-      const user: any = store.getState()?.user;
-      const {currentTeam} = user;
-      if (currentTeam.team_id === channel.team_id) {
+      const user = store.getState()?.user;
+      const {currentTeamId} = user;
+      if (currentTeamId === channel.team_id) {
         store.dispatch({
           type: actionTypes.NEW_CHANNEL,
           payload: channel,
         });
       }
     });
-    this.socket.on('ON_USER_JOIN_TEAM', (data: any) => {
-      const user: any = store.getState()?.user;
-      const {currentTeam} = user;
-      if (currentTeam.team_id === data.team_id) {
+    this.socket.on('ON_ADD_NEW_MEMBER_TO_PRIVATE_CHANNEL', (data: any) => {
+      const user = store.getState()?.user;
+      const {currentTeamId, channelMap, userData} = user;
+      const channel = channelMap?.[currentTeamId] || [];
+      if (currentTeamId === data.team_id) {
+        const isExistChannel = !!channel.find(
+          (el: any) => el.channel_id === data.channel_id,
+        );
+        if (isExistChannel) {
+          store.dispatch({
+            type: actionTypes.UPDATE_CHANNEL_SUCCESS,
+            payload: data.channel,
+          });
+        } else if (
+          !!data.channel_member.find((el: string) => el === userData.user_id)
+        ) {
+          store.dispatch({
+            type: actionTypes.NEW_CHANNEL,
+            payload: data.channel,
+          });
+        }
+      }
+    });
+    this.socket.on('ON_REMOVE_NEW_MEMBER_FROM_PRIVATE_CHANNEL', (data: any) => {
+      const user = store.getState()?.user;
+      const {currentTeamId, channelMap, userData} = user;
+      const channel = channelMap?.[currentTeamId] || [];
+      if (currentTeamId === data.team_id) {
+        const isExistChannel = !!channel.find(
+          (el: any) => el.channel_id === data.channel_id,
+        );
+        if (
+          isExistChannel &&
+          !data.channel_member.find((el: string) => el === userData.user_id)
+        ) {
+          store.dispatch({
+            type: actionTypes.DELETE_CHANNEL_SUCCESS,
+            payload: {channelId: data.channel.channel_id},
+          });
+        }
+      }
+    });
+    this.socket.on('ON_NEW_USER_JOIN_TEAM', (data: any) => {
+      const user = store.getState()?.user;
+      const {currentTeamId} = user;
+      if (currentTeamId === data.team.team_id) {
         store.dispatch({
           type: actionTypes.NEW_USER,
           payload: data.user,
@@ -376,24 +612,38 @@ class SocketUtil {
     });
     this.socket.on('ON_REACTION_ADDED', (data: any) => {
       const {attachment_id, emoji_id, user_id} = data.reaction_data;
+      const userData = store.getState()?.user?.userData;
       store.dispatch({
         type: actionTypes.ADD_REACT,
         payload: {
           id: attachment_id,
           reactName: emoji_id,
-          userId: user_id,
+          mine: userData.user_id === user_id,
         },
       });
     });
     this.socket.on('ON_REACTION_REMOVED', (data: any) => {
       const {attachment_id, emoji_id, user_id} = data.reaction_data;
+      const userData = store.getState()?.user?.userData;
       store.dispatch({
         type: actionTypes.REMOVE_REACT,
         payload: {
           id: attachment_id,
           reactName: emoji_id,
-          userId: user_id,
+          mine: userData.user_id === user_id,
         },
+      });
+    });
+    this.socket.on('ON_USER_ONLINE', (data: any) => {
+      store.dispatch({
+        type: actionTypes.USER_ONLINE,
+        payload: data,
+      });
+    });
+    this.socket.on('ON_USER_OFFLINE', (data: any) => {
+      store.dispatch({
+        type: actionTypes.USER_OFFLINE,
+        payload: data,
       });
     });
     this.socket.on('ON_DELETE_MESSAGE', (data: any) => {
@@ -417,52 +667,44 @@ class SocketUtil {
         });
       });
     });
-    this.socket.on('ON_USER_ONLINE', (data: any) => {
-      store.dispatch({
-        type: actionTypes.USER_ONLINE,
-        payload: data,
-      });
-    });
-    this.socket.on('ON_USER_OFFLINE', (data: any) => {
-      store.dispatch({
-        type: actionTypes.USER_OFFLINE,
-        payload: data,
-      });
-    });
+    this.socket.on('ON_USER_OFFLINE', () => {});
     this.socket.on('ON_NEW_MESSAGE', async (data: any) => {
       const {message_data, notification_data} = data;
-      const {userData, channel, currentChannel} = store.getState()?.user;
+      const {notification_type} = notification_data;
       const configs: any = store.getState()?.configs;
       const {channelPrivateKey} = configs;
+      const user = store.getState()?.user;
+      const {userData, teamUserMap, channelMap, currentTeamId} = user;
+      const currentChannel = getCurrentChannel();
+      if (!currentChannel) return;
+      const channel = channelMap?.[currentTeamId] || [];
+      const teamUserData = teamUserMap?.[currentTeamId]?.data || [];
       const messageData: any = store.getState()?.message.messageData;
       const channelNotification = channel.find(
         (c: any) => c.channel_id === message_data.channel_id,
       );
-      if (!currentChannel.channel_id) {
-        store.dispatch({
-          type: actionTypes.SET_CURRENT_CHANNEL,
-          payload: {
-            channel: {
-              ...currentChannel,
-              channel_id: message_data.channel_id,
-              user: {
-                ...currentChannel.user,
-                direct_channel: message_data.channel_id,
+      if (currentChannel.channel_id === message_data.channel_id) {
+        this.emitSeenChannel(message_data.message_id, message_data.channel_id);
+      }
+      if (userData?.user_id !== notification_data?.sender_data?.user_id) {
+        if (notification_type !== 'Muted') {
+          if (currentChannel.channel_id !== message_data.channel_id) {
+            store.dispatch({
+              type: actionTypes.MARK_UN_SEEN_CHANNEL,
+              payload: {
+                channelId: message_data.channel_id,
               },
-            },
-          },
-        });
-        AsyncStorage.setItem(AsyncKey.lastChannelId, message_data.channel_id);
-      } else if (
-        userData?.user_id !== notification_data?.sender_data?.user_id
-      ) {
-        if (currentChannel.channel_id !== message_data.channel_id) {
-          store.dispatch({
-            type: actionTypes.MARK_UN_SEEN_CHANNEL,
-            payload: {
-              channelId: message_data.channel_id,
-            },
-          });
+            });
+          }
+        }
+        if (channelNotification?.channel_type === 'Direct') {
+          channelNotification.user = teamUserData.find(
+            (u: any) =>
+              u.user_id ===
+              channelNotification.channel_member.find(
+                (el: string) => el !== userData?.user_id,
+              ),
+          );
         }
         if (currentChannel.channel_id === message_data.channel_id) {
           const {scrollData} = messageData?.[currentChannel.channel_id] || {};
@@ -497,32 +739,66 @@ class SocketUtil {
           res = null;
         }
       }
+      if (res) {
+        store.dispatch({
+          type: actionTypes.RECEIVE_MESSAGE,
+          payload: {data: res},
+        });
+      }
+    });
+    this.socket.on('ON_NEW_TASK', (data: any) => {
+      if (!data) return;
+      const currentChannel = getCurrentChannel();
+      if (!currentChannel) return;
       store.dispatch({
-        type: actionTypes.RECEIVE_MESSAGE,
+        type: actionTypes.CREATE_TASK_SUCCESS,
+        payload: {
+          res: data,
+          channelId:
+            currentChannel?.user?.user_id === data?.assignee_id
+              ? currentChannel?.channel_id
+              : data?.channel?.[0]?.channel_id,
+        },
+      });
+    });
+    this.socket.on('ON_EDIT_MESSAGE', async (data: any) => {
+      if (!data) return;
+      const configs: any = store.getState()?.configs;
+      const {channelPrivateKey} = configs;
+      const user = store.getState()?.user;
+      const {channelMap, currentTeamId} = user;
+      const channel = channelMap?.[currentTeamId] || [];
+      const channelNotification = channel.find(
+        (c: any) => c.channel_id === data.channel_id,
+      );
+      let res = data;
+      if (channelNotification?.channel_type === 'Private') {
+        const keys = channelPrivateKey[data.channel_id];
+        if (keys?.length > 0) {
+          res = await normalizeMessageItem(
+            data,
+            keys[keys.length - 1].key,
+            data.channel_id,
+          );
+        }
+      }
+      store.dispatch({
+        type: actionTypes.EDIT_MESSAGE,
         payload: {data: res},
       });
     });
-    this.socket.on('ON_EDIT_MESSAGE', (data: any) => {
-      if (!data) return;
-      store.dispatch({
-        type: actionTypes.EDIT_MESSAGE,
-        payload: {data},
-      });
-    });
-    this.socket.on('ON_NEW_TASK', (data: any) => {
-      store.dispatch({
-        type: actionTypes.CREATE_TASK_SUCCESS,
-        payload: {res: data, channelId: data?.channel?.[0]?.channel_id},
-      });
-    });
     this.socket.on('ON_UPDATE_TASK', (data: any) => {
-      const user: any = store.getState()?.user;
-      const {currentChannel} = user || {};
+      if (!data) return;
+      const currentChannel = getCurrentChannel();
+      if (!currentChannel) return;
       store.dispatch({
         type: actionTypes.UPDATE_TASK_REQUEST,
         payload: {
           taskId: data.task_id,
-          data,
+          data: {
+            [data.updated_key]: data[data.updated_key],
+            comment_count: data.comment_count,
+          },
           channelId:
             currentChannel?.user?.direct_channel ||
             data?.channel?.[0]?.channel_id,
@@ -536,7 +812,6 @@ class SocketUtil {
     });
     this.socket.on('ON_ERROR', (data: any) => {
       alert(data);
-      // toast.error(data);
     });
   }
   async changeTeam(teamId: string) {
@@ -544,63 +819,75 @@ class SocketUtil {
       await this.init(teamId);
       return;
     }
-    this.emitOnline(teamId);
+    // this.emitOnline(teamId);
+  }
+  emitSeenChannel(messageId: string | undefined, channelId: string) {
+    if (!messageId) return;
+    this.socket?.emit?.('ON_VIEW_MESSAGE_IN_CHANNEL', {
+      message_id: messageId,
+      channel_id: channelId,
+    });
+  }
+  async emitOnline(teamId?: string) {
+    const deviceCode = await getDeviceCode();
+    this.socket.emit('ONLINE', {team_id: teamId, device_code: deviceCode});
+  }
+  async emitReceivedKey(channelId: string, timestamp: number) {
+    const deviceCode = await getDeviceCode();
+    this.socket.emit('ON_CHANNEL_KEY_RECEIVED', {
+      channel_id: channelId,
+      device_code: deviceCode,
+      timestamp,
+    });
   }
   sendMessage = (message: {
     channel_id: string;
-    text: string;
+    content: string;
+    plain_text: string;
+    mentions?: Array<any>;
     message_id?: string;
+    member_data?: Array<{key: string; timestamp: number; user_id: string}>;
+    parent_id?: string;
+    text?: string;
   }) => {
+    const user: any = store.getState()?.user;
+    const messageData: any = store.getState()?.message?.messageData;
+    const {userData} = user;
+    const conversationData =
+      messageData?.[message.channel_id]?.data
+        ?.filter(
+          el =>
+            el.parent_id === message.parent_id ||
+            el.message_id === message.parent_id,
+        )
+        .map(el => ({...el, conversation_data: null})) || [];
+    if (conversationData.length > 0) {
+      conversationData.unshift({...message, sender_id: userData.user_id});
+    }
+    store.dispatch({
+      type: actionTypes.EMIT_NEW_MESSAGE,
+      payload: {
+        ...message,
+        createdAt: new Date(),
+        sender_id: userData.user_id,
+        isSending: true,
+        conversation_data: message.parent_id ? conversationData : [],
+        content: message.text,
+        plain_text: message.text,
+      },
+    });
     this.socket.emit('NEW_MESSAGE', message);
-    this.generateId = null;
   };
 
-  setTeamFromNotification = async (
-    team: any,
-    channelId: string,
-    dispatch: any,
-  ) => {
-    dispatch({
-      type: actionTypes.CHANNEL_REQUEST,
-    });
-    const teamUsersRes = await api.getTeamUsers(team.team_id);
-    let lastChannelId = null;
-    if (channelId) {
-      lastChannelId = channelId;
-    } else {
-      lastChannelId = await AsyncStorage.getItem(AsyncKey.lastChannelId);
+  disconnect = () => {
+    if (this.socket) {
+      this.socket?.disconnect?.();
+      this.socket = null;
     }
-    const resChannel = await api.findChannel(team.team_id);
-    if (teamUsersRes.statusCode === 200) {
-      dispatch({
-        type: actionTypes.GET_TEAM_USER,
-        payload: {teamUsers: teamUsersRes.data, teamId: team.team_id},
-      });
-    }
-    this.changeTeam(team.team_id);
-    dispatch({
-      type: actionTypes.SET_CURRENT_TEAM,
-      payload: {team, resChannel, lastChannelId},
-    });
-    await AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
-    const resSpaceChannel = await api.getSpaceChannel(team.team_id);
-    if (resSpaceChannel.statusCode === 200) {
-      dispatch({
-        type: actionTypes.GROUP_CHANNEL,
-        payload: resSpaceChannel.data,
-      });
-    }
-    if (resChannel.statusCode === 200) {
-      if (resChannel.data.length > 0) {
-        dispatch({
-          type: actionTypes.CHANNEL_SUCCESS,
-          payload: {channel: resChannel.data},
-        });
-      } else {
-        dispatch({
-          type: actionTypes.CHANNEL_FAIL,
-        });
-      }
+  };
+  reconnectIfNeeded = () => {
+    if (!this.socket?.connected) {
+      this.socket?.connect?.();
     }
   };
 }

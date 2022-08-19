@@ -1,18 +1,17 @@
-import {ReactData, ThemeType} from 'models';
-import React from 'react';
+import {ReactReducerData} from 'models';
+import React, {memo} from 'react';
 import {View, StyleSheet, ViewStyle, Text} from 'react-native';
-import themes from 'themes';
 import Emoji from 'react-native-emoji';
 import Fonts from 'common/Fonts';
+import useThemeColor from 'hook/useThemeColor';
 
 type ReactViewProps = {
-  themeType: ThemeType;
   style?: ViewStyle;
-  reacts: Array<ReactData>;
+  reacts: Array<ReactReducerData>;
 };
 
-const ReactView = ({themeType, style, reacts}: ReactViewProps) => {
-  const {colors} = themes[themeType];
+const ReactView = ({style, reacts}: ReactViewProps) => {
+  const {colors} = useThemeColor();
   return (
     <View style={[styles.container, style]}>
       {reacts.map(react => (
@@ -62,4 +61,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReactView;
+export default memo(ReactView);

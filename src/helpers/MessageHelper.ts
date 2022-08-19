@@ -27,7 +27,7 @@ export const normalizeMessages = (messages: Array<any>) => {
   }, []);
 };
 
-export const normalizeMessageText = (text: string, isShowNote = false) => {
+export const normalizeMessageText = (text: string) => {
   if (!text) return '';
   let res = text?.replace?.(/<br>/g, '\n');
   const regexLink = /(http|https):\/\/(\S+)\.([a-z]{2,}?)(.*?)( |$)/gim;
@@ -42,9 +42,6 @@ export const normalizeMessageText = (text: string, isShowNote = false) => {
     }
   });
   res = res?.replace?.(/\$mention_location/g, `#/home`);
-  // if (isShowNote) {
-  //   return `<div style='display: flex; align-items: flex-start'><span>${res}</span><img src='${images.icNote}' style='margin-left: 15px; margin-top: 7px' /></div>`;
-  // }
   return `<span>${res}</span>`;
 };
 

@@ -2,22 +2,59 @@ import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {Channel, Message, ThemeType, User} from 'models';
-import React, {useState, useEffect} from 'react';
+import {Channel, MessageData} from 'models';
+import React, {useState, useEffect, useCallback, memo} from 'react';
 import {View, StyleSheet, TextInput, Text, ViewStyle} from 'react-native';
-import themes from 'themes';
 import SocketUtils from 'utils/SocketUtils';
 import FastImage from 'react-native-fast-image';
 import Spinner from 'components/Spinner';
 import api from 'services/api';
 import ImageHelper from 'helpers/ImageHelper';
 import Blockies from 'components/Blockies';
-import {useSelector} from 'react-redux';
 import {encryptMessage} from 'helpers/ChannelHelper';
 import {normalizeUserName} from 'helpers/MessageHelper';
+import useThemeColor from 'hook/useThemeColor';
+import useAppSelector from 'hook/useAppSelector';
+import useTeamUserData from 'hook/useTeamUserData';
+
+type AttachmentItemProps = {
+  attachment: any;
+  onPress: (id: any) => void;
+};
+
+const AttachmentItem = ({attachment, onPress}: AttachmentItemProps) => {
+  const {colors} = useThemeColor();
+  const handlePress = useCallback(
+    () => onPress(attachment.randomId),
+    [attachment.randomId, onPress],
+  );
+  return (
+    <View style={styles.attachmentItem}>
+      <FastImage
+        source={{uri: attachment.uri}}
+        style={{borderRadius: 5, width: 150, height: 90}}
+        resizeMode="cover"
+      />
+      {attachment.loading && (
+        <Spinner size="small" backgroundColor="#11111180" />
+      )}
+      <Touchable
+        style={{
+          padding: 10,
+          position: 'absolute',
+          top: -15,
+          right: -15,
+        }}
+        onPress={handlePress}>
+        <View style={[styles.clearButton, {backgroundColor: colors.subtext}]}>
+          <SVG.IconClose fill={colors.text} />
+        </View>
+      </Touchable>
+    </View>
+  );
+};
 
 type MessageInputProps = {
-  themeType: ThemeType;
   currentChannel: Channel;
   style?: ViewStyle;
   parentId?: string;
@@ -27,14 +64,12 @@ type MessageInputProps = {
   onRemoveAttachment?: (randomId: number) => void;
   onClearAttachment?: () => void;
   teamId: string;
-  messageReply?: Message;
-  messageEdit?: Message;
+  messageReply?: MessageData;
+  messageEdit?: MessageData;
   onClearReply?: () => void;
-  teamUserData?: Array<User>;
 };
 
 const MessageInput = ({
-  themeType,
   currentChannel,
   style,
   parentId,
@@ -47,33 +82,30 @@ const MessageInput = ({
   messageEdit,
   messageReply,
   onClearReply,
-  teamUserData,
 }: MessageInputProps) => {
   const [val, setVal] = useState('');
-  const channelPrivateKey = useSelector(
-    (state: any) => state.configs.channelPrivateKey,
+  const teamUserData = useTeamUserData();
+  const channelPrivateKey = useAppSelector(
+    state => state.configs.channelPrivateKey,
   );
-  const {colors} = themes[themeType];
+  const {colors} = useThemeColor();
   useEffect(() => {
     if (messageEdit) {
       setVal(messageEdit.plain_text);
     }
   }, [messageEdit]);
-  const onSend = () => {
-    if (messageEdit) {
-      editMessage();
-    } else {
-      submitMessage();
-    }
-  };
-  const submitMessage = async () => {
-    if (!!attachments.find(el => el.loading)) {
+
+  const handleChangeText = useCallback(text => setVal(text), []);
+
+  const submitMessage = useCallback(async () => {
+    if (attachments.find(el => el.loading)) {
       alert('Attachment is uploading');
       return;
     }
     const message: any = {
       content: val,
       plain_text: val,
+      text: val,
     };
     if (
       currentChannel.channel_type === 'Private' ||
@@ -105,9 +137,20 @@ const MessageInput = ({
     SocketUtils.sendMessage(message);
     setVal('');
     onClearAttachment?.();
-  };
-  const editMessage = async () => {
-    if (!!attachments.find(el => el.loading)) {
+  }, [
+    attachments,
+    channelPrivateKey,
+    currentChannel.channel_id,
+    currentChannel.channel_type,
+    currentChannel.user,
+    messageReply,
+    onClearAttachment,
+    parentId,
+    teamId,
+    val,
+  ]);
+  const editMessage = useCallback(async () => {
+    if (attachments.find(el => el.loading)) {
       alert('Attachment is uploading');
       return;
     }
@@ -126,8 +169,28 @@ const MessageInput = ({
     setVal('');
     onClearReply?.();
     onClearAttachment?.();
-  };
-  const renderReply = () => {
+  }, [
+    attachments,
+    channelPrivateKey,
+    currentChannel.channel_id,
+    currentChannel.channel_type,
+    messageEdit?.message_id,
+    onClearAttachment,
+    onClearReply,
+    val,
+  ]);
+  const onSend = useCallback(() => {
+    if (messageEdit) {
+      editMessage();
+    } else {
+      submitMessage();
+    }
+  }, [editMessage, messageEdit, submitMessage]);
+  const onClearReplyPress = useCallback(() => {
+    onClearReply?.();
+    setVal('');
+  }, [onClearReply]);
+  const renderReply = useCallback(() => {
     if (messageReply) {
       const sender = teamUserData?.find?.(
         u => u.user_id === messageReply?.sender_id,
@@ -170,10 +233,7 @@ const MessageInput = ({
           </Text>
           <Touchable
             style={{padding: 10, margin: 10}}
-            onPress={() => {
-              onClearReply?.();
-              setVal('');
-            }}>
+            onPress={onClearReplyPress}>
             <SVG.IconCircleClose fill={colors.subtext} />
           </Touchable>
         </View>
@@ -193,17 +253,22 @@ const MessageInput = ({
           </Text>
           <Touchable
             style={{padding: 10, margin: 10}}
-            onPress={() => {
-              onClearReply?.();
-              setVal('');
-            }}>
+            onPress={onClearReplyPress}>
             <SVG.IconCircleClose fill={colors.subtext} />
           </Touchable>
         </View>
       );
     }
     return null;
-  };
+  }, [
+    colors.border,
+    colors.subtext,
+    colors.text,
+    messageEdit,
+    messageReply,
+    onClearReplyPress,
+    teamUserData,
+  ]);
   return (
     <View style={[{backgroundColor: colors.activeBackgroundLight}, style]}>
       {renderReply()}
@@ -211,34 +276,11 @@ const MessageInput = ({
         {attachments.length > 0 && (
           <View style={styles.attachmentView}>
             {attachments.map(attachment => (
-              <View
-                style={styles.attachmentItem}
-                key={attachment.id || attachment.randomId}>
-                <FastImage
-                  source={{uri: attachment.uri}}
-                  style={{borderRadius: 5, width: 150, height: 90}}
-                  resizeMode="cover"
-                />
-                {attachment.loading && (
-                  <Spinner size="small" backgroundColor="#11111180" />
-                )}
-                <Touchable
-                  style={{
-                    padding: 10,
-                    position: 'absolute',
-                    top: -15,
-                    right: -15,
-                  }}
-                  onPress={() => onRemoveAttachment(attachment.randomId)}>
-                  <View
-                    style={[
-                      styles.clearButton,
-                      {backgroundColor: colors.subtext},
-                    ]}>
-                    <SVG.IconClose fill={colors.text} />
-                  </View>
-                </Touchable>
-              </View>
+              <AttachmentItem
+                attachment={attachment}
+                key={attachment.id || attachment.randomId}
+                onPress={onRemoveAttachment}
+              />
             ))}
           </View>
         )}
@@ -259,7 +301,7 @@ const MessageInput = ({
             multiline
             placeholderTextColor={colors.subtext}
             value={val}
-            onChangeText={text => setVal(text)}
+            onChangeText={handleChangeText}
             keyboardAppearance="dark"
           />
           {!!val && (
@@ -327,4 +369,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MessageInput;
+export default memo(MessageInput);

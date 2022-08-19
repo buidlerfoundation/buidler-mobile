@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, memo} from 'react';
 import {Image} from 'react-native';
 import FastImage, {ResizeMode, ImageStyle} from 'react-native-fast-image';
 
@@ -34,7 +34,7 @@ const ImageAutoSize = ({
         setSize({width: finalW, height: finalH});
       }
     });
-  }, [url]);
+  }, [maxHeight, maxWidth, url]);
   return (
     <FastImage
       resizeMode={resizeMode}
@@ -44,4 +44,4 @@ const ImageAutoSize = ({
   );
 };
 
-export default ImageAutoSize;
+export default memo(ImageAutoSize);

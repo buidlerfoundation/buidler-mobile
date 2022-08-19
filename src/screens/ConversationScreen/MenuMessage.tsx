@@ -1,13 +1,11 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import SVG from 'common/SVG';
-import {ThemeType} from 'models';
-import themes from 'themes';
 import Touchable from 'components/Touchable';
 import Fonts from 'common/Fonts';
+import useThemeColor from 'hook/useThemeColor';
 
 type MenuMessageProps = {
-  themeType: ThemeType;
   onCreateTask: () => void;
   onReply: () => void;
   onEdit: () => void;
@@ -15,13 +13,12 @@ type MenuMessageProps = {
 };
 
 const MenuMessage = ({
-  themeType,
   onCreateTask,
   onEdit,
   onReply,
   canEdit,
 }: MenuMessageProps) => {
-  const {colors} = themes[themeType];
+  const {colors} = useThemeColor();
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <Touchable style={styles.menuItem} onPress={onCreateTask}>
@@ -64,4 +61,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MenuMessage;
+export default memo(MenuMessage);

@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import store from '../store';
 import {uniqBy} from 'lodash';
+import {decrypt} from 'eciesjs';
 
 export const encryptMessage = async (str: string, key: string) => {
   const pubKey = utils.computePublicKey(key, true);
@@ -147,13 +148,29 @@ export const normalizeMessageItem = async (
   };
 };
 
-export const normalizePublicMessageData = async (messages: Array<any>) => {
-  return messages;
-  // const configs: any = store.getState()?.configs;
-  // const {privateKey} = configs;
-  // const req = messages?.map?.(el => normalizeMessageItem(el, privateKey)) || [];
-  // const res = await Promise.all(req);
-  // return res.filter(el => !!el.content);
+export const normalizePublicMessageItem = (item: any, key: string) => {
+  const content = item.content
+    ? decrypt(key, Buffer.from(item.content, 'hex')).toString()
+    : '';
+  const plain_text = item.plain_text
+    ? decrypt(key, Buffer.from(item.plain_text, 'hex')).toString()
+    : '';
+  if (item?.conversation_data?.length > 0) {
+    item.conversation_data = normalizePublicMessageData(item.conversation_data);
+  }
+  return {
+    ...item,
+    content,
+    plain_text,
+  };
+};
+
+export const normalizePublicMessageData = (messages: Array<any>) => {
+  const configs = store.getState()?.configs;
+  const {privateKey} = configs;
+  const res =
+    messages?.map?.(el => normalizePublicMessageItem(el, privateKey)) || [];
+  return res.filter(el => !!el.content || el?.message_attachment?.length > 0);
 };
 
 export const normalizeMessageData = async (

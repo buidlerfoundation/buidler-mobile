@@ -1,32 +1,17 @@
-import actions from 'actions';
 import Fonts from 'common/Fonts';
-import ScreenID from 'common/ScreenID';
-import {Channel, ThemeType, User} from 'models';
-import React from 'react';
+import useThemeColor from 'hook/useThemeColor';
+import React, {memo} from 'react';
 import {useWindowDimensions, Linking} from 'react-native';
 import Html, {defaultSystemFonts} from 'react-native-render-html';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import NavigationServices from 'services/NavigationServices';
-import themes from 'themes';
 
 type RenderHTMLProps = {
   html: string;
-  themeType: ThemeType;
-  teamUserData: Array<User>;
-  setCurrentChannel?: (channel: Channel) => any;
   onLinkPress?: () => void;
 };
 
-const RenderHTML = ({
-  html,
-  themeType,
-  teamUserData,
-  setCurrentChannel,
-  onLinkPress,
-}: RenderHTMLProps) => {
+const RenderHTML = ({html, onLinkPress}: RenderHTMLProps) => {
   const {width} = useWindowDimensions();
-  const {colors} = themes[themeType];
+  const {colors} = useThemeColor();
   return (
     <Html
       systemFonts={[
@@ -50,18 +35,9 @@ const RenderHTML = ({
             onLinkPress?.();
             if (href.includes('?user_id=')) {
               const userId = href.split('?user_id=')?.[1];
-              const user = teamUserData.find(el => el.user_id === userId);
-              if (user) {
-                setCurrentChannel({
-                  channel_id: user.direct_channel || '',
-                  channel_name: '',
-                  channel_type: 'Direct',
-                  user,
-                  seen: true,
-                });
-                NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+              if (userId) {
+                // Direct Message
               }
-
               return;
             }
             Linking.openURL(href);
@@ -101,11 +77,4 @@ const RenderHTML = ({
   );
 };
 
-const mapPropsToState = (state: any) => {
-  return {
-    themeType: state.configs.theme,
-    teamUserData: state.user.teamUserData,
-  };
-};
-
-export default connect(mapPropsToState)(RenderHTML);
+export default memo(RenderHTML);

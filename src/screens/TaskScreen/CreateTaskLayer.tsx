@@ -2,16 +2,21 @@ import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {Channel, SpaceChannel, Team, ThemeType, User} from 'models';
-import React, {useEffect, useState, useRef, useMemo, useCallback} from 'react';
-import {View, StyleSheet, TextInput, Text, Keyboard} from 'react-native';
-import themes from 'themes';
+import {Channel, SpaceChannel, Community, UserData} from 'models';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  memo,
+} from 'react';
+import {View, StyleSheet, TextInput, Text} from 'react-native';
 import BottomSheet, {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import FastImage from 'react-native-fast-image';
 import CalendarPicker from 'components/CalendarPicker';
 import moment from 'moment';
-import ImagePicker from 'utils/ImagePicker';
 import {getUniqueId} from 'helpers/GenerateUUID';
 import api from 'services/api';
 import Spinner from 'components/Spinner';
@@ -22,30 +27,76 @@ import AvatarView from 'components/AvatarView';
 import PermissionHelper from 'helpers/PermissionHelper';
 import HapticUtils from 'utils/HapticUtils';
 import {normalizeUserName} from 'helpers/MessageHelper';
+import useThemeColor from 'hook/useThemeColor';
+import useAppDispatch from 'hook/useAppDispatch';
+import {createTask} from 'actions/TaskActions';
+
+type ChannelItemProps = {
+  isSelected: boolean;
+  ch: Channel;
+  onPress: (isSelected: boolean, ch: Channel) => void;
+};
+
+const ChannelItem = ({isSelected, ch, onPress}: ChannelItemProps) => {
+  const {colors} = useThemeColor();
+  const handlePress = useCallback(() => {
+    onPress(isSelected, ch);
+  }, [ch, isSelected, onPress]);
+  return (
+    <Touchable style={styles.selectorChannelItem} onPress={handlePress}>
+      <Text style={[styles.selectorChannelText, {color: colors.text}]}>
+        # {ch.channel_name}
+      </Text>
+      {isSelected && <SVG.IconCheck fill={colors.text} />}
+    </Touchable>
+  );
+};
+
+type AssigneeItemProps = {
+  isSelected: boolean;
+  user: UserData;
+  onPress: (selected: boolean, user: UserData) => void;
+};
+
+const AssigneeItem = ({isSelected, user, onPress}: AssigneeItemProps) => {
+  const {colors} = useThemeColor();
+  const handlePress = useCallback(() => {
+    onPress(isSelected, user);
+  }, [isSelected, onPress, user]);
+  return (
+    <Touchable style={styles.selectorAssigneeItem} onPress={handlePress}>
+      <View style={{marginRight: 15}}>
+        <AvatarView user={user} />
+      </View>
+      <Text style={[styles.selectorChannelText, {color: colors.text}]}>
+        {normalizeUserName(user.user_name)}
+      </Text>
+      <View style={{flex: 1}} />
+      {isSelected && <SVG.IconCheck fill={colors.text} />}
+    </Touchable>
+  );
+};
 
 type CreateTaskLayerProps = {
-  themeType: ThemeType;
   isOpen: boolean;
   toggle: () => void;
   currentChannel: Channel;
   channels: Array<Channel>;
-  teamUserData: Array<User>;
-  currentTeam: Team;
-  createTask: (channelId: string, body: any) => any;
+  teamUserData: Array<UserData>;
+  currentTeam: Community;
   spaceChannel: Array<SpaceChannel>;
 };
 
 const CreateTaskLayer = ({
-  themeType,
   isOpen,
   toggle,
   currentChannel,
   channels,
   teamUserData,
   currentTeam,
-  createTask,
   spaceChannel,
 }: CreateTaskLayerProps) => {
+  const dispatch = useAppDispatch();
   const sheetChannelRef = useRef<BottomSheet>(null);
   const sheetAssigneeRef = useRef<BottomSheet>(null);
   const sheetCalendarRef = useRef<BottomSheet>(null);
@@ -56,7 +107,7 @@ const CreateTaskLayer = ({
   const [sheetOpen, setSheetOpen] = useState<
     'channel' | 'assignee' | 'calendar' | 'gallery' | null
   >(null);
-  const {colors} = themes[themeType];
+  const {colors} = useThemeColor();
   const [taskCreate, setTaskCreate] = useState({
     assignee: currentChannel?.user,
     dueDate: null,
@@ -76,7 +127,7 @@ const CreateTaskLayer = ({
         attachments: [],
       });
     }
-  }, [isOpen]);
+  }, [currentChannel, isOpen]);
   const snapPoints = useMemo(() => ['-50%', '50%', '80%'], []);
 
   // callbacks
@@ -108,35 +159,37 @@ const CreateTaskLayer = ({
       setSheetOpen('assignee');
     }
   }, []);
+  const onSelectAssignee = useCallback(
+    (isSelected, user) => {
+      setTaskCreate(current => ({
+        ...current,
+        assignee: isSelected ? null : user,
+      }));
+      onCloseAssign();
+    },
+    [onCloseAssign],
+  );
   const renderAssigneeItem = useCallback(
     ({item}: {item: User}) => {
-      const isSelected = taskCreate.assignee?.user_id == item.user_id;
+      const isSelected = taskCreate.assignee?.user_id === item.user_id;
       return (
-        <Touchable
-          style={styles.selectorAssigneeItem}
-          onPress={() => {
-            setTaskCreate(current => ({
-              ...current,
-              assignee: isSelected ? null : item,
-            }));
-            onCloseAssign();
-          }}>
-          <View style={{marginRight: 15}}>
-            <AvatarView
-              user={teamUserData.find(u => u.user_id === item.user_id)}
-              themeType={themeType}
-            />
-          </View>
-          <Text style={[styles.selectorChannelText, {color: colors.text}]}>
-            {normalizeUserName(item.user_name)}
-          </Text>
-          <View style={{flex: 1}} />
-          {isSelected && <SVG.IconCheck fill={colors.text} />}
-        </Touchable>
+        <AssigneeItem
+          user={teamUserData.find(u => u.user_id === item.user_id)}
+          isSelected={isSelected}
+          onPress={onSelectAssignee}
+        />
       );
     },
-    [taskCreate.assignee?.user_id],
+    [onSelectAssignee, taskCreate.assignee?.user_id, teamUserData],
   );
+  const onSelectChannel = useCallback((isSelected, ch) => {
+    setTaskCreate(current => ({
+      ...current,
+      channels: isSelected
+        ? current.channels.filter(c => c.channel_id !== ch.channel_id)
+        : [...current.channels, ch],
+    }));
+  }, []);
   const renderItem = useCallback(
     ({item}: {item: SpaceChannel}) => {
       return (
@@ -154,37 +207,23 @@ const CreateTaskLayer = ({
                 c => c.channel_id === ch.channel_id,
               );
               return (
-                <Touchable
+                <ChannelItem
+                  isSelected={isSelected}
+                  ch={ch}
                   key={ch.channel_id}
-                  style={styles.selectorChannelItem}
-                  onPress={() => {
-                    setTaskCreate(current => ({
-                      ...current,
-                      channels: isSelected
-                        ? current.channels.filter(
-                            c => c.channel_id !== ch.channel_id,
-                          )
-                        : [...current.channels, ch],
-                    }));
-                  }}>
-                  <Text
-                    style={[styles.selectorChannelText, {color: colors.text}]}>
-                    # {ch.channel_name}
-                  </Text>
-                  {isSelected && <SVG.IconCheck fill={colors.text} />}
-                </Touchable>
+                  onPress={onSelectChannel}
+                />
               );
             })}
         </View>
       );
     },
-    [taskCreate.channels.map(c => c.channel_id).join(',')],
+    [channels, colors.subtext, onSelectChannel, taskCreate.channels],
   );
   const handleSnapPress = useCallback((index: number) => {
     sheetChannelRef.current?.snapTo(index);
   }, []);
-  if (!isOpen) return null;
-  const onOutSidePress = () => {
+  const onOutSidePress = useCallback(() => {
     if (sheetOpen === 'channel') {
       sheetChannelRef.current.snapTo(0);
     } else if (sheetOpen === 'assignee') {
@@ -196,26 +235,19 @@ const CreateTaskLayer = ({
     } else {
       toggle();
     }
-  };
-  const clearFocus = () => {
-    if (titleRef.current.isFocused()) {
-      titleRef.current.blur();
-    } else if (descriptionRef.current.isFocused()) {
-      descriptionRef.current.blur();
-    }
-  };
-  const openImagePicker = async () => {
+  }, [sheetOpen, toggle]);
+  const openImagePicker = useCallback(async () => {
     const permission = await PermissionHelper.checkPermissionCamera();
     if (permission) {
       setOpenImagePicker(true);
       sheetGalleryRef.current?.snapTo(2);
     }
-  };
-  const onCreatePress = async () => {
+  }, []);
+  const onCreatePress = useCallback(async () => {
     const loadingAttachment = taskCreate.attachments.find(
       (att: any) => att.loading,
     );
-    if (!!loadingAttachment) {
+    if (loadingAttachment) {
       alert('Attachment is uploading');
       return;
     }
@@ -237,76 +269,90 @@ const CreateTaskLayer = ({
     if (SocketUtils.generateId !== '') {
       body.task_id = SocketUtils.generateId;
     }
-    await createTask(currentChannel?.channel_id, body);
+    await dispatch(createTask(currentChannel?.channel_id, body));
     HapticUtils.trigger();
     SocketUtils.generateId = null;
     toggle();
-  };
-  const onCloseAssign = () => {
+  }, [
+    currentChannel?.channel_id,
+    dispatch,
+    taskCreate.assignee?.user_id,
+    taskCreate.attachments,
+    taskCreate.channels,
+    taskCreate?.dueDate,
+    taskCreate?.notes,
+    taskCreate?.title,
+    toggle,
+  ]);
+  const onCloseAssign = useCallback(() => {
     sheetAssigneeRef.current.snapTo(0);
-  };
-  const onCloseDate = () => {
+  }, []);
+  const onCloseDate = useCallback(() => {
     sheetCalendarRef.current.snapTo(0);
-  };
-  const onCloseChannel = () => {
+  }, []);
+  const onCloseChannel = useCallback(() => {
     sheetChannelRef.current.snapTo(0);
-  };
-  const onCloseGallery = () => {
+  }, []);
+  const onCloseGallery = useCallback(() => {
     sheetGalleryRef.current.snapTo(0);
     setOpenImagePicker(false);
-  };
-  const onSelectPhoto = async (items: Array<any>) => {
-    if (!SocketUtils.generateId) {
-      SocketUtils.generateId = getUniqueId();
-    }
-    onCloseGallery();
-    const imagesResized = await Promise.all(
-      items.map(image => {
-        return resizeImage(image);
-      }),
-    );
-    imagesResized.forEach(img => {
-      const randomId = Math.random();
-      setTaskCreate(task => ({
-        ...task,
-        attachments: [
-          ...task.attachments,
-          {
+  }, []);
+  const onSelectPhoto = useCallback(
+    async (items: Array<any>) => {
+      if (!SocketUtils.generateId) {
+        SocketUtils.generateId = getUniqueId();
+      }
+      onCloseGallery();
+      const imagesResized = await Promise.all(
+        items.map(image => {
+          return resizeImage(image);
+        }),
+      );
+      imagesResized.forEach(img => {
+        const randomId = Math.random();
+        setTaskCreate(task => ({
+          ...task,
+          attachments: [
+            ...task.attachments,
+            {
+              uri: img.uri,
+              randomId,
+              loading: true,
+            },
+          ],
+        }));
+        api
+          .uploadFile(currentTeam.team_id, SocketUtils.generateId, {
             uri: img.uri,
-            randomId,
-            loading: true,
-          },
-        ],
-      }));
-      api
-        .uploadFile(currentTeam.team_id, SocketUtils.generateId, {
-          uri: img.uri,
-          name: img.name,
-          type: 'multipart/form-data',
-        })
-        .then(res => {
-          if (res.statusCode === 200) {
-            setTaskCreate(task => ({
-              ...task,
-              attachments: task.attachments.map(el => {
-                if (el.randomId === randomId) {
-                  el.url = res.file_url;
-                  el.loading = false;
-                }
-                return el;
-              }),
-            }));
-          } else {
-            setTaskCreate(task => ({
-              ...task,
-              attachments: task.attachments.filter(
-                el => el.randomId !== randomId,
-              ),
-            }));
-          }
-        });
-    });
-  };
+            name: img.name,
+            type: 'multipart/form-data',
+          })
+          .then(res => {
+            if (res.statusCode === 200) {
+              setTaskCreate(task => ({
+                ...task,
+                attachments: task.attachments.map(el => {
+                  if (el.randomId === randomId) {
+                    el.url = res.file_url;
+                    el.loading = false;
+                  }
+                  return el;
+                }),
+              }));
+            } else {
+              setTaskCreate(task => ({
+                ...task,
+                attachments: task.attachments.filter(
+                  el => el.randomId !== randomId,
+                ),
+              }));
+            }
+          });
+      });
+    },
+    [currentTeam.team_id, onCloseGallery],
+  );
+  if (!isOpen) return null;
   return (
     <View
       style={[
@@ -412,7 +458,6 @@ const CreateTaskLayer = ({
             onPress={() => sheetAssigneeRef.current?.snapTo(1)}>
             {taskCreate?.assignee ? (
               <AvatarView
-                themeType={themeType}
                 user={teamUserData.find(
                   u => u.user_id === taskCreate.assignee.user_id,
                 )}
@@ -451,11 +496,7 @@ const CreateTaskLayer = ({
         snapPoints={snapPoints}
         onChange={handleSheetChange}
         handleComponent={() => (
-          <BottomSheetHandle
-            title="Channels"
-            themeType={themeType}
-            onClosePress={onCloseChannel}
-          />
+          <BottomSheetHandle title="Channels" onClosePress={onCloseChannel} />
         )}>
         <BottomSheetFlatList
           keyboardShouldPersistTaps="handled"
@@ -473,11 +514,7 @@ const CreateTaskLayer = ({
         snapPoints={snapPoints}
         onChange={handleSheetAssigneeChange}
         handleComponent={() => (
-          <BottomSheetHandle
-            title="Assigned to"
-            themeType={themeType}
-            onClosePress={onCloseAssign}
-          />
+          <BottomSheetHandle title="Assigned to" onClosePress={onCloseAssign} />
         )}>
         <BottomSheetFlatList
           keyboardShouldPersistTaps="handled"
@@ -495,15 +532,10 @@ const CreateTaskLayer = ({
         snapPoints={snapPoints}
         onChange={handleSheetCalendarChange}
         handleComponent={() => (
-          <BottomSheetHandle
-            title="Due date"
-            themeType={themeType}
-            onClosePress={onCloseDate}
-          />
+          <BottomSheetHandle title="Due date" onClosePress={onCloseDate} />
         )}>
         <View style={{flex: 1, backgroundColor: colors.background}}>
           <CalendarPicker
-            themeType={themeType}
             onDateChange={date => {
               setTaskCreate(task => ({...task, dueDate: new Date(date)}));
             }}
@@ -516,17 +548,9 @@ const CreateTaskLayer = ({
         snapPoints={snapPoints}
         onChange={handleSheetGalleryChange}
         handleComponent={() => (
-          <BottomSheetHandle
-            title="Photos"
-            themeType={themeType}
-            onClosePress={onCloseGallery}
-          />
+          <BottomSheetHandle title="Photos" onClosePress={onCloseGallery} />
         )}>
-        <GalleryView
-          themeType={themeType}
-          onSelectPhoto={onSelectPhoto}
-          isOpen={isOpenImagePicker}
-        />
+        <GalleryView onSelectPhoto={onSelectPhoto} isOpen={isOpenImagePicker} />
       </BottomSheet>
     </View>
   );
@@ -654,4 +678,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateTaskLayer;
+export default memo(CreateTaskLayer);

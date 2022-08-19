@@ -4,6 +4,8 @@ import {
 } from 'helpers/ChannelHelper';
 import {ActionCreator, Dispatch} from 'redux';
 import api from 'services/api';
+import {AppGetState} from 'store';
+import SocketUtils from 'utils/SocketUtils';
 import {actionTypes} from './actionTypes';
 
 export const getConversations: ActionCreator<any> =
@@ -30,23 +32,66 @@ export const getConversations: ActionCreator<any> =
 
 export const getMessages: ActionCreator<any> =
   (channelId: string, channelType: string, before?: string, isFresh = false) =>
-  async (dispatch: Dispatch) => {
+  async (dispatch: Dispatch, getState: AppGetState) => {
+    const {apiController, messageData} = getState().message;
+    apiController?.abort?.();
+    if (!before) {
+      const messages = messageData?.[channelId]?.data;
+      SocketUtils.emitSeenChannel(messages?.[0]?.message_id, channelId);
+    }
+    const controller = new AbortController();
     if (before) {
       dispatch({type: actionTypes.MESSAGE_MORE, payload: {channelId}});
     } else if (isFresh) {
-      dispatch({type: actionTypes.MESSAGE_FRESH, payload: {channelId}});
-    } else {
-      dispatch({type: actionTypes.MESSAGE_REQUEST, payload: {channelId}});
-    }
-    const messageRes = await api.getMessages(channelId, 20, before);
-    const isPrivate = channelType === 'Private' || channelType === 'Direct';
-    if (messageRes.statusCode === 200) {
-      const messageData = isPrivate
-        ? await normalizeMessageData(messageRes.data, channelId)
-        : await normalizePublicMessageData(messageRes.data);
       dispatch({
-        type: actionTypes.MESSAGE_SUCCESS,
-        payload: {data: messageData, channelId, before, isFresh},
+        type: actionTypes.MESSAGE_FRESH,
+        payload: {channelId, controller},
+      });
+    } else {
+      dispatch({
+        type: actionTypes.MESSAGE_REQUEST,
+        payload: {channelId, controller},
+      });
+    }
+    try {
+      const messageRes = await api.getMessages(
+        channelId,
+        50,
+        before,
+        undefined,
+        controller,
+      );
+      if (!before) {
+        SocketUtils.emitSeenChannel(
+          messageRes.data?.[0]?.message_id,
+          channelId,
+        );
+      }
+      const isPrivate = channelType === 'Private' || channelType === 'Direct';
+      const messageData = isPrivate
+        ? await normalizeMessageData(messageRes.data || [], channelId)
+        : normalizePublicMessageData(messageRes.data || []);
+      if (messageRes.statusCode === 200) {
+        dispatch({
+          type: actionTypes.MESSAGE_SUCCESS,
+          payload: {
+            data: messageData,
+            channelId,
+            before,
+            isFresh,
+            reloadSocket: !before,
+          },
+        });
+      } else {
+        dispatch({
+          type: actionTypes.MESSAGE_FAIL,
+          payload: messageRes,
+        });
+      }
+    } catch (error) {
+      dispatch({
+        type: actionTypes.MESSAGE_FAIL,
+        payload: {message: error},
       });
     }
   };

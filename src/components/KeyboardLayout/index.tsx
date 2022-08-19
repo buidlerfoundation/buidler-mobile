@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Animated,
   Keyboard,
@@ -31,48 +31,62 @@ const KeyboardLayout = ({
   activeAndroid = false,
   realHeight,
 }: KeyboardLayoutProps) => {
-  const [padding, setPadding] = useState(new Animated.Value(0));
+  const [padding] = useState(new Animated.Value(0));
   useEffect(() => {
     const show = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hide = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
     const keyboardDidShowListener = Keyboard.addListener(show, e =>
       keyboardDidShow(e),
     );
-    const keyboardDidHideListener = Keyboard.addListener(hide, e =>
+    const keyboardDidHideListener = Keyboard.addListener(hide, () =>
       keyboardDidHide(),
     );
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
-  }, []);
+  }, [keyboardDidHide, keyboardDidShow]);
 
-  const keyboardDidShow = (e: any) => {
-    let value =
-      Platform.OS === 'ios' ? e.endCoordinates.height + extraPaddingBottom : 0;
-    if (Platform.OS === 'android' && activeAndroid) {
-      value = realHeight - e.endCoordinates.screenY;
-    }
-    runAnimation(value);
-    onKeyboardShow(e);
-  };
+  const keyboardDidShow = useCallback(
+    (e: any) => {
+      let value =
+        Platform.OS === 'ios'
+          ? e.endCoordinates.height + extraPaddingBottom
+          : 0;
+      if (Platform.OS === 'android' && activeAndroid) {
+        value = realHeight - e.endCoordinates.screenY;
+      }
+      runAnimation(value);
+      onKeyboardShow(e);
+    },
+    [
+      activeAndroid,
+      extraPaddingBottom,
+      onKeyboardShow,
+      realHeight,
+      runAnimation,
+    ],
+  );
 
-  const keyboardDidHide = () => {
+  const keyboardDidHide = useCallback(() => {
     runAnimation(0);
     onKeyboardHide();
-  };
+  }, [onKeyboardHide, runAnimation]);
 
-  const runAnimation = (value: number) => {
-    Animated.spring(padding, {
-      toValue: value,
-      useNativeDriver: false,
-    }).start();
-  };
+  const runAnimation = useCallback(
+    (value: number) => {
+      Animated.spring(padding, {
+        toValue: value,
+        useNativeDriver: false,
+      }).start();
+    },
+    [padding],
+  );
 
-  const onPressOutSide = () => {
+  const onPressOutSide = useCallback(() => {
     Keyboard.dismiss();
     onOutSidePress?.();
-  };
+  }, [onOutSidePress]);
 
   const body = (
     <Animated.View style={[containerStyle, {flex: 1, marginBottom: padding}]}>

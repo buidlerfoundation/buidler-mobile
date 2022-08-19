@@ -1,25 +1,22 @@
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {ThemeType} from 'models';
-import React from 'react';
+import useThemeColor from 'hook/useThemeColor';
+import React, {memo} from 'react';
 import {View, Text} from 'react-native';
-import themes from 'themes';
 
 type BottomSheetHandleProps = {
-  themeType: ThemeType;
   title?: string;
   titleComponent?: any;
   onClosePress: () => void;
 };
 
 const BottomSheetHandle = ({
-  themeType,
   title,
   titleComponent,
   onClosePress,
 }: BottomSheetHandleProps) => {
-  const {colors} = themes[themeType];
+  const {colors} = useThemeColor();
   return (
     <View
       style={{
@@ -62,4 +59,4 @@ const BottomSheetHandle = ({
   );
 };
 
-export default BottomSheetHandle;
+export default memo(BottomSheetHandle);
