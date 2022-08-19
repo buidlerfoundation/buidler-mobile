@@ -264,7 +264,8 @@ const ConversationScreen = () => {
             inverted
             keyExtractor={item => item.message_id}
             renderItem={renderItem}
-            initialNumToRender={20}
+            initialNumToRender={10}
+            windowSize={2}
             ListHeaderComponent={<View style={{height: 15}} />}
             onEndReached={onEndReached}
             renderSectionFooter={renderFooter}

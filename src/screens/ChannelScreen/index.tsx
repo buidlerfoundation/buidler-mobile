@@ -2,7 +2,7 @@ import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Community, Space} from 'models';
 import React, {memo, useCallback, useState} from 'react';
-import {View, FlatList, StyleSheet, Text} from 'react-native';
+import {View, FlatList, StyleSheet, Text, SectionList} from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import Fonts from 'common/Fonts';
 import MemberItem from './MemberItem';
@@ -16,6 +16,7 @@ import useCurrentChannel from 'hook/useCurrentChannel';
 import useTeamUserData from 'hook/useTeamUserData';
 import TeamItem from './TeamItem';
 import {useMemo} from 'react';
+import ChannelItem from './ChannelItem';
 
 const ChannelScreen = () => {
   const team = useAppSelector(state => state.user.team || []);
@@ -77,21 +78,42 @@ const ChannelScreen = () => {
     user,
     userData.user_id,
   ]);
-  const renderSpaceChannelItem = useCallback(
-    ({item}: {item: Space}) => {
+  const renderSectionHeader = useCallback(
+    (e: {section: {title: Space; data: Array<string>}}) => {
       return (
         <SpaceItem
-          item={item}
-          currentChannel={currentChannel}
+          isEmpty={e.section.data.length === 0}
+          item={e.section.title}
           teamId={currentTeam.team_id}
         />
       );
     },
-    [currentChannel, currentTeam.team_id],
+    [currentTeam.team_id],
   );
-  const renderItemSeparate = useCallback(
-    () => <View style={{height: 10}} />,
-    [],
+
+  const renderItemSeparate = useCallback(e => {
+    return <View style={{height: e.leadingItem ? 10 : 0}} />;
+  }, []);
+  const renderItem = useCallback(
+    ({
+      item,
+      index,
+      section,
+    }: {
+      item: string;
+      index: number;
+      section: {data: Array<string>};
+    }) => {
+      const isActive = currentChannel.channel_id === item;
+      return (
+        <ChannelItem
+          channelId={item}
+          isActive={isActive}
+          isLast={index === section.data.length - 1}
+        />
+      );
+    },
+    [currentChannel.channel_id],
   );
   return (
     <View
@@ -106,13 +128,20 @@ const ChannelScreen = () => {
           />
         </View>
         <View style={styles.channelContainer}>
-          <FlatList
-            data={spaceChannel}
-            keyExtractor={item => item.space_id}
-            renderItem={renderSpaceChannelItem}
+          <SectionList
+            sections={spaceChannel.map(el => ({
+              data: el.channel_ids,
+              title: el,
+            }))}
+            renderSectionHeader={renderSectionHeader}
+            stickySectionHeadersEnabled={false}
+            keyExtractor={item => item}
             ListFooterComponent={renderFooter}
             ListHeaderComponent={<View style={{height: 10}} />}
-            ItemSeparatorComponent={renderItemSeparate}
+            SectionSeparatorComponent={renderItemSeparate}
+            renderItem={renderItem}
+            initialNumToRender={20}
+            windowSize={2}
           />
         </View>
       </View>

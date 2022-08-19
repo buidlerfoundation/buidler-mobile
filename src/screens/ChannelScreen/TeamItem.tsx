@@ -1,5 +1,4 @@
 import {setCurrentTeam} from 'actions/UserActions';
-import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import ImageHelper from 'helpers/ImageHelper';
@@ -9,7 +8,6 @@ import {Community} from 'models';
 import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import NavigationServices from 'services/NavigationServices';
 
 type TeamItemProps = {
   item: Community;
@@ -21,7 +19,6 @@ const TeamItem = ({item, isActive}: TeamItemProps) => {
   const {colors} = useThemeColor();
   const onPress = useCallback(async () => {
     dispatch(setCurrentTeam(item));
-    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
   }, [dispatch, item]);
   return (
     <Touchable

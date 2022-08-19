@@ -1,30 +1,22 @@
-import React, {memo, useState} from 'react';
+import React, {memo} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import Collapsible from 'react-native-collapsible';
 import Fonts from 'common/Fonts';
-import {Channel, Space} from 'models';
-import Touchable from 'components/Touchable';
+import {Space} from 'models';
 import SVG from 'common/SVG';
 import Emoji from 'react-native-emoji';
 import FastImage from 'react-native-fast-image';
 import ImageHelper from 'helpers/ImageHelper';
 import useThemeColor from 'hook/useThemeColor';
 import {useCallback} from 'react';
-import ChannelItem from './ChannelItem';
 
 type SpaceItemProps = {
   item: Space;
-  currentChannel: Channel;
   teamId: string;
+  isEmpty: boolean;
 };
 
-const SpaceItem = ({item, currentChannel, teamId}: SpaceItemProps) => {
+const SpaceItem = ({item, teamId, isEmpty}: SpaceItemProps) => {
   const {colors} = useThemeColor();
-  const [isCollapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = useCallback(
-    () => setCollapsed(current => !current),
-    [],
-  );
   const renderSpaceIcon = useCallback(() => {
     if (item.space_image_url) {
       return (
@@ -50,10 +42,14 @@ const SpaceItem = ({item, currentChannel, teamId}: SpaceItemProps) => {
         styles.space,
         {
           backgroundColor: colors.background,
-          borderColor: isCollapsed ? colors.border : colors.background,
+          borderColor: colors.background,
+        },
+        isEmpty && {
+          borderBottomLeftRadius: 5,
+          borderBottomRightRadius: 5,
         },
       ]}>
-      <Touchable style={styles.groupHead} onPress={toggleCollapsed}>
+      <View style={styles.groupHead}>
         <View
           style={[styles.logoSpaceWrapper, {backgroundColor: colors.border}]}>
           {renderSpaceIcon()}
@@ -61,19 +57,7 @@ const SpaceItem = ({item, currentChannel, teamId}: SpaceItemProps) => {
         <Text style={[styles.groupName, {color: colors.text}]}>
           {item.space_name}
         </Text>
-      </Touchable>
-      <Collapsible collapsed={isCollapsed} duration={400} easing="linear">
-        {item.channel_ids.map(channelId => {
-          const isActive = currentChannel.channel_id === channelId;
-          return (
-            <ChannelItem
-              channelId={channelId}
-              isActive={isActive}
-              key={channelId}
-            />
-          );
-        })}
-      </Collapsible>
+      </View>
     </View>
   );
 };
@@ -82,7 +66,8 @@ const styles = StyleSheet.create({
   space: {
     marginHorizontal: 10,
     padding: 10,
-    borderRadius: 5,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
     borderWidth: 1,
   },
   groupHead: {

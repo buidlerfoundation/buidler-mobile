@@ -56,7 +56,7 @@ export const getMessages: ActionCreator<any> =
     try {
       const messageRes = await api.getMessages(
         channelId,
-        50,
+        20,
         before,
         undefined,
         controller,

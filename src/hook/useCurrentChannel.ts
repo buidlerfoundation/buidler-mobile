@@ -1,5 +1,5 @@
 import React from 'react';
-import {Channel} from 'renderer/models';
+import {Channel} from 'models';
 import useAppSelector from './useAppSelector';
 import useChannel from './useChannel';
 
