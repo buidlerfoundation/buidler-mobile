@@ -8,7 +8,7 @@ export const getMessages = (
   after?: string,
   controller?: AbortController,
 ) => {
-  let uri = `messages/${channelId}?page[size]=${limit}&page[before]=${before}`;
+  let uri = `messages/${channelId}?page[size]=${limit}&page[before]=${before}&disable_encrypt=1`;
   if (after) {
     uri += `&page[after]=${after}`;
   }

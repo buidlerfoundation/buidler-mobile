@@ -166,6 +166,7 @@ export const normalizePublicMessageItem = (item: any, key: string) => {
 };
 
 export const normalizePublicMessageData = (messages: Array<any>) => {
+  return messages;
   const configs = store.getState()?.configs;
   const {privateKey} = configs;
   const res =
