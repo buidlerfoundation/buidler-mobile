@@ -8,7 +8,7 @@ module.exports = {
       files: ['*.ts', '*.tsx'],
       rules: {
         'no-shadow': 'off',
-        'no-undef': 'off',
+        'no-undef': 'error',
         'react-native/no-inline-styles': 'off',
         radix: 'off',
         curly: 'off',

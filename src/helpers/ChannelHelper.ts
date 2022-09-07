@@ -129,17 +129,12 @@ export const normalizeMessageItem = async (
 ) => {
   const content = await decryptMessage(item.content, key);
   const plain_text = await decryptMessage(item.plain_text, key);
-  if (item?.conversation_data?.length > 0) {
-    if (channelId) {
-      item.conversation_data = await normalizeMessageData(
-        item.conversation_data,
-        channelId,
-      );
-    } else {
-      item.conversation_data = await normalizePublicMessageData(
-        item.conversation_data,
-      );
-    }
+  if (item?.conversation_data) {
+    item.conversation_data = await normalizeMessageItem(
+      item.conversation_data,
+      key,
+      channelId,
+    );
   }
   return {
     ...item,
@@ -155,8 +150,11 @@ export const normalizePublicMessageItem = (item: any, key: string) => {
   const plain_text = item.plain_text
     ? decrypt(key, Buffer.from(item.plain_text, 'hex')).toString()
     : '';
-  if (item?.conversation_data?.length > 0) {
-    item.conversation_data = normalizePublicMessageData(item.conversation_data);
+  if (item?.conversation_data) {
+    item.conversation_data = normalizePublicMessageItem(
+      item.conversation_data,
+      key,
+    );
   }
   return {
     ...item,

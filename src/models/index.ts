@@ -213,10 +213,10 @@ export interface TaskData {
 export interface ConversationData {
   content: string;
   createdAt: string;
-  message_attachment: Array<AttachmentData>;
+  message_attachments: Array<AttachmentData>;
   message_id: string;
-  message_tag: Array<TagData>;
-  parent_id: string;
+  message_tags: Array<TagData>;
+  reply_message_id: string;
   plain_text: string;
   sender_id: string;
   updatedAt: string;
@@ -226,10 +226,12 @@ export interface ConversationData {
   isConversationHead: boolean;
   reaction_data: Array<ReactionData>;
   user_reaction: Array<UserReaction>;
+  entity_id: string;
+  entity_type: string;
 }
 
 export interface MessageData extends ConversationData {
-  conversation_data: Array<ConversationData>;
+  conversation_data: ConversationData;
 }
 
 export interface ReactUserApiData {

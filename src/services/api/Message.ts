@@ -1,16 +1,23 @@
+import {getDeviceCode} from 'helpers/GenerateUUID';
 import {ConversationData, MessageData} from 'models';
 import ApiCaller from './ApiCaller';
 
-export const getMessages = (
+export const getMessages = async (
   channelId: string,
   limit = 20,
-  before = new Date().toISOString(),
+  before?: string,
   after?: string,
   controller?: AbortController,
 ) => {
-  let uri = `messages/${channelId}?page[size]=${limit}&page[before]=${before}&disable_encrypt=1`;
+  const deviceCode = await getDeviceCode();
+  let uri = `messages/${channelId}?page[size]=${limit}&device_code=${deviceCode}&disable_encrypt=1`;
   if (after) {
+    if (before) {
+      uri += `&page[before]=${before}`;
+    }
     uri += `&page[after]=${after}`;
+  } else {
+    uri += `&page[before]=${before || new Date().toISOString()}`;
   }
   return ApiCaller.get<Array<MessageData>>(uri, undefined, controller);
 };

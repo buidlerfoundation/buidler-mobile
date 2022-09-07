@@ -22,7 +22,6 @@ import {
 import {createLoadMoreSelector} from 'reducers/selectors';
 import MessageInput from './MessageInput';
 import MessageItem from './MessageItem';
-import MessageReplyItem from './MessageReplyItem';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import Modal from 'react-native-modal';
@@ -82,16 +81,6 @@ const ConversationScreen = () => {
   const onMoveShouldSetResponderCapture = useCallback(() => false, []);
   const renderItem = useCallback(
     ({item}: {item: MessageData}) => {
-      if (item.conversation_data.length > 0) {
-        return (
-          <MessageReplyItem
-            item={item}
-            sender={teamUserData.find(el => el.user_id === item.sender_id)}
-            teamId={currentTeam.team_id}
-            onLongPress={openMenuMessage}
-          />
-        );
-      }
       return (
         <MessageItem
           item={item}

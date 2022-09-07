@@ -16,6 +16,7 @@ import {normalizeUserName} from 'helpers/MessageHelper';
 import useThemeColor from 'hook/useThemeColor';
 import useAppSelector from 'hook/useAppSelector';
 import useTeamUserData from 'hook/useTeamUserData';
+import {getUniqueId} from 'helpers/GenerateUUID';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -57,7 +58,6 @@ const AttachmentItem = ({attachment, onPress}: AttachmentItemProps) => {
 type MessageInputProps = {
   currentChannel: Channel;
   style?: ViewStyle;
-  parentId?: string;
   placeholder?: string;
   openGallery?: () => void;
   attachments?: Array<any>;
@@ -72,7 +72,6 @@ type MessageInputProps = {
 const MessageInput = ({
   currentChannel,
   style,
-  parentId,
   placeholder,
   openGallery,
   attachments = [],
@@ -106,6 +105,7 @@ const MessageInput = ({
       content: val,
       plain_text: val,
       text: val,
+      entity_type: 'channel',
     };
     if (
       currentChannel.channel_type === 'Private' ||
@@ -121,18 +121,18 @@ const MessageInput = ({
       message.plain_text = plain_text;
     }
     if (currentChannel.channel_id) {
-      message.channel_id = currentChannel.channel_id;
+      message.entity_id = currentChannel.channel_id;
     } else if (currentChannel.user) {
       message.other_user_id = currentChannel?.user?.user_id;
       message.team_id = teamId;
     }
     if (messageReply) {
-      message.parent_id = messageReply.parent_id || messageReply.message_id;
-    } else if (parentId) {
-      message.parent_id = parentId;
+      message.reply_message_id = messageReply.message_id;
     }
     if (attachments.length > 0) {
       message.message_id = SocketUtils.generateId;
+    } else {
+      message.message_id = getUniqueId();
     }
     SocketUtils.sendMessage(message);
     setVal('');
@@ -145,7 +145,6 @@ const MessageInput = ({
     currentChannel.user,
     messageReply,
     onClearAttachment,
-    parentId,
     teamId,
     val,
   ]);
