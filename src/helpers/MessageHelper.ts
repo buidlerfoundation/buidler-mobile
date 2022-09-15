@@ -58,10 +58,10 @@ export const normalizeMessageText = (text: string, wrapParagraph?: boolean) => {
       /((https?|ftps?):\/\/[^"<\s]+)(?![^<>]*>|[^"]*?<\/a)/gim,
       "<a onclick='event.stopPropagation();' target='_blank' href='$1'>$1</a>",
     )
-    .replace(/\$mention_location/g, `${window.location.origin}/channels/user`)
+    // .replace(/\$mention_location/g, `${window.location.origin}/channels/user`)
     .replace(
       /(<@)(.*?)(-)(.*?)(>)/gim,
-      `<a href="${window.location.origin}/channels/user/$4" class="mention-string">@$2</a>`,
+      '<a href="/channels/user/$4" class="mention-string">@$2</a>',
     );
 
   if (wrapParagraph) {

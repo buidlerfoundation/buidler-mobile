@@ -20,7 +20,7 @@ const ImportSeedPhraseScreen = () => {
   }, []);
   const onNextPress = useCallback(async () => {
     const isValid = await RNGoldenKeystore.mnemonicIsValid(seed);
-    if (isValid === 0) {
+    if (isValid === '0') {
       alert('Invalid seed phrase');
       return;
     }

@@ -147,9 +147,6 @@ export const normalizePublicMessageItem = (item: any, key: string) => {
   const content = item.content
     ? decrypt(key, Buffer.from(item.content, 'hex')).toString()
     : '';
-  const plain_text = item.plain_text
-    ? decrypt(key, Buffer.from(item.plain_text, 'hex')).toString()
-    : '';
   if (item?.conversation_data) {
     item.conversation_data = normalizePublicMessageItem(
       item.conversation_data,
@@ -159,16 +156,17 @@ export const normalizePublicMessageItem = (item: any, key: string) => {
   return {
     ...item,
     content,
-    plain_text,
   };
 };
 
 export const normalizePublicMessageData = (messages: Array<any>) => {
   return messages;
+  console.log('1XXX: ', 'Started', new Date().getTime());
   const configs = store.getState()?.configs;
   const {privateKey} = configs;
   const res =
     messages?.map?.(el => normalizePublicMessageItem(el, privateKey)) || [];
+  console.log('2XXX: ', 'End', new Date().getTime());
   return res.filter(el => !!el.content || el?.message_attachment?.length > 0);
 };
 

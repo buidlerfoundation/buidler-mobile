@@ -530,20 +530,22 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = notable/notable.entitlements;
-				CURRENT_PROJECT_VERSION = 36;
-				DEVELOPMENT_TEAM = UDCV6ZY8CU;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 726KYATD7J;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = notable/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Buidler;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = team.notable;
+				PRODUCT_BUNDLE_IDENTIFIER = app.buidler;
 				PRODUCT_NAME = notable;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -558,19 +560,21 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = notable/notable.entitlements;
-				CURRENT_PROJECT_VERSION = 36;
-				DEVELOPMENT_TEAM = UDCV6ZY8CU;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 726KYATD7J;
 				INFOPLIST_FILE = notable/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Buidler;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = team.notable;
+				PRODUCT_BUNDLE_IDENTIFIER = app.buidler;
 				PRODUCT_NAME = notable;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

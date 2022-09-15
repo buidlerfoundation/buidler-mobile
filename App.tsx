@@ -15,16 +15,20 @@ LogBox.ignoreAllLogs();
 
 const App = () => {
   // const test = async () => {
-  //   const encrypted = encrypt(
-  //     '033333db2859fb5dc791edf29e73adc5e6addff1fa4c2e443af30b8990102ef374', // publicKey
-  //     Buffer.from('foobar'), // message
-  //   );
+  //   console.log('1XXX: ', new Date().getTime());
+  //   // const encrypted = encrypt(
+  //   //   '033333db2859fb5dc791edf29e73adc5e6addff1fa4c2e443af30b8990102ef374', // publicKey
+  //   //   Buffer.from('foobar'), // message
+  //   // );
   //   const message = decrypt(
   //     '0x3e8a25bedd79c30cc8e535dde02466efc4324b9ce0a7d0a4591babcde7ef550d', // privateKey
-  //     encrypted,
+  //     Buffer.from(
+  //       '04e32601e1e9e8393412e5b2815d35e5f12c01f5bf9272715de30d6e1028b08299f1d63ee4fee41890bca27b1e78ec6c5526e8b05fd5e59a80a78c4b4bc259f590e2485c782f3d219ea929b30a1a4639a76fd1fd569d5f95c0f4f42cf0d3a85792ec3a0ed735e6',
+  //       'hex',
+  //     ),
   //   );
-  //   console.log('XXX: ', encrypted);
-  //   console.log('XXX: ', message.toString());
+  //   // console.log('2XXX: ', encrypted.toString('hex'), new Date().getTime());
+  //   console.log('3XXX: ', message.toString(), new Date().getTime());
   // };
   useEffect(() => {
     // test();

@@ -4,7 +4,7 @@ import ApiCaller from './ApiCaller';
 
 export const getMessages = async (
   channelId: string,
-  limit = 20,
+  limit = 15,
   before?: string,
   after?: string,
   controller?: AbortController,
