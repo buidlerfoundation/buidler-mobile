@@ -3,11 +3,11 @@ import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs
 import ScreenID from 'common/ScreenID';
 import ChannelScreen from 'screens/ChannelScreen';
 import ConversationScreen from 'screens/ConversationScreen';
-import TaskScreen from 'screens/TaskScreen';
 import {View} from 'react-native';
 import {useSelector} from 'react-redux';
 import NavigationServices from 'services/NavigationServices';
 import ModalOtp from 'components/ModalOtp';
+import PinPostScreen from 'screens/PinPostScreen';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -41,7 +41,7 @@ const HomeStack = ({route}: HomeStackProps) => {
           name={ScreenID.ConversationScreen}
           component={ConversationScreen}
         />
-        <Tab.Screen name={ScreenID.TaskScreen} component={TaskScreen} />
+        <Tab.Screen name={ScreenID.TaskScreen} component={PinPostScreen} />
       </Tab.Navigator>
       {openOTP && !!requestOtpCode && (
         <ModalOtp isOpen={openOTP} otp={requestOtpCode} />

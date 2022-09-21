@@ -1,9 +1,90 @@
 import {Dispatch} from 'redux';
-import moment from 'moment';
 import {actionTypes} from './actionTypes';
 import api from 'services/api';
-import {isFilterStatus} from 'helpers/TaskHelper';
 import {AppGetState} from 'store';
+import {utils} from 'ethers';
+
+export const uploadToIPFS =
+  (pinPostId: string, channelId: string) =>
+  async (dispatch: Dispatch, getState: AppGetState) => {
+    dispatch({
+      type: actionTypes.UPDATE_TASK_REQUEST,
+      payload: {
+        taskId: pinPostId,
+        data: {uploadingIPFS: true},
+        channelId,
+      },
+    });
+    try {
+      const private_key = getState().configs.privateKey;
+      if (private_key) {
+        const timestamp = new Date().getTime();
+        const message = `Nonce: ${timestamp}`;
+        const msgHash = utils.hashMessage(message);
+        const msgHashBytes = utils.arrayify(msgHash);
+        const signingKey = new utils.SigningKey(`0x${private_key}`);
+        const signature = signingKey.signDigest(msgHashBytes);
+        api
+          .uploadToIPFS(pinPostId, {
+            timestamp,
+            signature,
+            sign_message: message,
+          })
+          .then(() => {
+            dispatch({
+              type: actionTypes.UPDATE_TASK_REQUEST,
+              payload: {
+                taskId: pinPostId,
+                data: {uploadingIPFS: false},
+                channelId,
+              },
+            });
+          })
+          .catch(error => {
+            console.log(error);
+            dispatch({
+              type: actionTypes.UPDATE_TASK_REQUEST,
+              payload: {
+                taskId: pinPostId,
+                data: {uploadingIPFS: false},
+                channelId,
+              },
+            });
+          });
+      }
+    } catch (error: any) {
+      console.log(error.message);
+      dispatch({
+        type: actionTypes.UPDATE_TASK_REQUEST,
+        payload: {
+          taskId: pinPostId,
+          data: {uploadingIPFS: false},
+          channelId,
+        },
+      });
+    }
+  };
+
+export const getPinPostDetail =
+  (postId: string) => async (dispatch: Dispatch) => {
+    dispatch({type: actionTypes.PP_DETAIL_REQUEST, payload: {postId}});
+    try {
+      const postRes = await api.getPostById(postId);
+      if (postRes.success) {
+        dispatch({type: actionTypes.PP_DETAIL_SUCCESS, payload: postRes});
+      } else {
+        dispatch({type: actionTypes.PP_DETAIL_FAIL, payload: postRes});
+      }
+      return postRes;
+    } catch (error: any) {
+      const postRes = {success: false, message: error};
+      dispatch({
+        type: actionTypes.PP_DETAIL_FAIL,
+        payload: postRes,
+      });
+      return postRes;
+    }
+  };
 
 export const getTaskFromUser =
   (userId: string, channelId: string, teamId: string) =>
@@ -13,40 +94,6 @@ export const getTaskFromUser =
       const [taskRes, archivedCountRes] = await Promise.all([
         api.getTaskFromUser(userId, teamId),
         api.getArchivedTaskCountFromUser(userId, teamId),
-      ]);
-      if (taskRes.statusCode === 200 && archivedCountRes.statusCode === 200) {
-        dispatch({
-          type: actionTypes.TASK_SUCCESS,
-          payload: {
-            channelId,
-            tasks: taskRes.data,
-            archivedCount: archivedCountRes.total,
-          },
-        });
-      } else {
-        dispatch({
-          type: actionTypes.TASK_FAIL,
-          payload: {message: 'Error', taskRes, archivedCountRes},
-        });
-      }
-    } catch (e) {
-      dispatch({type: actionTypes.TASK_FAIL, payload: {message: e}});
-    }
-  };
-
-export const getTasks =
-  (channelId: string) => async (dispatch: Dispatch, getState: AppGetState) => {
-    const lastController = getState().task.apiController;
-    lastController?.abort?.();
-    const controller = new AbortController();
-    dispatch({
-      type: actionTypes.TASK_REQUEST,
-      payload: {channelId, controller: controller},
-    });
-    try {
-      const [taskRes, archivedCountRes] = await Promise.all([
-        api.getTasks(channelId, controller),
-        api.getArchivedTaskCount(channelId, controller),
       ]);
       if (taskRes.statusCode === 200 && archivedCountRes.statusCode === 200) {
         dispatch({
@@ -68,32 +115,62 @@ export const getTasks =
     }
   };
 
+export const getTasks =
+  (channelId: string, createdAt?: string) =>
+  async (dispatch: Dispatch, getState: AppGetState) => {
+    const lastController = getState().task.apiController;
+    lastController?.abort?.();
+    // eslint-disable-next-line no-undef
+    const controller = new AbortController();
+    if (createdAt) {
+      dispatch({
+        type: actionTypes.TASK_MORE,
+        payload: {channelId, createdAt, controller: controller},
+      });
+    } else {
+      dispatch({
+        type: actionTypes.TASK_REQUEST,
+        payload: {channelId, controller: controller},
+      });
+    }
+    try {
+      const taskRes = await api.getTasks(
+        channelId,
+        createdAt,
+        undefined,
+        controller,
+      );
+      if (taskRes.statusCode === 200) {
+        dispatch({
+          type: actionTypes.TASK_SUCCESS,
+          payload: {
+            channelId,
+            tasks: taskRes.data,
+            createdAt,
+          },
+        });
+      } else {
+        dispatch({
+          type: actionTypes.TASK_FAIL,
+          payload: {message: 'Error', taskRes},
+        });
+      }
+    } catch (e) {
+      dispatch({type: actionTypes.TASK_FAIL, payload: {message: e}});
+    }
+  };
+
 export const dropTask =
-  (result: any, channelId: string, upVote: number) =>
+  (result: any, channelId: string, upVote: number, teamId: string) =>
   async (dispatch: Dispatch) => {
     const {source, destination, draggableId} = result;
     dispatch({
       type: actionTypes.DROP_TASK,
-      payload: {result, channelId, upVote},
+      payload: {result, channelId, upVote, teamId},
     });
     if (!destination) return;
     if (source.droppableId === destination.droppableId) {
-      api.updateTask({up_votes: upVote}, draggableId);
-    } else if (!isFilterStatus(destination.droppableId)) {
-      const newDate = moment(destination.droppableId).format(
-        'YYYY-MM-DD HH:mm:ss.SSSZ',
-      );
-      if (source.droppableId === 'archived') {
-        api.updateTask(
-          {due_date: newDate, up_votes: upVote, status: 'todo'},
-          draggableId,
-        );
-      } else {
-        api.updateTask({due_date: newDate, up_votes: upVote}, draggableId);
-      }
-    } else {
-      const newStatus = destination.droppableId;
-      api.updateTask({status: newStatus, up_votes: upVote}, draggableId);
+      api.updateTask({up_votes: upVote, team_id: teamId}, draggableId);
     }
   };
 
@@ -124,33 +201,28 @@ export const createTask =
       payload: {channelId, body},
     });
     try {
-      await api.createTask(body);
+      const data = body;
+      delete data.attachments;
+      const res = await api.createTask(data);
+      return res.statusCode === 200;
     } catch (e) {
       dispatch({
         type: actionTypes.CREATE_TASK_FAIL,
         payload: {message: e},
       });
+      return false;
     }
   };
 
 export const updateTask =
   (taskId: string, channelId: string, data: any) =>
   async (dispatch: Dispatch) => {
-    dispatch({
-      type: actionTypes.UPDATE_TASK_REQUEST,
-      payload: {taskId, data, channelId},
-    });
     try {
-      if (data.channel) {
-        data.channel_ids = data.channel.map((c: any) => c.channel_id);
+      if (data.channels) {
+        data.channel_ids = data.channels.map((c: any) => c.channel_id);
       }
       const res = await api.updateTask(data, taskId);
-      dispatch({
-        type: actionTypes.UPDATE_TASK_SUCCESS,
-        payload: {
-          res,
-        },
-      });
+      return res.statusCode === 200;
     } catch (e) {
       dispatch({
         type: actionTypes.UPDATE_TASK_FAIL,
@@ -158,28 +230,36 @@ export const updateTask =
           message: e,
         },
       });
+      return false;
     }
   };
 
 export const getArchivedTasks =
-  (channelId: string, userId?: string, teamId?: string) =>
-  async (dispatch: Dispatch) => {
-    dispatch({
-      type: actionTypes.ARCHIVED_TASK_REQUEST,
-      payload: {
-        channelId,
-        userId,
-      },
-    });
+  (channelId: string, createdAt?: string) => async (dispatch: Dispatch) => {
+    if (createdAt) {
+      dispatch({
+        type: actionTypes.ARCHIVED_TASK_MORE,
+        payload: {
+          channelId,
+          createdAt,
+        },
+      });
+    } else {
+      dispatch({
+        type: actionTypes.ARCHIVED_TASK_REQUEST,
+        payload: {
+          channelId,
+        },
+      });
+    }
     try {
-      const res = userId
-        ? await api.getArchivedTaskFromUser(userId, teamId)
-        : await api.getArchivedTasks(channelId);
+      const res = await api.getArchivedTasks(channelId, createdAt);
       dispatch({
         type: actionTypes.ARCHIVED_TASK_SUCCESS,
         payload: {
           res: res.data,
           channelId,
+          createdAt,
         },
       });
     } catch (e) {

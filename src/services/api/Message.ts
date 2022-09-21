@@ -4,13 +4,13 @@ import ApiCaller from './ApiCaller';
 
 export const getMessages = async (
   channelId: string,
-  limit = 15,
+  limit = 20,
   before?: string,
   after?: string,
   controller?: AbortController,
 ) => {
   const deviceCode = await getDeviceCode();
-  let uri = `messages/${channelId}?page[size]=${limit}&device_code=${deviceCode}&disable_encrypt=1`;
+  let uri = `messages/${channelId}?page[size]=${limit}&device_code=${deviceCode}`;
   if (after) {
     if (before) {
       uri += `&page[before]=${before}`;

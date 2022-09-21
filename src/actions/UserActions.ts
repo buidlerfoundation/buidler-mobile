@@ -158,6 +158,7 @@ const actionSetCurrentTeam = async (
 ) => {
   const lastController = getState?.().user?.apiTeamController;
   lastController?.abort?.();
+  // eslint-disable-next-line no-undef
   const controller = new AbortController();
   dispatch({
     type: actionTypes.CURRENT_TEAM_REQUEST,

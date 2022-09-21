@@ -5,6 +5,7 @@ import {AsyncKey} from 'common/AppStorage';
 import store from '../store';
 import {uniqBy} from 'lodash';
 import {decrypt} from 'eciesjs';
+import CryptoJS from 'crypto-js';
 
 export const encryptMessage = async (str: string, key: string) => {
   const pubKey = utils.computePublicKey(key, true);
@@ -145,7 +146,7 @@ export const normalizeMessageItem = async (
 
 export const normalizePublicMessageItem = (item: any, key: string) => {
   const content = item.content
-    ? decrypt(key, Buffer.from(item.content, 'hex')).toString()
+    ? CryptoJS.AES.decrypt(item.content, key).toString(CryptoJS.enc.Utf8)
     : '';
   if (item?.conversation_data) {
     item.conversation_data = normalizePublicMessageItem(
@@ -159,15 +160,22 @@ export const normalizePublicMessageItem = (item: any, key: string) => {
   };
 };
 
-export const normalizePublicMessageData = (messages: Array<any>) => {
-  return messages;
-  console.log('1XXX: ', 'Started', new Date().getTime());
-  const configs = store.getState()?.configs;
+export const normalizePublicMessageData = (
+  messages: Array<any>,
+  encryptMessageKey?: string,
+) => {
+  const configs: any = store.getState()?.configs;
   const {privateKey} = configs;
+  const decryptMessageKey = decrypt(
+    privateKey,
+    // eslint-disable-next-line no-undef
+    Buffer.from(encryptMessageKey || '', 'hex'),
+  );
   const res =
-    messages?.map?.(el => normalizePublicMessageItem(el, privateKey)) || [];
-  console.log('2XXX: ', 'End', new Date().getTime());
-  return res.filter(el => !!el.content || el?.message_attachment?.length > 0);
+    messages?.map?.(el =>
+      normalizePublicMessageItem(el, decryptMessageKey.toString()),
+    ) || [];
+  return res.filter(el => !!el.content || el?.message_attachments?.length > 0);
 };
 
 export const normalizeMessageData = async (

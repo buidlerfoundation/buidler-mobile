@@ -62,14 +62,10 @@ const MessageItem = ({item, sender, teamId, onLongPress}: MessageItemProps) => {
           </View>
         )}
         {(!!item.content && (
-          <RenderHTML
-            html={`<div class='message-text'>${normalizeMessageText(
-              item.content,
-            )}</div>`}
-          />
+          <RenderHTML html={normalizeMessageText(item.content)} />
         )) || <View style={{height: 8}} />}
         <MessagePhoto
-          attachments={item?.message_attachment || []}
+          attachments={item?.message_attachments || []}
           teamId={teamId}
         />
       </View>

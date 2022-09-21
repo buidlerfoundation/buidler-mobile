@@ -67,7 +67,7 @@ export const normalizeMessageText = (text: string, wrapParagraph?: boolean) => {
   if (wrapParagraph) {
     res = res.replace(/^([^<]*)([^<]*)$/gim, '<p>$1</p>');
   }
-  return `<div class='enable-user-select'>${res}</div>`;
+  return `<div class='message-text'>${res}</div>`;
 };
 
 export const normalizeUserName = (str: string) => {

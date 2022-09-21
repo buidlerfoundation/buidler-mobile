@@ -67,7 +67,15 @@ const ConversationScreen = () => {
     [],
   );
   useEffect(() => {
-    dispatch(getMessages(currentChannel.channel_id, 'Public', undefined, true));
+    dispatch(
+      getMessages(
+        currentChannel.channel_id,
+        'Public',
+        undefined,
+        undefined,
+        true,
+      ),
+    );
   }, [currentChannel.channel_id, dispatch]);
   const {colors} = useThemeColor();
   const onRemoveAttachment = useCallback(
