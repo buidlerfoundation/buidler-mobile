@@ -28,6 +28,8 @@ import IconCopy from '../assets/images/ic_copy.svg';
 import IconPrivate from '../assets/images/ic_private.svg';
 import LogoDarkSquare from '../assets/images/logo_dark_square.svg';
 import LogoLightSquare from '../assets/images/logo_light_square.svg';
+import IconStar from '../assets/images/ic_star.svg';
+import IconPublicChannel from '../assets/images/ic_public_channel.svg';
 
 export default {
   IconExpand,
@@ -60,4 +62,6 @@ export default {
   IconPrivate,
   LogoDarkSquare,
   LogoLightSquare,
+  IconStar,
+  IconPublicChannel,
 };

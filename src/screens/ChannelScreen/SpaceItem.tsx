@@ -1,13 +1,13 @@
-import React, {memo} from 'react';
+import React, {memo, useCallback, useMemo} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import Fonts from 'common/Fonts';
 import {Space} from 'models';
-import SVG from 'common/SVG';
-import Emoji from 'react-native-emoji';
-import FastImage from 'react-native-fast-image';
-import ImageHelper from 'helpers/ImageHelper';
 import useThemeColor from 'hook/useThemeColor';
-import {useCallback} from 'react';
+import SpaceIcon from 'components/SpaceIcon';
+import SVG from 'common/SVG';
+import Touchable from 'components/Touchable';
+import useAppDispatch from 'hook/useAppDispatch';
+import {actionTypes} from 'actions/actionTypes';
 
 type SpaceItemProps = {
   item: Space;
@@ -15,29 +15,21 @@ type SpaceItemProps = {
   isEmpty: boolean;
 };
 
-const SpaceItem = ({item, teamId, isEmpty}: SpaceItemProps) => {
+const SpaceItem = ({item, isEmpty}: SpaceItemProps) => {
+  const isCollapsed = useMemo(() => !item.isExpanded, [item.isExpanded]);
+  const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
-  const renderSpaceIcon = useCallback(() => {
-    if (item.space_image_url) {
-      return (
-        <FastImage
-          style={styles.logoSpace}
-          src={ImageHelper.normalizeImage(item.space_image_url, teamId)}
-          alt=""
-        />
-      );
-    }
-    if (item.space_emoji) {
-      return <Emoji name={item.space_emoji} style={styles.emojiIcon} />;
-    }
-    return (
-      <View style={styles.logoSpace}>
-        <SVG.LogoDarkSquare width={30} height={30} />
-      </View>
-    );
-  }, [item.space_emoji, item.space_image_url, teamId]);
+  const toggleSpace = useCallback(() => {
+    dispatch({
+      type: actionTypes.UPDATE_EXPAND_SPACE_ITEM,
+      payload: {
+        spaceId: item.space_id,
+        isExpand: isCollapsed,
+      },
+    });
+  }, [dispatch, isCollapsed, item.space_id]);
   return (
-    <View
+    <Touchable
       style={[
         styles.space,
         {
@@ -47,25 +39,39 @@ const SpaceItem = ({item, teamId, isEmpty}: SpaceItemProps) => {
         isEmpty && {
           borderBottomLeftRadius: 5,
           borderBottomRightRadius: 5,
+          paddingBottom: 5,
         },
-      ]}>
+      ]}
+      onPress={toggleSpace}>
       <View style={styles.groupHead}>
         <View
           style={[styles.logoSpaceWrapper, {backgroundColor: colors.border}]}>
-          {renderSpaceIcon()}
+          <SpaceIcon space={item} />
         </View>
-        <Text style={[styles.groupName, {color: colors.text}]}>
+        <Text
+          style={[
+            styles.groupName,
+            {color: isCollapsed ? colors.subtext : colors.text},
+          ]}
+          ellipsizeMode="tail"
+          numberOfLines={1}>
           {item.space_name}
         </Text>
+        {item.space_type === 'Private' && (
+          <View style={styles.badgeWrapper}>
+            <SVG.IconStar fill={item.icon_color} />
+          </View>
+        )}
       </View>
-    </View>
+    </Touchable>
   );
 };
 
 const styles = StyleSheet.create({
   space: {
     marginHorizontal: 10,
-    padding: 10,
+    paddingLeft: 10,
+    paddingTop: 5,
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
     borderWidth: 1,
@@ -78,22 +84,19 @@ const styles = StyleSheet.create({
   groupName: {
     fontFamily: Fonts.Bold,
     fontSize: 16,
-    lineHeight: 19,
-  },
-  emojiIcon: {fontSize: 20},
-  logoSpace: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    overflow: 'hidden',
+    lineHeight: 20,
+    marginHorizontal: 15,
+    flex: 1,
   },
   logoSpaceWrapper: {
     width: 30,
     height: 30,
     borderRadius: 8,
-    marginRight: 15,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  badgeWrapper: {
+    marginRight: 5,
   },
 });
 

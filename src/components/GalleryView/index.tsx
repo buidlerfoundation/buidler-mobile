@@ -16,7 +16,7 @@ import {
   Text,
 } from 'react-native';
 import ActionSheet from 'react-native-actionsheet';
-import CameraRoll from '@react-native-community/cameraroll';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import Touchable from 'components/Touchable';
 import PermissionHelper from 'helpers/PermissionHelper';
@@ -74,25 +74,27 @@ const GalleryView = ({
   const [pageInfo, setPageInfo] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [isLimited, setLimited] = useState(false);
-  const getData = useCallback(() => {
+  const getData = useCallback((after?: string) => {
     PermissionHelper.checkLimitPhotoIOS().then(res => setLimited(res));
     CameraRoll.getPhotos({
       first: 20,
-      after: pageInfo?.end_cursor,
+      after,
       assetType: 'Photos',
     })
       .then(res => {
-        setPhotos([...photos, ...res.edges]);
-        setPageInfo(res.page_info);
+        if (res.edges.length > 0) {
+          setPhotos(current => [...current, ...res.edges]);
+          setPageInfo(res.page_info);
+        }
       })
       .catch(e => console.log(e));
-  }, [pageInfo?.end_cursor, photos]);
+  }, []);
   useEffect(() => {
     if (isOpen) getData();
   }, [getData, isOpen]);
   const onEndReached = useCallback(() => {
     if (pageInfo?.has_next_page) {
-      getData();
+      getData(pageInfo?.has_next_page);
     }
   }, [getData, pageInfo?.has_next_page]);
   const onMorePress = useCallback(() => actionSheetRef.current?.show(), []);
@@ -114,7 +116,7 @@ const GalleryView = ({
         onEndReachedThreshold={0.5}
         onEndReached={onEndReached}
         renderItem={({item, index}) => {
-          if (index === 0) {
+          if (item.type === 'select-photo') {
             return (
               <Touchable
                 style={{

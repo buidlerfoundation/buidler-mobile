@@ -1,13 +1,13 @@
 import React from 'react';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import ScreenID from 'common/ScreenID';
-import ChannelScreen from 'screens/ChannelScreen';
+import ScreenID, {DrawerID} from 'common/ScreenID';
 import ConversationScreen from 'screens/ConversationScreen';
 import {View} from 'react-native';
 import {useSelector} from 'react-redux';
 import NavigationServices from 'services/NavigationServices';
 import ModalOtp from 'components/ModalOtp';
 import PinPostScreen from 'screens/PinPostScreen';
+import CommunityDrawer from './CommunityDrawer';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -36,7 +36,10 @@ const HomeStack = ({route}: HomeStackProps) => {
             // lazy: true,
           }
         }>
-        <Tab.Screen name={ScreenID.ChannelScreen} component={ChannelScreen} />
+        <Tab.Screen
+          name={DrawerID.CommunityDrawer}
+          component={CommunityDrawer}
+        />
         <Tab.Screen
           name={ScreenID.ConversationScreen}
           component={ConversationScreen}

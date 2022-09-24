@@ -16,3 +16,7 @@ export const StackID = {
   HomeStack: 'HomeStack',
   AuthStack: 'AuthStack',
 };
+
+export const DrawerID = {
+  CommunityDrawer: 'CommunityDrawer',
+};

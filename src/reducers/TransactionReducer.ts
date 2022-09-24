@@ -1,6 +1,6 @@
 import {actionTypes} from 'actions/actionTypes';
 import {AnyAction, Reducer} from 'redux';
-import {TransactionApiData} from 'renderer/models';
+import {TransactionApiData} from 'models';
 
 type TransactionReducerState = {
   data: Array<TransactionApiData>;

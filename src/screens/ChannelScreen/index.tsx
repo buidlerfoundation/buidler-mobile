@@ -1,8 +1,8 @@
 import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
-import {Community, Space} from 'models';
+import {Space} from 'models';
 import React, {memo, useCallback, useState} from 'react';
-import {View, FlatList, StyleSheet, Text, SectionList} from 'react-native';
+import {View, StyleSheet, Text, SectionList} from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import Fonts from 'common/Fonts';
 import MemberItem from './MemberItem';
@@ -14,12 +14,11 @@ import useSpaceChannel from 'hook/useSpaceChannel';
 import useAppSelector from 'hook/useAppSelector';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useTeamUserData from 'hook/useTeamUserData';
-import TeamItem from './TeamItem';
 import {useMemo} from 'react';
 import ChannelItem from './ChannelItem';
+import CommunityLogo from 'components/CommunityLogo';
 
-const ChannelScreen = () => {
-  const team = useAppSelector(state => state.user.team || []);
+const ChannelScreen = ({navigation}: any) => {
   const userData = useAppSelector(state => state.user.userData);
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
@@ -34,13 +33,6 @@ const ChannelScreen = () => {
   const user = useMemo(
     () => teamUserData?.find?.(u => u.user_id === userData.user_id),
     [teamUserData, userData.user_id],
-  );
-  const renderTeamItem = useCallback(
-    ({item}: {item: Community; index: number}) => {
-      const isActive = currentTeam.team_id === item.team_id;
-      return <TeamItem item={item} isActive={isActive} />;
-    },
-    [currentTeam.team_id],
   );
   const renderFooter = useCallback(() => {
     return (
@@ -102,7 +94,7 @@ const ChannelScreen = () => {
     }: {
       item: string;
       index: number;
-      section: {data: Array<string>};
+      section: {data: Array<string>; title: Space};
     }) => {
       const isActive = currentChannel.channel_id === item;
       return (
@@ -110,29 +102,41 @@ const ChannelScreen = () => {
           channelId={item}
           isActive={isActive}
           isLast={index === section.data.length - 1}
+          isCollapsed={!section.title.isExpanded}
         />
       );
     },
     [currentChannel.channel_id],
   );
+  const spaceData = useMemo(
+    () =>
+      spaceChannel.map(el => ({
+        data: el.channel_ids || [],
+        title: el,
+      })),
+    [spaceChannel],
+  );
+  const openDrawer = useCallback(() => {
+    navigation.openDrawer();
+  }, [navigation]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
       <View style={styles.mainView}>
-        <View
-          style={[styles.teamContainer, {backgroundColor: colors.background}]}>
-          <FlatList
-            data={team}
-            keyExtractor={item => item.team_id}
-            renderItem={renderTeamItem}
-          />
-        </View>
         <View style={styles.channelContainer}>
+          <View style={styles.communityContainer}>
+            <Touchable onPress={openDrawer}>
+              <CommunityLogo community={currentTeam} size={40} />
+            </Touchable>
+            <Text
+              style={[styles.communityTitle, {color: colors.text}]}
+              ellipsizeMode="tail"
+              numberOfLines={1}>
+              {currentTeam.team_display_name}
+            </Text>
+          </View>
           <SectionList
-            sections={spaceChannel.map(el => ({
-              data: el.channel_ids,
-              title: el,
-            }))}
+            sections={spaceData}
             renderSectionHeader={renderSectionHeader}
             stickySectionHeadersEnabled={false}
             keyExtractor={item => item}
@@ -140,8 +144,6 @@ const ChannelScreen = () => {
             ListHeaderComponent={<View style={{height: 10}} />}
             SectionSeparatorComponent={renderItemSeparate}
             renderItem={renderItem}
-            initialNumToRender={20}
-            windowSize={2}
           />
         </View>
       </View>
@@ -152,8 +154,18 @@ const ChannelScreen = () => {
 const styles = StyleSheet.create({
   container: {flex: 1, paddingTop: AppDimension.extraTop},
   mainView: {flexDirection: 'row', flex: 1},
-  teamContainer: {
-    width: 70,
+  communityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingLeft: 20,
+    paddingRight: 10,
+  },
+  communityTitle: {
+    marginHorizontal: 10,
+    fontFamily: Fonts.Bold,
+    fontSize: 20,
+    lineHeight: 24,
   },
   channelContainer: {
     flex: 1,

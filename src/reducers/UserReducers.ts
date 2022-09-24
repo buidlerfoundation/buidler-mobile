@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import {BalanceApiData, Channel, Community, Space, UserData} from 'models';
 import {AnyAction, Reducer} from 'redux';
+import {uniqBy} from 'lodash';
 
 interface MemberRoleData {
   data: Array<UserData>;
@@ -114,6 +115,21 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     defaultChannel;
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.UPDATE_EXPAND_SPACE_ITEM: {
+      return {
+        ...state,
+        spaceChannelMap: {
+          ...spaceChannelMap,
+          [currentTeamId]: spaceChannelMap[currentTeamId]?.map(el => {
+            if (el.space_id === payload.spaceId) {
+              el.isExpanded = payload.isExpand;
+              return {...el};
+            }
+            return el;
+          }),
+        },
+      };
+    }
     case actionTypes.UPDATE_LAST_CHANNEL: {
       const newLastChannel = channelMap?.[payload.communityId]?.find(
         el => el.channel_id === payload.channelId,

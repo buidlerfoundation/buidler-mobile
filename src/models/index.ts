@@ -101,6 +101,7 @@ export interface Space {
   space_background_color?: string;
   channel_ids: Array<string>;
   is_space_member: boolean;
+  isExpanded?: boolean;
 }
 
 export interface Community {

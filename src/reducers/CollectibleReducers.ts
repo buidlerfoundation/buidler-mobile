@@ -1,6 +1,6 @@
 import {actionTypes} from 'actions/actionTypes';
 import {AnyAction, Reducer} from 'redux';
-import {NFTCollectionDataApi} from 'renderer/models';
+import {NFTCollectionDataApi} from 'models';
 
 type CollectibleReducerState = {
   data: Array<NFTCollectionDataApi>;

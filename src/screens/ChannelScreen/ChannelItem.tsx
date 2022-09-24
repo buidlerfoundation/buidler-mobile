@@ -1,23 +1,29 @@
 import {setCurrentChannel} from 'actions/UserActions';
 import Fonts from 'common/Fonts';
 import ScreenID from 'common/ScreenID';
-import SVG from 'common/SVG';
+import ChannelIcon from 'components/ChannelIcon';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useChannel from 'hook/useChannel';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo, useMemo} from 'react';
 import {useCallback} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {GestureResponderEvent, StyleSheet, Text, View} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 
 type ChannelItemProps = {
   channelId: string;
   isActive: boolean;
   isLast: boolean;
+  isCollapsed?: boolean;
 };
 
-const ChannelItem = ({channelId, isActive, isLast}: ChannelItemProps) => {
+const ChannelItem = ({
+  channelId,
+  isActive,
+  isLast,
+  isCollapsed,
+}: ChannelItemProps) => {
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const channel = useChannel();
@@ -25,20 +31,48 @@ const ChannelItem = ({channelId, isActive, isLast}: ChannelItemProps) => {
     () => channel.find(el => el.channel_id === channelId),
     [channel, channelId],
   );
-  const handlePress = useCallback(() => {
-    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-    dispatch(setCurrentChannel(c));
-  }, [c, dispatch]);
-  const handleLongPress = useCallback(() => {
-    dispatch(setCurrentChannel(c));
-    NavigationServices.pushToScreen(ScreenID.TaskScreen);
-  }, [c, dispatch]);
+
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      e.stopPropagation();
+      NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+      dispatch(setCurrentChannel(c));
+    },
+    [c, dispatch],
+  );
+  const isUnSeen = useMemo(() => !c?.seen, [c?.seen]);
+  const isMuted = useMemo(
+    () => c?.notification_type === 'Muted',
+    [c?.notification_type],
+  );
+  const titleColor = useMemo(() => {
+    if (isMuted) return colors.activeBackground;
+    if (isUnSeen || isActive) return colors.text;
+    return colors.subtext;
+  }, [
+    colors.activeBackground,
+    colors.subtext,
+    colors.text,
+    isActive,
+    isMuted,
+    isUnSeen,
+  ]);
+  const hide = useMemo(
+    () => isCollapsed && !isActive && !isUnSeen,
+    [isActive, isCollapsed, isUnSeen],
+  );
+
   return (
     <View
       style={[
         styles.container,
         {backgroundColor: colors.background},
-        isLast && {borderBottomLeftRadius: 5, borderBottomRightRadius: 5},
+        isLast && {
+          borderBottomLeftRadius: 5,
+          borderBottomRightRadius: 5,
+          paddingBottom: 5,
+        },
+        hide && {display: 'none'},
       ]}>
       <Touchable
         style={[
@@ -47,22 +81,17 @@ const ChannelItem = ({channelId, isActive, isLast}: ChannelItemProps) => {
             backgroundColor: colors.activeBackground,
           },
         ]}
-        onPress={handlePress}
-        onLongPress={handleLongPress}>
+        onPress={handlePress}>
+        <ChannelIcon channel={c} color={titleColor} />
         <Text
           style={[
             styles.channelName,
             {
-              color: isActive || !c.seen ? colors.text : colors.subtext,
+              color: titleColor,
             },
-          ]}>
-          {c.channel_type === 'Private' ? (
-            <SVG.IconPrivate
-              fill={isActive || !c.seen ? colors.text : colors.subtext}
-            />
-          ) : (
-            '#'
-          )}{' '}
+          ]}
+          ellipsizeMode="tail"
+          numberOfLines={1}>
           {c.channel_name}
         </Text>
       </Touchable>
@@ -73,7 +102,6 @@ const ChannelItem = ({channelId, isActive, isLast}: ChannelItemProps) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 10,
-    paddingBottom: 10,
     marginHorizontal: 10,
   },
   channelItem: {
@@ -86,7 +114,8 @@ const styles = StyleSheet.create({
   channelName: {
     fontFamily: Fonts.SemiBold,
     fontSize: 16,
-    lineHeight: 19,
+    lineHeight: 20,
+    marginHorizontal: 10,
   },
 });
 

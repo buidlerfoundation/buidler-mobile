@@ -1,5 +1,5 @@
+import {Community} from 'models';
 import React from 'react';
-import {Community} from 'renderer/models';
 import useAppSelector from './useAppSelector';
 
 function useCurrentCommunity() {
