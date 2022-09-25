@@ -1,10 +1,11 @@
 import ImageHelper from 'helpers/ImageHelper';
 import {UserData} from 'models';
-import React, {useMemo, memo} from 'react';
+import React, {useMemo, memo, useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Blockies from 'components/Blockies';
 import useThemeColor from 'hook/useThemeColor';
+import {SvgUri} from 'react-native-svg';
 
 type AvatarViewProps = {
   user: UserData;
@@ -17,22 +18,42 @@ const AvatarView = ({user, size = 25}: AvatarViewProps) => {
     () => ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id),
     [user?.avatar_url, user?.user_id],
   );
-  return (
-    <View style={styles.container}>
-      {typeof data === 'string' ? (
+  const renderBody = useCallback(() => {
+    if (typeof data === 'string') {
+      if (data.includes('.svg')) {
+        return (
+          <View
+            style={{
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              overflow: 'hidden',
+            }}>
+            <SvgUri uri={data} width={size} height={size} />
+          </View>
+        );
+      }
+      return (
         <FastImage
           style={{width: size, height: size, borderRadius: size / 2}}
           source={{
             uri: data,
           }}
         />
-      ) : (
-        <Blockies
-          blockies={data.address}
-          size={8}
-          style={{width: size, height: size, borderRadius: size / 2}}
-        />
-      )}
+      );
+    }
+    return (
+      <Blockies
+        blockies={data.address}
+        size={8}
+        style={{width: size, height: size, borderRadius: size / 2}}
+      />
+    );
+  }, [data, size]);
+
+  return (
+    <View style={{width: size, height: size}}>
+      {renderBody()}
       {user.status === 'online' && (
         <View
           style={[
@@ -49,7 +70,6 @@ const AvatarView = ({user, size = 25}: AvatarViewProps) => {
 };
 
 const styles = StyleSheet.create({
-  container: {},
   onlineStatus: {
     width: 10,
     height: 10,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import ScreenID from 'common/ScreenID';
@@ -41,4 +41,4 @@ const AuthStack = () => {
   );
 };
 
-export default AuthStack;
+export default memo(AuthStack);

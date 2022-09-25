@@ -1,5 +1,6 @@
 import {actionTypes} from 'actions/actionTypes';
 import {sortPinPost} from 'helpers/TaskHelper';
+import {TaskData} from 'models';
 import {AnyAction, Reducer} from 'redux';
 
 type TaskReducerState = {

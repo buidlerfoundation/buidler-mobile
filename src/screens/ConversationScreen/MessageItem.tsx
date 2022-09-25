@@ -1,16 +1,14 @@
 import {MessageData, UserData} from 'models';
-import React, {useMemo, useCallback, memo} from 'react';
+import React, {useCallback, memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import FastImage from 'react-native-fast-image';
 import Fonts from 'common/Fonts';
 import MessagePhoto from './MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
 import {normalizeMessageText, normalizeUserName} from 'helpers/MessageHelper';
 import {messageFromNow} from 'utils/DateUtils';
-import ImageHelper from 'helpers/ImageHelper';
-import Blockies from 'components/Blockies';
 import useThemeColor from 'hook/useThemeColor';
 import Touchable from 'components/Touchable';
+import AvatarView from 'components/AvatarView';
 
 type MessageItemProps = {
   item: MessageData;
@@ -20,26 +18,7 @@ type MessageItemProps = {
 };
 
 const MessageItem = ({item, sender, teamId, onLongPress}: MessageItemProps) => {
-  console.log('Render Message');
   const {colors} = useThemeColor();
-  const data = useMemo(
-    () => ImageHelper.normalizeAvatar(sender?.avatar_url, sender?.user_id),
-    [sender?.avatar_url, sender?.user_id],
-  );
-  const Avatar = useMemo(
-    () =>
-      typeof data === 'string' ? (
-        <FastImage
-          source={{
-            uri: data,
-          }}
-          style={styles.avatar}
-        />
-      ) : (
-        <Blockies blockies={data.address} size={8} style={styles.avatar} />
-      ),
-    [data],
-  );
   const handleLongPress = useCallback(
     () => onLongPress?.(item),
     [item, onLongPress],
@@ -49,7 +28,11 @@ const MessageItem = ({item, sender, teamId, onLongPress}: MessageItemProps) => {
     <Touchable
       style={[styles.container, {marginTop: item.isHead ? 20 : 0}]}
       onLongPress={handleLongPress}>
-      {item.isHead ? Avatar : <View style={{width: 35}} />}
+      {item.isHead ? (
+        <AvatarView user={sender} size={35} />
+      ) : (
+        <View style={{width: 35}} />
+      )}
       <View style={styles.bodyMessage}>
         {item.isHead && (
           <View style={styles.nameWrapper}>

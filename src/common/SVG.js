@@ -30,6 +30,9 @@ import LogoDarkSquare from '../assets/images/logo_dark_square.svg';
 import LogoLightSquare from '../assets/images/logo_light_square.svg';
 import IconStar from '../assets/images/ic_star.svg';
 import IconPublicChannel from '../assets/images/ic_public_channel.svg';
+import IconSideMenu from '../assets/images/ic_side_menu.svg';
+import IconPin from '../assets/images/ic_pin.svg';
+import IconIPFSLock from '../assets/images/ic_ipfs_lock.svg';
 
 export default {
   IconExpand,
@@ -64,4 +67,7 @@ export default {
   LogoLightSquare,
   IconStar,
   IconPublicChannel,
+  IconSideMenu,
+  IconPin,
+  IconIPFSLock,
 };

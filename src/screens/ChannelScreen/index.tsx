@@ -17,8 +17,11 @@ import useTeamUserData from 'hook/useTeamUserData';
 import {useMemo} from 'react';
 import ChannelItem from './ChannelItem';
 import CommunityLogo from 'components/CommunityLogo';
+import {DrawerID} from 'common/ScreenID';
+import {useNavigation} from '@react-navigation/native';
 
-const ChannelScreen = ({navigation}: any) => {
+const ChannelScreen = () => {
+  const navigation = useNavigation();
   const userData = useAppSelector(state => state.user.userData);
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
@@ -117,8 +120,9 @@ const ChannelScreen = ({navigation}: any) => {
     [spaceChannel],
   );
   const openDrawer = useCallback(() => {
-    navigation.openDrawer();
+    navigation.getParent(DrawerID.CommunityDrawer).openDrawer();
   }, [navigation]);
+  const onMoveShouldSetResponder = useCallback(() => true, []);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -144,6 +148,7 @@ const ChannelScreen = ({navigation}: any) => {
             ListHeaderComponent={<View style={{height: 10}} />}
             SectionSeparatorComponent={renderItemSeparate}
             renderItem={renderItem}
+            onMoveShouldSetResponder={onMoveShouldSetResponder}
           />
         </View>
       </View>

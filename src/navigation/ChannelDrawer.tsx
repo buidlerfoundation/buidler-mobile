@@ -1,22 +1,19 @@
 import React, {memo, useCallback} from 'react';
 import {useWindowDimensions, View} from 'react-native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
-import {DrawerID, StackID} from 'common/ScreenID';
-import SideBarCommunity from 'components/SideBarCommunity';
+import ScreenID, {DrawerID} from 'common/ScreenID';
+import ChannelScreen from 'screens/ChannelScreen';
 import useThemeColor from 'hook/useThemeColor';
-import HomeStack from './HomeStack';
+import ConversationScreen from 'screens/ConversationScreen';
 const Drawer = createDrawerNavigator();
 
-const CommunityDrawer = () => {
+const ChannelDrawer = () => {
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
-  const drawerContent = useCallback(
-    props => <SideBarCommunity {...props} />,
-    [],
-  );
+  const drawerContent = useCallback(props => <ChannelScreen {...props} />, []);
   return (
     <Drawer.Navigator
-      id={DrawerID.CommunityDrawer}
+      id={DrawerID.ChannelDrawer}
       drawerContent={drawerContent}
       screenOptions={{
         header: () => <View />,
@@ -25,10 +22,14 @@ const CommunityDrawer = () => {
           backgroundColor: colors.backgroundHeader,
           width: width - 80,
         },
+        swipeEdgeWidth: width,
       }}>
-      <Drawer.Screen name={StackID.HomeStack} component={HomeStack} />
+      <Drawer.Screen
+        name={ScreenID.ConversationScreen}
+        component={ConversationScreen}
+      />
     </Drawer.Navigator>
   );
 };
 
-export default memo(CommunityDrawer);
+export default memo(ChannelDrawer);

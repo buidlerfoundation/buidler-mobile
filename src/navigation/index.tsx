@@ -1,30 +1,26 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import ScreenID, {StackID} from 'common/ScreenID';
+import ScreenID, {DrawerID, StackID} from 'common/ScreenID';
 import SplashScreen from 'screens/SplashScreen';
 import NavigationServices from 'services/NavigationServices';
-import HomeStack from './HomeStack';
-import {connect} from 'react-redux';
-import {ThemeType} from 'models';
-import themes from 'themes';
 import AuthStack from './AuthStack';
 import UnlockScreen from 'screens/UnlockScreen';
 import EnterOTP from 'screens/EnterOTP';
+import CommunityDrawer from './CommunityDrawer';
+import PinPostScreen from 'screens/PinPostScreen';
+import useThemeColor from 'hook/useThemeColor';
 
 const Stack = createNativeStackNavigator();
 
-type RootNavigatorProps = {
-  themeType: ThemeType;
-};
-
-const RootNavigator = ({themeType}: RootNavigatorProps) => {
+const RootNavigator = () => {
+  const theme = useThemeColor();
   return (
     <NavigationContainer
       ref={ref => (NavigationServices.navigator = ref)}
       onStateChange={NavigationServices.onNavigationStateChange}
-      theme={themes[themeType]}>
+      theme={theme}>
       <Stack.Navigator
         initialRouteName={ScreenID.SplashScreen}
         screenOptions={{
@@ -48,18 +44,19 @@ const RootNavigator = ({themeType}: RootNavigatorProps) => {
             animation: 'default',
           }}>
           <Stack.Screen name={ScreenID.EnterOTPScreen} component={EnterOTP} />
+          <Stack.Screen
+            name={ScreenID.PinPostScreen}
+            component={PinPostScreen}
+          />
         </Stack.Group>
-        <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
+        <Stack.Screen
+          name={DrawerID.CommunityDrawer}
+          component={CommunityDrawer}
+        />
         <Stack.Screen name={StackID.AuthStack} component={AuthStack} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
 
-const mapStateToProps = (state: any) => {
-  return {
-    themeType: state.configs.theme,
-  };
-};
-
-export default connect(mapStateToProps)(RootNavigator);
+export default memo(RootNavigator);

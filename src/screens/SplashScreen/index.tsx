@@ -1,4 +1,4 @@
-import ScreenID, {StackID} from 'common/ScreenID';
+import ScreenID, {DrawerID, StackID} from 'common/ScreenID';
 import React, {memo, useCallback, useEffect} from 'react';
 import {View, Platform} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
@@ -43,7 +43,7 @@ const SplashScreen = () => {
       }
       PushNotificationHelper.reset();
     }
-    NavigationServices.replace(StackID.HomeStack, params);
+    NavigationServices.replace(DrawerID.CommunityDrawer, params);
   }, [dispatch]);
   const initApp = useCallback(async () => {
     await uniqChannelPrivateKey();

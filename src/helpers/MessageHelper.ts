@@ -37,6 +37,43 @@ export const normalizeMessages = (messages: Array<any>) => {
   }, []);
 };
 
+export const normalizeMessageTextPlain = (
+  text: string,
+  messageReply?: boolean,
+  isEdited?: boolean,
+) => {
+  if (!text) return '';
+  let res = text
+    .replace(/^#### (.*$)/gim, '$1')
+    .replace(/^### (.*$)/gim, '$1')
+    .replace(/^## (.*$)/gim, '$1')
+    .replace(/^# (.*$)/gim, '$1')
+    .replace(/^> (.*$)/gim, '$1')
+    .replace(/\*\*(.*)\*\*/gim, '$1')
+    .replace(/\*(.*)\*/gim, '$1')
+    .replace(/!\[(.*?)\]\((.*?)\)/gim, '$1')
+    .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
+    .replace(/\n$/gim, '<br />');
+
+  if (messageReply) {
+    res = res.replace(/(<@)(.*?)(-)(.*?)(>)/gim, `@$2`);
+  } else {
+    res = res
+      .replace(
+        /((https?|ftps?):\/\/[^"<\s]+)(?![^<>]*>|[^"]*?<\/a)/gim,
+        "<a class='text-ellipsis' style='white-space: pre-line;' href='$1'>$1</a>",
+      )
+      .replace(/\$mention_location/g, `${window.location.origin}/channels/user`)
+      .replace(
+        /(<@)(.*?)(-)(.*?)(>)/gim,
+        `<a href="${window.location.origin}/channels/user/$4" class="mention-string">@$2</a>`,
+      );
+  }
+  return `<div class='message-text'>${res}${
+    isEdited ? ' <span class="edited-string">edited</span>' : ''
+  }</div>`;
+};
+
 export const normalizeMessageText = (text: string, wrapParagraph?: boolean) => {
   if (!text) return '';
   let res = text

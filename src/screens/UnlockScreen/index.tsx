@@ -10,7 +10,7 @@ import {useDispatch} from 'react-redux';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import {Team} from 'models';
 import NavigationServices from 'services/NavigationServices';
-import {StackID} from 'common/ScreenID';
+import {DrawerID} from 'common/ScreenID';
 import FastImage from 'react-native-fast-image';
 import Blockies from 'components/Blockies';
 import ImageHelper from 'helpers/ImageHelper';
@@ -52,7 +52,7 @@ const UnlockScreen = () => {
       }
       PushNotificationHelper.reset();
     }
-    NavigationServices.replace(StackID.HomeStack, params);
+    NavigationServices.replace(DrawerID.CommunityDrawer, params);
   }, [dispatch]);
   const checkPassword = useCallback(async () => {
     if (loading) return;

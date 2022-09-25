@@ -10,6 +10,7 @@ export default {
   BackupScreen: 'BackupScreen',
   ImportSeedPhraseScreen: 'ImportSeedPhraseScreen',
   EnterOTPScreen: 'EnterOTP',
+  PinPostScreen: 'PinPostScreen',
 };
 
 export const StackID = {
@@ -19,4 +20,5 @@ export const StackID = {
 
 export const DrawerID = {
   CommunityDrawer: 'CommunityDrawer',
+  ChannelDrawer: 'ChannelDrawer',
 };

@@ -26,16 +26,19 @@ const SideBarCommunity = ({navigation}: any) => {
     },
     [handlePress],
   );
+  const onMoveShouldSetResponder = useCallback(() => true, []);
   return (
     <View style={[styles.container]}>
       <Text style={[styles.title, {color: colors.text}]}>Community</Text>
       <FlatList
+        style={{flex: 1}}
         data={team}
         keyExtractor={item => item.team_id}
         renderItem={renderCommunityItem}
         ListHeaderComponent={<View style={{height: 10}} />}
         ListFooterComponent={<View style={{height: 10}} />}
         ItemSeparatorComponent={() => <View style={{height: 10}} />}
+        onMoveShouldSetResponder={onMoveShouldSetResponder}
       />
     </View>
   );
@@ -44,6 +47,7 @@ const SideBarCommunity = ({navigation}: any) => {
 const styles = StyleSheet.create({
   container: {
     paddingTop: AppDimension.extraTop,
+    flex: 1,
   },
   title: {
     fontFamily: Fonts.Bold,

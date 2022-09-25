@@ -1,22 +1,15 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import ScreenID, {DrawerID} from 'common/ScreenID';
-import ConversationScreen from 'screens/ConversationScreen';
 import {View} from 'react-native';
 import {useSelector} from 'react-redux';
 import NavigationServices from 'services/NavigationServices';
 import ModalOtp from 'components/ModalOtp';
-import PinPostScreen from 'screens/PinPostScreen';
-import CommunityDrawer from './CommunityDrawer';
+import ChannelDrawer from './ChannelDrawer';
 
 const Tab = createMaterialTopTabNavigator();
 
-type HomeStackProps = {
-  route: any;
-};
-
-const HomeStack = ({route}: HomeStackProps) => {
-  const {type} = route.params || {};
+const HomeStack = () => {
   const openOTP = useSelector((state: any) => state.configs.openOTP);
   const requestOtpCode = useSelector(
     (state: any) => state.configs.requestOtpCode,
@@ -27,24 +20,10 @@ const HomeStack = ({route}: HomeStackProps) => {
   return (
     <>
       <Tab.Navigator
-        initialRouteName={
-          type === 'task' ? ScreenID.TaskScreen : ScreenID.ConversationScreen
-        }
-        tabBar={() => <View />}
-        screenOptions={
-          {
-            // lazy: true,
-          }
-        }>
-        <Tab.Screen
-          name={DrawerID.CommunityDrawer}
-          component={CommunityDrawer}
-        />
-        <Tab.Screen
-          name={ScreenID.ConversationScreen}
-          component={ConversationScreen}
-        />
-        <Tab.Screen name={ScreenID.TaskScreen} component={PinPostScreen} />
+        initialRouteName={DrawerID.ChannelDrawer}
+        tabBarPosition="bottom"
+        tabBar={() => <View />}>
+        <Tab.Screen name={DrawerID.ChannelDrawer} component={ChannelDrawer} />
       </Tab.Navigator>
       {openOTP && !!requestOtpCode && (
         <ModalOtp isOpen={openOTP} otp={requestOtpCode} />
@@ -53,4 +32,4 @@ const HomeStack = ({route}: HomeStackProps) => {
   );
 };
 
-export default HomeStack;
+export default memo(HomeStack);

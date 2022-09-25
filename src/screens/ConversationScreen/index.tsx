@@ -4,11 +4,7 @@ import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
-import {
-  normalizeMessage,
-  normalizeMessages,
-  normalizeUserName,
-} from 'helpers/MessageHelper';
+import {normalizeMessage, normalizeMessages} from 'helpers/MessageHelper';
 import {MessageData} from 'models';
 import React, {memo, useEffect, useState, useMemo, useCallback} from 'react';
 import {
@@ -17,7 +13,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   SectionList,
-  Image,
 } from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
 import MessageInput from './MessageInput';
@@ -30,7 +25,6 @@ import {getUniqueId} from 'helpers/GenerateUUID';
 import {resizeImage} from 'helpers/ImageHelpers';
 import SocketUtils from 'utils/SocketUtils';
 import MenuMessage from './MenuMessage';
-import AvatarView from 'components/AvatarView';
 import {titleMessageFromNow} from 'utils/DateUtils';
 import useThemeColor from 'hook/useThemeColor';
 import useCurrentChannel from 'hook/useCurrentChannel';
@@ -41,8 +35,12 @@ import useAppDispatch from 'hook/useAppDispatch';
 import {getMessages} from 'actions/MessageActions';
 import useMessageData from 'hook/useMessageData';
 import {createTask} from 'actions/TaskActions';
+import ChannelIcon from 'components/ChannelIcon';
+import {useNavigation} from '@react-navigation/native';
+import ScreenID from 'common/ScreenID';
 
 const ConversationScreen = () => {
+  const navigation = useNavigation();
   const messageData = useMessageData();
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
@@ -211,45 +209,30 @@ const ConversationScreen = () => {
     setMessageEdit(selectedMessage);
     setSelectedMessage(null);
   }, [selectedMessage]);
+  const openSideMenu = useCallback(() => {
+    navigation.openDrawer();
+  }, [navigation]);
+  const onPinPress = useCallback(() => {
+    navigation.navigate(ScreenID.PinPostScreen);
+  }, [navigation]);
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom}>
       <View style={styles.container}>
         <View style={styles.header}>
-          {currentChannel.user ? (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginLeft: 5,
-              }}>
-              <AvatarView
-                user={teamUserData.find(
-                  u => u.user_id === currentChannel.user?.user_id,
-                )}
-                size={32}
-              />
-              <Text style={[styles.title, {color: colors.text}]}>
-                {normalizeUserName(currentChannel.user?.user_name)}
-              </Text>
-            </View>
-          ) : (
-            <Text style={[styles.title, {color: colors.text}]}>
-              {currentChannel.channel_type === 'Private' ? (
-                <Image source={require('assets/images/ic_private.png')} />
-              ) : (
-                '#'
-              )}{' '}
+          <Touchable onPress={openSideMenu}>
+            <SVG.IconSideMenu fill={colors.text} />
+          </Touchable>
+          <View style={styles.titleWrap}>
+            <ChannelIcon channel={currentChannel} color={colors.text} />
+            <Text
+              style={[styles.title, {color: colors.text}]}
+              ellipsizeMode="tail"
+              numberOfLines={1}>
               {currentChannel.channel_name}
             </Text>
-          )}
-          <Touchable
-            style={{
-              padding: 10,
-              height: 40,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <SVG.IconMore fill={colors.text} />
+          </View>
+          <Touchable onPress={onPinPress}>
+            <SVG.IconPin fill={colors.text} />
           </Touchable>
         </View>
         <View style={styles.body}>
@@ -353,14 +336,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    height: 42,
+  },
+  titleWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 15,
   },
   title: {
     fontFamily: Fonts.Bold,
     fontSize: 16,
     lineHeight: 19,
-    marginLeft: 10,
+    marginHorizontal: 5,
+    flex: 1,
   },
   body: {
     flex: 1,
