@@ -39,6 +39,7 @@ const SideBarCommunity = ({navigation}: any) => {
         ListFooterComponent={<View style={{height: 10}} />}
         ItemSeparatorComponent={() => <View style={{height: 10}} />}
         onMoveShouldSetResponder={onMoveShouldSetResponder}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );

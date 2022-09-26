@@ -94,9 +94,9 @@ const GalleryView = ({
   }, [getData, isOpen]);
   const onEndReached = useCallback(() => {
     if (pageInfo?.has_next_page) {
-      getData(pageInfo?.has_next_page);
+      getData(pageInfo?.end_cursor);
     }
-  }, [getData, pageInfo?.has_next_page]);
+  }, [getData, pageInfo?.end_cursor, pageInfo?.has_next_page]);
   const onMorePress = useCallback(() => actionSheetRef.current?.show(), []);
   const onSelect = useCallback(index => {
     if (index === 0) {

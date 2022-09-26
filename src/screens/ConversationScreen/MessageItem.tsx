@@ -98,7 +98,10 @@ const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
           )}
         </View>
       )}
-      <Touchable style={[styles.container]} onLongPress={handleLongPress}>
+      <Touchable
+        style={[styles.container]}
+        onLongPress={handleLongPress}
+        disabled>
         {showAvatar ? (
           <AvatarView user={sender} size={35} />
         ) : (

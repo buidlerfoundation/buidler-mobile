@@ -149,6 +149,7 @@ const ChannelScreen = () => {
             SectionSeparatorComponent={renderItemSeparate}
             renderItem={renderItem}
             onMoveShouldSetResponder={onMoveShouldSetResponder}
+            showsVerticalScrollIndicator={false}
           />
         </View>
       </View>

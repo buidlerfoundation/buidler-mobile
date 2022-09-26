@@ -8,7 +8,7 @@ import useChannel from 'hook/useChannel';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo, useMemo} from 'react';
 import {useCallback} from 'react';
-import {GestureResponderEvent, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 
 type ChannelItemProps = {
@@ -32,22 +32,19 @@ const ChannelItem = ({
     [channel, channelId],
   );
 
-  const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      e.stopPropagation();
-      NavigationServices.pushToScreen(ScreenID.ConversationScreen);
-      dispatch(setCurrentChannel(c));
-    },
-    [c, dispatch],
-  );
+  const handlePress = useCallback(() => {
+    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+    dispatch(setCurrentChannel(c));
+  }, [c, dispatch]);
   const isUnSeen = useMemo(() => !c?.seen, [c?.seen]);
   const isMuted = useMemo(
     () => c?.notification_type === 'Muted',
     [c?.notification_type],
   );
   const titleColor = useMemo(() => {
+    if (isActive) return colors.text;
     if (isMuted) return colors.activeBackground;
-    if (isUnSeen || isActive) return colors.text;
+    if (isUnSeen) return colors.text;
     return colors.subtext;
   }, [
     colors.activeBackground,

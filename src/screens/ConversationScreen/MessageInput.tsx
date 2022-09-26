@@ -135,6 +135,7 @@ const MessageInput = ({
       message.message_id = getUniqueId();
     }
     SocketUtils.sendMessage(message);
+    SocketUtils.generateId = null;
     setVal('');
     onClearAttachment?.();
   }, [
