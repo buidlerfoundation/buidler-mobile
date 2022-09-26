@@ -34,6 +34,9 @@ import IconSideMenu from '../assets/images/ic_side_menu.svg';
 import IconPin from '../assets/images/ic_pin.svg';
 import IconIPFSLock from '../assets/images/ic_ipfs_lock.svg';
 import IconPinReply from '../assets/images/ic_pin_reply.svg';
+import IconMessageReply from '../assets/images/ic_message_reply.svg';
+import IconBan from '../assets/images/ic_ban.svg';
+import IconReplyAttachment from '../assets/images/ic_reply_attachment.svg';
 
 export default {
   IconExpand,
@@ -72,4 +75,7 @@ export default {
   IconPin,
   IconIPFSLock,
   IconPinReply,
+  IconMessageReply,
+  IconBan,
+  IconReplyAttachment,
 };

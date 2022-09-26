@@ -13,7 +13,7 @@ import useThemeColor from 'hook/useThemeColor';
 import {TaskData, UserData} from 'models';
 import numeral from 'numeral';
 import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, ViewStyle} from 'react-native';
 import MessagePhoto from 'screens/ConversationScreen/MessagePhoto';
 import {lastReplyFromNow, messageFromNow} from 'utils/DateUtils';
 
@@ -65,9 +65,13 @@ const UserReply = ({data, totalSender}: UserReplyProps) => {
   );
 };
 
-type PinPostItemProps = {pinPost: TaskData};
+type PinPostItemProps = {
+  pinPost: TaskData;
+  embeds?: boolean;
+  style?: ViewStyle;
+};
 
-const PinPostItem = ({pinPost}: PinPostItemProps) => {
+const PinPostItem = ({pinPost, embeds, style}: PinPostItemProps) => {
   const contentRef = useRef();
   const [isMore, setIsMore] = useState(false);
   const community = useCurrentCommunity();
@@ -96,7 +100,7 @@ const PinPostItem = ({pinPost}: PinPostItemProps) => {
   const onPinPostPress = useCallback(() => {}, []);
   if (!creator) return null;
   return (
-    <Touchable style={styles.container} onPress={onPinPostPress}>
+    <Touchable style={[styles.container, style]} onPress={onPinPostPress}>
       <View style={styles.header}>
         <AvatarView user={creator} size={20} />
         <View style={styles.userNameWrap}>
@@ -106,12 +110,19 @@ const PinPostItem = ({pinPost}: PinPostItemProps) => {
             numberOfLines={1}>
             {creator.user_name}
           </Text>
-          <Text style={[styles.createdAt, {color: colors.subtext}]}>
-            {messageFromNow(pinPost.message_created_at)}
-          </Text>
+          {!embeds && (
+            <Text style={[styles.createdAt, {color: colors.subtext}]}>
+              {messageFromNow(pinPost.message_created_at)}
+            </Text>
+          )}
         </View>
         {isIPFS && <SVG.IconIPFSLock fill={colors.mention} />}
       </View>
+      {embeds && (
+        <Text style={[styles.createdAt, {color: colors.subtext, marginTop: 5}]}>
+          {messageFromNow(pinPost.message_created_at)}
+        </Text>
+      )}
       {!!pinPost.content && (
         <View
           ref={contentRef}
@@ -119,7 +130,10 @@ const PinPostItem = ({pinPost}: PinPostItemProps) => {
           onLayout={onContentLayout}>
           <RenderHTML
             html={normalizeMessageTextPlain(pinPost.content)}
-            pinPostItem
+            defaultTextProps={{
+              ellipsizeMode: 'tail',
+              numberOfLines: 5,
+            }}
           />
           {isMore && (
             <Text style={[styles.viewMore, {color: colors.subtext}]}>
@@ -133,10 +147,12 @@ const PinPostItem = ({pinPost}: PinPostItemProps) => {
         attachments={pinPost.task_attachments}
         teamId={community.team_id}
       />
-      <PinChannelView
-        channels={pinPost.channels}
-        style={styles.attachmentWrap}
-      />
+      {!embeds && (
+        <PinChannelView
+          channels={pinPost.channels}
+          style={styles.attachmentWrap}
+        />
+      )}
       <ReactView style={styles.attachmentWrap} reacts={reacts} />
       {pinPost.total_messages > 0 && (
         <View style={styles.replyWrap}>
@@ -160,6 +176,11 @@ const PinPostItem = ({pinPost}: PinPostItemProps) => {
           </View>
         </View>
       )}
+      {embeds && (
+        <Text style={[styles.viewPost, {color: colors.mention}]}>
+          View post
+        </Text>
+      )}
     </Touchable>
   );
 };
@@ -174,6 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     marginHorizontal: 10,
+    flex: 1,
   },
   userName: {
     marginRight: 8,
@@ -236,6 +258,12 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1,
+  },
+  viewPost: {
+    fontFamily: Fonts.SemiBold,
+    fontSize: 16,
+    lineHeight: 26,
+    marginTop: 15,
   },
 });
 

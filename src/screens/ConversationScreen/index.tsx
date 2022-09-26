@@ -90,13 +90,12 @@ const ConversationScreen = () => {
       return (
         <MessageItem
           item={item}
-          sender={teamUserData.find(el => el.user_id === item.sender_id)}
           teamId={currentTeam.team_id}
           onLongPress={openMenuMessage}
         />
       );
     },
-    [currentTeam.team_id, openMenuMessage, teamUserData],
+    [currentTeam.team_id, openMenuMessage],
   );
   const renderFooter = useCallback(
     ({section: {title}}) => (

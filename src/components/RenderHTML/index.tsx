@@ -1,16 +1,16 @@
 import Fonts from 'common/Fonts';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo} from 'react';
-import {useWindowDimensions, Linking} from 'react-native';
+import {useWindowDimensions, Linking, TextProps} from 'react-native';
 import Html, {defaultSystemFonts} from 'react-native-render-html';
 
 type RenderHTMLProps = {
   html: string;
   onLinkPress?: () => void;
-  pinPostItem?: boolean;
+  defaultTextProps?: TextProps;
 };
 
-const RenderHTML = ({html, onLinkPress, pinPostItem}: RenderHTMLProps) => {
+const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
   const {width} = useWindowDimensions();
   const {colors} = useThemeColor();
   return (
@@ -30,14 +30,7 @@ const RenderHTML = ({html, onLinkPress, pinPostItem}: RenderHTMLProps) => {
           textDecorationLine: 'none',
         },
       }}
-      defaultTextProps={
-        pinPostItem
-          ? {
-              ellipsizeMode: 'tail',
-              numberOfLines: 5,
-            }
-          : {}
-      }
+      defaultTextProps={defaultTextProps}
       renderersProps={{
         a: {
           onPress: (_, href) => {
@@ -60,13 +53,26 @@ const RenderHTML = ({html, onLinkPress, pinPostItem}: RenderHTMLProps) => {
           lineHeight: 26,
           color: colors.text,
         },
+        'edited-string': {
+          fontFamily: Fonts.Medium,
+          fontSize: 12,
+          lineHeight: 20,
+          color: colors.subtext,
+        },
         'message-text': {
           fontFamily: Fonts.Medium,
           fontSize: 16,
           lineHeight: 26,
-          marginTop: 8,
+          marginTop: 5,
           color: colors.text,
           whiteSpace: 'pre',
+        },
+        'message-text-reply': {
+          marginLeft: 8,
+          fontFamily: Fonts.Medium,
+          fontSize: 14,
+          lineHeight: 22,
+          color: colors.lightText,
         },
         'message-reply-text': {
           marginHorizontal: 10,

@@ -56,7 +56,7 @@ export const normalizeMessageTextPlain = (
     .replace(/\n$/gim, '<br />');
 
   if (messageReply) {
-    res = res.replace(/(<@)(.*?)(-)(.*?)(>)/gim, `@$2`);
+    res = res.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2');
   } else {
     res = res
       .replace(
@@ -72,20 +72,39 @@ export const normalizeMessageTextPlain = (
         '<a href="https://community.buidler.app/channels/user/$4" class="mention-string">@$2</a>',
       );
   }
-  return `<div class='message-text'>${res}${
+  return `<div class='${
+    messageReply ? 'message-text-reply' : 'message-text'
+  }'>${res}${
     isEdited ? ' <span class="edited-string">edited</span>' : ''
   }</div>`;
 };
 
-export const normalizeMessageText = (text: string, wrapParagraph?: boolean) => {
+export const normalizeMessageText = (
+  text: string,
+  wrapParagraph?: boolean,
+  messageEdit?: boolean,
+  isEdited?: boolean,
+) => {
   if (!text) return '';
+  if (messageEdit) {
+    return text
+      .replace(
+        /(<@)(.*?)(-)(.*?)(>)/gim,
+        '<a href="https://community.buidler.app/channels/user/$4" class="mention-string">@$2</a>',
+      )
+      .replace(/href=".*?\/channels\/user/g, 'href="$mention_location');
+  }
   let res = text
     .replace(/<br>/gim, '\n')
+    .replace(/^#### (.*$)(\n)/gim, '<h4>$1</h4>')
     .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+    .replace(/^### (.*$)(\n)/gim, '<h3>$1</h3>')
     .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)(\n)/gim, '<h2>$1</h2>')
     .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)(\n)/gim, '<h1>$1</h1>')
     .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-    .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+    .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
     .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
     .replace(/\*(.*)\*/gim, '<i>$1</i>')
     .replace(
@@ -96,17 +115,23 @@ export const normalizeMessageText = (text: string, wrapParagraph?: boolean) => {
     .replace(/\n$/gim, '<br />')
     .replace(
       /((https?|ftps?):\/\/[^"<\s]+)(?![^<>]*>|[^"]*?<\/a)/gim,
-      "<a onclick='event.stopPropagation();' target='_blank' href='$1'>$1</a>",
+      "<a href='$1'>$1</a>",
+    )
+    .replace(
+      /\$mention_location/g,
+      'https://community.buidler.app/channels/user',
     )
     .replace(
       /(<@)(.*?)(-)(.*?)(>)/gim,
-      '<a href="/channels/user/$4" class="mention-string">@$2</a>',
+      '<a href="https://community.buidler.app/channels/user/$4" class="mention-string">@$2</a>',
     );
 
   if (wrapParagraph) {
     res = res.replace(/^([^<]*)([^<]*)$/gim, '<p>$1</p>');
   }
-  return `<div class='message-text'>${res}</div>`;
+  return `<div class='message-text'>${res}${
+    isEdited ? ' <span class="edited-string">edited</span>' : ''
+  }</div>`;
 };
 
 export const normalizeUserName = (str: string) => {
