@@ -27,6 +27,12 @@ const PinPostScreen = () => {
   const renderPinPost = useCallback(({item}: {item: TaskData}) => {
     return <PinPostItem pinPost={item} />;
   }, []);
+  const renderSeparator = useCallback(
+    () => (
+      <View style={[styles.ppSeparate, {backgroundColor: colors.border}]} />
+    ),
+    [colors.border],
+  );
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -48,6 +54,7 @@ const PinPostScreen = () => {
           data={pinPosts}
           keyExtractor={item => item.task_id}
           renderItem={renderPinPost}
+          ItemSeparatorComponent={renderSeparator}
         />
       </View>
     </View>
@@ -80,6 +87,10 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
+  },
+  ppSeparate: {
+    height: 1,
+    marginVertical: 30,
   },
 });
 export default memo(PinPostScreen);

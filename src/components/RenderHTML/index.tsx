@@ -7,9 +7,10 @@ import Html, {defaultSystemFonts} from 'react-native-render-html';
 type RenderHTMLProps = {
   html: string;
   onLinkPress?: () => void;
+  pinPostItem?: boolean;
 };
 
-const RenderHTML = ({html, onLinkPress}: RenderHTMLProps) => {
+const RenderHTML = ({html, onLinkPress, pinPostItem}: RenderHTMLProps) => {
   const {width} = useWindowDimensions();
   const {colors} = useThemeColor();
   return (
@@ -29,12 +30,20 @@ const RenderHTML = ({html, onLinkPress}: RenderHTMLProps) => {
           textDecorationLine: 'none',
         },
       }}
+      defaultTextProps={
+        pinPostItem
+          ? {
+              ellipsizeMode: 'tail',
+              numberOfLines: 5,
+            }
+          : {}
+      }
       renderersProps={{
         a: {
           onPress: (_, href) => {
             onLinkPress?.();
-            if (href.includes('?user_id=')) {
-              const userId = href.split('?user_id=')?.[1];
+            if (href.includes('channels/user/')) {
+              const userId = href.split('channels/user/')?.[1];
               if (userId) {
                 // Direct Message
               }
@@ -57,6 +66,7 @@ const RenderHTML = ({html, onLinkPress}: RenderHTMLProps) => {
           lineHeight: 26,
           marginTop: 8,
           color: colors.text,
+          whiteSpace: 'pre',
         },
         'message-reply-text': {
           marginHorizontal: 10,

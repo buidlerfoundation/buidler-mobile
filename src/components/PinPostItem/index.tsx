@@ -2,17 +2,23 @@ import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
 import RenderHTML from 'components/RenderHTML';
+import Touchable from 'components/Touchable';
 import {normalizeMessageTextPlain} from 'helpers/MessageHelper';
+import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useTeamUserData from 'hook/useTeamUserData';
 import useThemeColor from 'hook/useThemeColor';
 import {TaskData} from 'models';
-import React, {memo, useMemo} from 'react';
+import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
+import MessagePhoto from 'screens/ConversationScreen/MessagePhoto';
 import {messageFromNow} from 'utils/DateUtils';
 
 type PinPostItemProps = {pinPost: TaskData};
 
 const PinPostItem = ({pinPost}: PinPostItemProps) => {
+  const contentRef = useRef();
+  const [isMore, setIsMore] = useState(false);
+  const community = useCurrentCommunity();
   const teamUserData = useTeamUserData();
   const {colors} = useThemeColor();
   const creator = useMemo(
@@ -20,8 +26,14 @@ const PinPostItem = ({pinPost}: PinPostItemProps) => {
     [pinPost.message_sender_id, teamUserData],
   );
   const isIPFS = useMemo(() => !!pinPost.cid, [pinPost.cid]);
+  const onContentLayout = useCallback(() => {
+    contentRef.current.measure((ox, oy, w, h) => {
+      setIsMore(h > 130);
+    });
+  }, []);
+  const onPinPostPress = useCallback(() => {}, []);
   return (
-    <View style={styles.container}>
+    <Touchable style={styles.container} onPress={onPinPostPress}>
       <View style={styles.header}>
         <AvatarView user={creator} size={20} />
         <View style={styles.userNameWrap}>
@@ -37,10 +49,31 @@ const PinPostItem = ({pinPost}: PinPostItemProps) => {
         </View>
         {isIPFS && <SVG.IconIPFSLock fill={colors.mention} />}
       </View>
-      <View style={styles.content}>
-        <RenderHTML html={normalizeMessageTextPlain(pinPost.content)} />
-      </View>
-    </View>
+      {!!pinPost.content && (
+        <View
+          ref={contentRef}
+          style={styles.content}
+          onLayout={onContentLayout}>
+          <RenderHTML
+            html={normalizeMessageTextPlain(pinPost.content)}
+            pinPostItem
+          />
+          {isMore && (
+            <Text style={[styles.viewMore, {color: colors.subtext}]}>
+              View more
+            </Text>
+          )}
+        </View>
+      )}
+      {pinPost.task_attachments.length > 0 && (
+        <View style={styles.attachmentWrap}>
+          <MessagePhoto
+            attachments={pinPost.task_attachments}
+            teamId={community.team_id}
+          />
+        </View>
+      )}
+    </Touchable>
   );
 };
 
@@ -68,6 +101,14 @@ const styles = StyleSheet.create({
   },
   content: {
     marginTop: 8,
+  },
+  attachmentWrap: {
+    marginTop: 5,
+  },
+  viewMore: {
+    fontSize: 16,
+    lineHeight: 26,
+    fontFamily: Fonts.SemiBold,
   },
 });
 

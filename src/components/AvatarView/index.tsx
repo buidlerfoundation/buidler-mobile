@@ -28,6 +28,7 @@ const AvatarView = ({user, size = 25}: AvatarViewProps) => {
               height: size,
               borderRadius: size / 2,
               overflow: 'hidden',
+              backgroundColor: colors.border,
             }}>
             <SvgUri uri={data} width={size} height={size} />
           </View>
@@ -35,7 +36,12 @@ const AvatarView = ({user, size = 25}: AvatarViewProps) => {
       }
       return (
         <FastImage
-          style={{width: size, height: size, borderRadius: size / 2}}
+          style={{
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: colors.border,
+          }}
           source={{
             uri: data,
           }}
@@ -46,10 +52,15 @@ const AvatarView = ({user, size = 25}: AvatarViewProps) => {
       <Blockies
         blockies={data.address}
         size={8}
-        style={{width: size, height: size, borderRadius: size / 2}}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: colors.border,
+        }}
       />
     );
-  }, [data, size]);
+  }, [colors.border, data, size]);
 
   return (
     <View style={{width: size, height: size}}>
