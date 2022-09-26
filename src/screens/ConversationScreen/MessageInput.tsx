@@ -304,7 +304,7 @@ const MessageInput = ({
             onChangeText={handleChangeText}
             keyboardAppearance="dark"
           />
-          {!!val && (
+          {(!!val || attachments.length > 0) && (
             <Touchable style={{padding: 5}} onPress={onSend}>
               <SVG.IconArrowSend />
             </Touchable>

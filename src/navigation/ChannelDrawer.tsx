@@ -23,6 +23,7 @@ const ChannelDrawer = () => {
           width: width - 80,
         },
         swipeEdgeWidth: width,
+        swipeMinDistance: 0.1,
       }}>
       <Drawer.Screen
         name={ScreenID.ConversationScreen}
