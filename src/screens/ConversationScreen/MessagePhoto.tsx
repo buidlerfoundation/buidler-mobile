@@ -6,7 +6,14 @@ import Touchable from 'components/Touchable';
 import ImageHelper from 'helpers/ImageHelper';
 import {AttachmentData} from 'models';
 import React, {memo, useCallback} from 'react';
-import {View, StyleSheet, Text, Linking, Platform} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Linking,
+  Platform,
+  ViewStyle,
+} from 'react-native';
 import Video from 'react-native-video';
 import useThemeColor from 'hook/useThemeColor';
 
@@ -66,9 +73,10 @@ const AttachmentItem = ({att, onPress, teamId}: AttachmentItemProps) => {
 type MessagePhotoProps = {
   attachments: Array<AttachmentData>;
   teamId: string;
+  style?: ViewStyle;
 };
 
-const MessagePhoto = ({attachments, teamId}: MessagePhotoProps) => {
+const MessagePhoto = ({attachments, teamId, style}: MessagePhotoProps) => {
   const onFilePress = useCallback(
     (att: AttachmentData) => {
       Linking.openURL(
@@ -77,8 +85,9 @@ const MessagePhoto = ({attachments, teamId}: MessagePhotoProps) => {
     },
     [teamId],
   );
+  if (!attachments || attachments.length === 0) return null;
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       {attachments.map(att => {
         return (
           <AttachmentItem

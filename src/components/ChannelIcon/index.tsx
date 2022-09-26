@@ -10,14 +10,21 @@ import FastImage from 'react-native-fast-image';
 type ChannelIconProps = {
   channel: Channel;
   color: string;
+  size?: number;
+  emojiSize?: number;
 };
 
-const ChannelIcon = ({channel, color}: ChannelIconProps) => {
+const ChannelIcon = ({
+  channel,
+  color,
+  size = 20,
+  emojiSize = 16,
+}: ChannelIconProps) => {
   const currentCommunity = useCurrentCommunity();
   if (channel?.channel_image_url) {
     return (
       <FastImage
-        style={styles.channelIcon}
+        style={[styles.channelIcon, {width: size, height: size}]}
         source={{
           uri: ImageHelper.normalizeImage(
             channel.channel_image_url,
@@ -28,22 +35,20 @@ const ChannelIcon = ({channel, color}: ChannelIconProps) => {
     );
   }
   if (channel?.channel_emoji) {
-    return <Emoji name={channel.channel_emoji} style={{fontSize: 16}} />;
+    return <Emoji name={channel.channel_emoji} style={{fontSize: emojiSize}} />;
   }
   if (channel.channel_type === 'Private') {
     return (
-      <View style={styles.channelIcon}>
+      <View style={[styles.channelIcon, {width: size, height: size}]}>
         <SVG.IconPrivate fill={color} />
       </View>
     );
   }
-  return <SVG.IconPublicChannel fill={color} />;
+  return <SVG.IconPublicChannel width={size} height={size} fill={color} />;
 };
 
 const styles = StyleSheet.create({
   channelIcon: {
-    width: 20,
-    height: 20,
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',

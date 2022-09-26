@@ -5,14 +5,15 @@ import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Blockies from 'components/Blockies';
 import useThemeColor from 'hook/useThemeColor';
-import {SvgUri} from 'react-native-svg';
+import SvgUri from 'components/SvgUri';
 
 type AvatarViewProps = {
   user: UserData;
   size?: number;
+  withStatus?: boolean;
 };
 
-const AvatarView = ({user, size = 25}: AvatarViewProps) => {
+const AvatarView = ({user, size = 25, withStatus = true}: AvatarViewProps) => {
   const {colors} = useThemeColor();
   const data = useMemo(
     () => ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id),
@@ -65,7 +66,7 @@ const AvatarView = ({user, size = 25}: AvatarViewProps) => {
   return (
     <View style={{width: size, height: size}}>
       {renderBody()}
-      {user.status === 'online' && (
+      {withStatus && user.status === 'online' && (
         <View
           style={[
             styles.onlineStatus,

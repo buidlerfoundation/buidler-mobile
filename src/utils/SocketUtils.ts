@@ -765,10 +765,7 @@ class SocketUtil {
         type: actionTypes.CREATE_TASK_SUCCESS,
         payload: {
           res: data,
-          channelId:
-            currentChannel?.user?.user_id === data?.assignee_id
-              ? currentChannel?.channel_id
-              : data?.channel?.[0]?.channel_id,
+          channelId: data?.channels?.[0]?.channel_id,
         },
       });
     });
@@ -806,18 +803,9 @@ class SocketUtil {
         type: actionTypes.UPDATE_TASK_REQUEST,
         payload: {
           taskId: data.task_id,
-          data: {
-            [data.updated_key]: data[data.updated_key],
-            comment_count: data.comment_count,
-          },
+          data,
           channelId:
-            currentChannel?.user?.direct_channel ||
-            data?.channel?.[0]?.channel_id,
-          channelUserId:
-            data.updated_key === 'assignee_id' &&
-            currentChannel?.user?.direct_channel
-              ? currentChannel?.user?.user_id
-              : null,
+            currentChannel.channel_id || data?.channels?.[0]?.channel_id,
         },
       });
     });

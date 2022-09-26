@@ -33,6 +33,7 @@ import IconPublicChannel from '../assets/images/ic_public_channel.svg';
 import IconSideMenu from '../assets/images/ic_side_menu.svg';
 import IconPin from '../assets/images/ic_pin.svg';
 import IconIPFSLock from '../assets/images/ic_ipfs_lock.svg';
+import IconPinReply from '../assets/images/ic_pin_reply.svg';
 
 export default {
   IconExpand,
@@ -70,4 +71,5 @@ export default {
   IconSideMenu,
   IconPin,
   IconIPFSLock,
+  IconPinReply,
 };

@@ -246,8 +246,9 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
         task,
         message_attachments,
         plain_text,
+        updatedAt,
       } = data;
-      const newMessageData = state.messageData;
+      const newMessageData = {...state.messageData};
       if (newMessageData[entity_id]) {
         newMessageData[entity_id] = {
           ...newMessageData[entity_id],
@@ -263,6 +264,8 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
                     }
                   : null;
               msg.message_attachments = message_attachments;
+              msg.updatedAt = updatedAt;
+              return {...msg};
             }
             if (msg.reply_message_id === message_id && msg.conversation_data) {
               msg.conversation_data = {
@@ -271,7 +274,9 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
                 plain_text,
                 task,
                 message_attachments,
+                updatedAt,
               };
+              return {...msg};
             }
             return msg;
           }),
@@ -279,7 +284,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
       }
       return {
         ...state,
-        messageData: {...newMessageData},
+        messageData: newMessageData,
       };
     }
     case actionTypes.EMIT_NEW_MESSAGE: {

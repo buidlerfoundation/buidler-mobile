@@ -12,6 +12,7 @@ type ReactViewProps = {
 
 const ReactView = ({style, reacts}: ReactViewProps) => {
   const {colors} = useThemeColor();
+  if (!reacts || reacts.length === 0) return null;
   return (
     <View style={[styles.container, style]}>
       {reacts.map(react => (
@@ -25,11 +26,11 @@ const ReactView = ({style, reacts}: ReactViewProps) => {
                 : colors.activeBackgroundLight,
             },
           ]}>
-          <Emoji name={react.reactName} />
+          <Emoji name={react.reactName} style={styles.emoji} />
           <Text
             style={[
               styles.reactCount,
-              {color: react.isReacted ? colors.text : colors.subtext},
+              {color: react.isReacted ? colors.text : colors.lightText},
             ]}>
             {react.count}
           </Text>
@@ -49,15 +50,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 4,
     marginRight: 10,
-    marginBottom: 10,
+    marginTop: 10,
     borderRadius: 5,
   },
   reactCount: {
-    fontSize: 16,
-    fontFamily: Fonts.Medium,
-    lineHeight: 19,
+    fontSize: 14,
+    fontFamily: Fonts.SemiBold,
+    lineHeight: 22,
+    marginLeft: 5,
+  },
+  emoji: {
+    fontSize: 14,
+    lineHeight: 22,
   },
 });
 

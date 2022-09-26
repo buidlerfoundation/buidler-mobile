@@ -13,6 +13,7 @@ declare module '@react-navigation/native' {
       card: string;
       text: string;
       subtext: string;
+      lightText: string;
       separator: string;
       border: string;
       darkText: string;

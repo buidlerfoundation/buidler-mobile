@@ -15,6 +15,16 @@ export const fromNow = (date: any) => {
   return time;
 };
 
+export const lastReplyFromNow = (date: any) => {
+  const time = moment(new Date(date)).calendar(null, {
+    sameDay: '[Today at] HH:mm',
+    lastDay: '[Yesterday]',
+    lastWeek: 'MM-DD-YYYY',
+    sameElse: 'MM-DD-YYYY',
+  });
+  return time;
+};
+
 export const messageFromNow = (date: any) => {
   const time = moment(new Date(date)).calendar(null, {
     sameDay: '[Today at] HH:mm',

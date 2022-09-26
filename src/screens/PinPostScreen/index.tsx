@@ -1,4 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
+import {actionTypes} from 'actions/actionTypes';
 import {getTasks} from 'actions/TaskActions';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
@@ -7,12 +8,17 @@ import ChannelIcon from 'components/ChannelIcon';
 import PinPostItem from 'components/PinPostItem';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
+import useAppSelector from 'hook/useAppSelector';
 import useCurrentChannel from 'hook/useCurrentChannel';
+import usePinPostData from 'hook/usePinPostData';
 import usePinPosts from 'hook/usePinPosts';
 import useThemeColor from 'hook/useThemeColor';
 import {TaskData} from 'models';
 import React, {memo, useCallback, useEffect} from 'react';
 import {FlatList, StyleSheet, Text, View} from 'react-native';
+import {createLoadMoreSelector} from 'reducers/selectors';
+
+const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
 const PinPostScreen = () => {
   const dispatch = useAppDispatch();
@@ -20,6 +26,8 @@ const PinPostScreen = () => {
   const navigation = useNavigation();
   const currentChannel = useCurrentChannel();
   const {colors} = useThemeColor();
+  const loadMoreTask = useAppSelector(state => taskMoreSelector(state));
+  const {canMoreTask} = usePinPostData();
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
   useEffect(() => {
     dispatch(getTasks(currentChannel.channel_id));
@@ -33,6 +41,17 @@ const PinPostScreen = () => {
     ),
     [colors.border],
   );
+  const onEndReached = useCallback(() => {
+    if (loadMoreTask || !canMoreTask) return;
+    const last = pinPosts[pinPosts.length - 1];
+    dispatch(getTasks(currentChannel.channel_id, last.message_created_at));
+  }, [
+    canMoreTask,
+    currentChannel.channel_id,
+    dispatch,
+    loadMoreTask,
+    pinPosts,
+  ]);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -55,6 +74,12 @@ const PinPostScreen = () => {
           keyExtractor={item => item.task_id}
           renderItem={renderPinPost}
           ItemSeparatorComponent={renderSeparator}
+          ListHeaderComponent={<View style={{height: 20}} />}
+          ListFooterComponent={
+            <View style={{height: 30 + AppDimension.extraBottom}} />
+          }
+          onEndReachedThreshold={0.5}
+          onEndReached={onEndReached}
         />
       </View>
     </View>
