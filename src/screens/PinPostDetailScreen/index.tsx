@@ -125,9 +125,16 @@ const PinPostDetailScreen = () => {
     },
     [community.team_id, toggleGallery],
   );
+  const onKeyboardShow = useCallback(() => {
+    setTimeout(() => {
+      listRef.current.scrollToIndex({index: 0});
+    }, 300);
+  }, []);
   if (!pinPost.data) return null;
   return (
-    <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom}>
+    <KeyboardLayout
+      extraPaddingBottom={-AppDimension.extraBottom}
+      onKeyboardShow={onKeyboardShow}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Touchable onPress={onBack}>
@@ -175,6 +182,7 @@ const PinPostDetailScreen = () => {
             onClearReply={onClearReply}
             teamUserData={teamUserData}
             postId={postId}
+            onSent={onKeyboardShow}
           />
         </View>
         <Modal

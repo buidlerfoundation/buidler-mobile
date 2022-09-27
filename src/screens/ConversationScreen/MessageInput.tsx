@@ -79,6 +79,7 @@ type MessageInputProps = {
   onClearReply?: () => void;
   postId?: string;
   inputStyle?: ViewStyle;
+  onSent?: () => void;
 };
 
 const MessageInput = ({
@@ -95,6 +96,7 @@ const MessageInput = ({
   onClearReply,
   postId,
   inputStyle,
+  onSent,
 }: MessageInputProps) => {
   const [val, setVal] = useState('');
   const teamUserData = useTeamUserData();
@@ -183,7 +185,7 @@ const MessageInput = ({
       content = await encryptMessage(content, key);
       plain_text = await encryptMessage(plain_text, key);
     }
-    api.editMessage(messageEdit.message_id, content, plain_text);
+    await api.editMessage(messageEdit.message_id, content, plain_text);
     setVal('');
     onClearReply?.();
     onClearAttachment?.();
@@ -197,13 +199,14 @@ const MessageInput = ({
     onClearReply,
     val,
   ]);
-  const onSend = useCallback(() => {
+  const onSend = useCallback(async () => {
     if (messageEdit) {
-      editMessage();
+      await editMessage();
     } else {
-      submitMessage();
+      await submitMessage();
     }
-  }, [editMessage, messageEdit, submitMessage]);
+    onSent?.();
+  }, [editMessage, messageEdit, onSent, submitMessage]);
   const onClearReplyPress = useCallback(() => {
     onClearReply?.();
     setVal('');
