@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    height: 42,
+    height: AppDimension.headerHeight,
   },
   titleWrap: {
     flex: 1,

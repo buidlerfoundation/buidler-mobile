@@ -11,6 +11,7 @@ export default {
   ImportSeedPhraseScreen: 'ImportSeedPhraseScreen',
   EnterOTPScreen: 'EnterOTP',
   PinPostScreen: 'PinPostScreen',
+  PinPostDetailScreen: 'PinPostDetailScreen',
 };
 
 export const StackID = {

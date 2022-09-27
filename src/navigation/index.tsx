@@ -11,6 +11,7 @@ import EnterOTP from 'screens/EnterOTP';
 import CommunityDrawer from './CommunityDrawer';
 import PinPostScreen from 'screens/PinPostScreen';
 import useThemeColor from 'hook/useThemeColor';
+import PinPostDetailScreen from 'screens/PinPostDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +48,10 @@ const RootNavigator = () => {
           <Stack.Screen
             name={ScreenID.PinPostScreen}
             component={PinPostScreen}
+          />
+          <Stack.Screen
+            name={ScreenID.PinPostDetailScreen}
+            component={PinPostDetailScreen}
           />
         </Stack.Group>
         <Stack.Screen

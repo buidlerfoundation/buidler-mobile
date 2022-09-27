@@ -1,6 +1,6 @@
 import Fonts from 'common/Fonts';
 import useThemeColor from 'hook/useThemeColor';
-import React, {memo} from 'react';
+import React, {memo, useCallback} from 'react';
 import {useWindowDimensions, Linking, TextProps} from 'react-native';
 import Html, {defaultSystemFonts} from 'react-native-render-html';
 
@@ -13,6 +13,21 @@ type RenderHTMLProps = {
 const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
   const {width} = useWindowDimensions();
   const {colors} = useThemeColor();
+  const handleLinkPress = useCallback(
+    (e, href) => {
+      e.stopPropagation();
+      onLinkPress?.();
+      if (href.includes('channels/user/')) {
+        const userId = href.split('channels/user/')?.[1];
+        if (userId) {
+          // Direct Message
+        }
+        return;
+      }
+      Linking.openURL(href);
+    },
+    [onLinkPress],
+  );
   return (
     <Html
       systemFonts={[
@@ -33,17 +48,7 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
       defaultTextProps={defaultTextProps}
       renderersProps={{
         a: {
-          onPress: (_, href) => {
-            onLinkPress?.();
-            if (href.includes('channels/user/')) {
-              const userId = href.split('channels/user/')?.[1];
-              if (userId) {
-                // Direct Message
-              }
-              return;
-            }
-            Linking.openURL(href);
-          },
+          onPress: handleLinkPress,
         },
       }}
       classesStyles={{

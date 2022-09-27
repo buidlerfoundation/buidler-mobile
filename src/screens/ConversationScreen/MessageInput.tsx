@@ -4,7 +4,14 @@ import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import {Channel, MessageData} from 'models';
 import React, {useState, useEffect, useCallback, memo} from 'react';
-import {View, StyleSheet, TextInput, Text, ViewStyle} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  Text,
+  ViewStyle,
+  FlatList,
+} from 'react-native';
 import SocketUtils from 'utils/SocketUtils';
 import FastImage from 'react-native-fast-image';
 import Spinner from 'components/Spinner';
@@ -274,15 +281,16 @@ const MessageInput = ({
       {renderReply()}
       <View style={styles.container}>
         {attachments.length > 0 && (
-          <View style={styles.attachmentView}>
-            {attachments.map(attachment => (
-              <AttachmentItem
-                attachment={attachment}
-                key={attachment.id || attachment.randomId}
-                onPress={onRemoveAttachment}
-              />
-            ))}
-          </View>
+          <FlatList
+            style={styles.attachmentView}
+            data={attachments}
+            keyExtractor={attachment => attachment.id || attachment.randomId}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            renderItem={({item}) => (
+              <AttachmentItem attachment={item} onPress={onRemoveAttachment} />
+            )}
+          />
         )}
         <View style={styles.inputContainer}>
           <Touchable style={{padding: 5}} onPress={openGallery}>
@@ -352,8 +360,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   attachmentView: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 10,
   },
   attachmentItem: {

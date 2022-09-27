@@ -1,11 +1,17 @@
+import {useNavigation} from '@react-navigation/native';
 import Fonts from 'common/Fonts';
+import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
 import PinChannelView from 'components/PinChannelView';
 import ReactView from 'components/ReactView';
 import RenderHTML from 'components/RenderHTML';
 import Touchable from 'components/Touchable';
-import {normalizeMessageTextPlain} from 'helpers/MessageHelper';
+import {
+  normalizeMessageText,
+  normalizeMessageTextPlain,
+  normalizeUserName,
+} from 'helpers/MessageHelper';
 import useAppSelector from 'hook/useAppSelector';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useTeamUserData from 'hook/useTeamUserData';
@@ -13,7 +19,13 @@ import useThemeColor from 'hook/useThemeColor';
 import {TaskData, UserData} from 'models';
 import numeral from 'numeral';
 import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
-import {StyleSheet, View, Text, ViewStyle} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ViewStyle,
+  useWindowDimensions,
+} from 'react-native';
 import MessagePhoto from 'screens/ConversationScreen/MessagePhoto';
 import {lastReplyFromNow, messageFromNow} from 'utils/DateUtils';
 
@@ -69,10 +81,13 @@ type PinPostItemProps = {
   pinPost: TaskData;
   embeds?: boolean;
   style?: ViewStyle;
+  detail?: boolean;
 };
 
-const PinPostItem = ({pinPost, embeds, style}: PinPostItemProps) => {
+const PinPostItem = ({pinPost, embeds, detail, style}: PinPostItemProps) => {
   const contentRef = useRef();
+  const navigation = useNavigation();
+  const {width} = useWindowDimensions();
   const [isMore, setIsMore] = useState(false);
   const community = useCurrentCommunity();
   const teamUserData = useTeamUserData();
@@ -97,13 +112,21 @@ const PinPostItem = ({pinPost, embeds, style}: PinPostItemProps) => {
       setIsMore(h > 130);
     });
   }, []);
-  const onPinPostPress = useCallback(() => {}, []);
+  const onPinPostPress = useCallback(() => {
+    navigation.navigate(ScreenID.PinPostDetailScreen, {
+      postId: pinPost.task_id,
+    });
+  }, [navigation, pinPost.task_id]);
   if (!creator) return null;
   return (
-    <Touchable style={[styles.container, style]} onPress={onPinPostPress}>
+    <Touchable
+      style={[styles.container, style]}
+      onPress={onPinPostPress}
+      disabled={detail}>
       <View style={styles.header}>
-        <AvatarView user={creator} size={20} />
-        <View style={styles.userNameWrap}>
+        <AvatarView user={creator} size={detail ? 35 : 20} />
+        <View
+          style={[styles.userNameWrap, detail && styles.userNameDetailWrap]}>
           <Text
             style={[styles.userName, {color: colors.text}]}
             ellipsizeMode="tail"
@@ -111,12 +134,22 @@ const PinPostItem = ({pinPost, embeds, style}: PinPostItemProps) => {
             {creator.user_name}
           </Text>
           {!embeds && (
-            <Text style={[styles.createdAt, {color: colors.subtext}]}>
-              {messageFromNow(pinPost.message_created_at)}
-            </Text>
+            <View style={styles.createdAtWrap}>
+              <Text style={[styles.createdAt, {color: colors.subtext}]}>
+                {messageFromNow(pinPost.message_created_at)}
+              </Text>
+              {isIPFS && detail && (
+                <View style={styles.ipfsWrap}>
+                  <SVG.IconIPFSLock fill={colors.mention} />
+                  <Text style={[styles.cidText, {color: colors.mention}]}>
+                    {normalizeUserName(pinPost.cid, 4)}
+                  </Text>
+                </View>
+              )}
+            </View>
           )}
         </View>
-        {isIPFS && <SVG.IconIPFSLock fill={colors.mention} />}
+        {isIPFS && !detail && <SVG.IconIPFSLock fill={colors.mention} />}
       </View>
       {embeds && (
         <Text style={[styles.createdAt, {color: colors.subtext, marginTop: 5}]}>
@@ -129,13 +162,21 @@ const PinPostItem = ({pinPost, embeds, style}: PinPostItemProps) => {
           style={styles.content}
           onLayout={onContentLayout}>
           <RenderHTML
-            html={normalizeMessageTextPlain(pinPost.content)}
-            defaultTextProps={{
-              ellipsizeMode: 'tail',
-              numberOfLines: 5,
-            }}
+            html={
+              detail
+                ? normalizeMessageText(pinPost.content)
+                : normalizeMessageTextPlain(pinPost.content)
+            }
+            defaultTextProps={
+              detail
+                ? undefined
+                : {
+                    ellipsizeMode: 'tail',
+                    numberOfLines: 5,
+                  }
+            }
           />
-          {isMore && (
+          {isMore && !detail && (
             <Text style={[styles.viewMore, {color: colors.subtext}]}>
               View more
             </Text>
@@ -146,6 +187,8 @@ const PinPostItem = ({pinPost, embeds, style}: PinPostItemProps) => {
         style={styles.attachmentWrap}
         attachments={pinPost.task_attachments}
         teamId={community.team_id}
+        imageWidth={embeds ? (width - 132) / 2 : (width - 50) / 2}
+        stackAttachment={!detail}
       />
       {!embeds && (
         <PinChannelView
@@ -197,6 +240,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     flex: 1,
   },
+  userNameDetailWrap: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
   userName: {
     marginRight: 8,
     fontFamily: Fonts.Bold,
@@ -205,7 +252,7 @@ const styles = StyleSheet.create({
   },
   createdAt: {
     fontSize: 12,
-    lineHeight: 20,
+    lineHeight: 22,
     fontFamily: Fonts.Medium,
   },
   content: {
@@ -264,6 +311,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 26,
     marginTop: 15,
+  },
+  createdAtWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ipfsWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  cidText: {
+    textDecorationLine: 'underline',
+    marginLeft: 5,
+    fontFamily: Fonts.Medium,
+    fontSize: 14,
+    lineHeight: 22,
   },
 });
 

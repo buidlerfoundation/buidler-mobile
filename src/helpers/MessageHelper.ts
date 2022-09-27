@@ -134,10 +134,10 @@ export const normalizeMessageText = (
   }</div>`;
 };
 
-export const normalizeUserName = (str: string) => {
+export const normalizeUserName = (str: string, length = 5) => {
   if (str?.length > 20) {
-    return `${str.substring(0, 5)}...${str.substring(
-      str.length - 5,
+    return `${str.substring(0, length)}...${str.substring(
+      str.length - length,
       str.length,
     )}`;
   }

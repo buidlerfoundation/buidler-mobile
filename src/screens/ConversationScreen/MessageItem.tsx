@@ -1,6 +1,6 @@
 import {MessageData} from 'models';
 import React, {useCallback, memo, useMemo} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
 import Fonts from 'common/Fonts';
 import MessagePhoto from './MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
@@ -27,6 +27,7 @@ type MessageItemProps = {
 
 const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
   const {colors} = useThemeColor();
+  const {width} = useWindowDimensions();
   const teamUserData = useTeamUserData();
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const replyMessage = useMemo(
@@ -136,6 +137,12 @@ const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
               <MessagePhoto
                 attachments={item?.message_attachments || []}
                 teamId={teamId}
+                imageWidth={width - 160}
+                edited={
+                  !item.isSending &&
+                  item.createdAt !== item.updatedAt &&
+                  !item.content
+                }
               />
               <ReactView reacts={reactData[item.message_id]} />
             </>
@@ -212,6 +219,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderRadius: 5,
     borderWidth: 1,
+    paddingHorizontal: 15,
   },
 });
 
