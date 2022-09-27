@@ -2,6 +2,21 @@ import {getDeviceCode} from 'helpers/GenerateUUID';
 import {ConversationData, MessageData} from 'models';
 import ApiCaller from './ApiCaller';
 
+export const getPinPostMessage = async (
+  postId: string,
+  limit = 20,
+  before = new Date().toISOString(),
+  after?: string,
+  controller?: AbortController,
+) => {
+  const deviceCode = await getDeviceCode();
+  let uri = `messages/${postId}/post?page[size]=${limit}&page[before]=${before}&device_code=${deviceCode}`;
+  if (after) {
+    uri += `&page[after]=${after}`;
+  }
+  return ApiCaller.get<Array<MessageData>>(uri, undefined, controller);
+};
+
 export const getMessages = async (
   channelId: string,
   limit = 20,

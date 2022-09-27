@@ -32,10 +32,11 @@ type AttachmentItemProps = {
 
 const AttachmentItem = ({attachment, onPress}: AttachmentItemProps) => {
   const {colors} = useThemeColor();
-  const handlePress = useCallback(
-    () => onPress(attachment.randomId),
-    [attachment.randomId, onPress],
-  );
+  const handlePress = useCallback(async () => {
+    if (!attachment.id) return;
+    await api.removeFile(attachment.id);
+    onPress(attachment.randomId);
+  }, [attachment.id, attachment.randomId, onPress]);
   return (
     <View style={styles.attachmentItem}>
       <FastImage
@@ -46,18 +47,20 @@ const AttachmentItem = ({attachment, onPress}: AttachmentItemProps) => {
       {attachment.loading && (
         <Spinner size="small" backgroundColor="#11111180" />
       )}
-      <Touchable
-        style={{
-          padding: 10,
-          position: 'absolute',
-          top: -15,
-          right: -15,
-        }}
-        onPress={handlePress}>
-        <View style={[styles.clearButton, {backgroundColor: colors.subtext}]}>
-          <SVG.IconClose fill={colors.text} />
-        </View>
-      </Touchable>
+      {attachment.id && (
+        <Touchable
+          style={{
+            padding: 10,
+            position: 'absolute',
+            top: -15,
+            right: -15,
+          }}
+          onPress={handlePress}>
+          <View style={[styles.clearButton, {backgroundColor: colors.subtext}]}>
+            <SVG.IconClose fill={colors.text} />
+          </View>
+        </Touchable>
+      )}
     </View>
   );
 };
@@ -74,6 +77,8 @@ type MessageInputProps = {
   messageReply?: MessageData;
   messageEdit?: MessageData;
   onClearReply?: () => void;
+  postId?: string;
+  inputStyle?: ViewStyle;
 };
 
 const MessageInput = ({
@@ -88,6 +93,8 @@ const MessageInput = ({
   messageEdit,
   messageReply,
   onClearReply,
+  postId,
+  inputStyle,
 }: MessageInputProps) => {
   const [val, setVal] = useState('');
   const teamUserData = useTeamUserData();
@@ -112,11 +119,12 @@ const MessageInput = ({
       content: val,
       plain_text: val,
       text: val,
-      entity_type: 'channel',
+      entity_type: postId ? 'post' : 'channel',
     };
     if (
-      currentChannel.channel_type === 'Private' ||
-      (currentChannel.channel_type === 'Direct' && currentChannel.channel_id)
+      (currentChannel.channel_type === 'Private' ||
+        currentChannel.channel_type === 'Direct') &&
+      currentChannel.channel_id
     ) {
       const {key} =
         channelPrivateKey[currentChannel.channel_id][
@@ -127,7 +135,9 @@ const MessageInput = ({
       message.content = content;
       message.plain_text = plain_text;
     }
-    if (currentChannel.channel_id) {
+    if (postId) {
+      message.entity_id = postId;
+    } else if (currentChannel.channel_id) {
       message.entity_id = currentChannel.channel_id;
     } else if (currentChannel.user) {
       message.other_user_id = currentChannel?.user?.user_id;
@@ -155,13 +165,14 @@ const MessageInput = ({
     onClearAttachment,
     teamId,
     val,
+    postId,
   ]);
   const editMessage = useCallback(async () => {
     if (attachments.find(el => el.loading)) {
       alert('Attachment is uploading');
       return;
     }
-    if (!val) return;
+    if (!val && attachments.length === 0) return;
     let content = val.trim();
     let plain_text = val.trim();
     if (currentChannel.channel_type === 'Private') {
@@ -279,7 +290,7 @@ const MessageInput = ({
   return (
     <View style={[{backgroundColor: colors.activeBackgroundLight}, style]}>
       {renderReply()}
-      <View style={styles.container}>
+      <View style={[styles.container, inputStyle]}>
         {attachments.length > 0 && (
           <FlatList
             style={styles.attachmentView}

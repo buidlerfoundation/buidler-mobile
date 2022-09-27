@@ -59,6 +59,22 @@ const ChannelItem = ({
     [isActive, isCollapsed, isUnSeen],
   );
 
+  if (hide) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {backgroundColor: colors.background},
+          isLast && {
+            borderBottomLeftRadius: 5,
+            borderBottomRightRadius: 5,
+            height: 5,
+          },
+        ]}
+      />
+    );
+  }
+
   return (
     <View
       style={[
@@ -69,7 +85,6 @@ const ChannelItem = ({
           borderBottomRightRadius: 5,
           paddingBottom: 5,
         },
-        hide && {display: 'none'},
       ]}>
       <Touchable
         style={[

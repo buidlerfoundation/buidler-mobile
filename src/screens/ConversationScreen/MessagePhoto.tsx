@@ -154,7 +154,7 @@ const MessagePhoto = ({
             onPress={onFilePress}
             teamId={teamId}
             imageWidth={Math.min(imageWidth, 300)}
-            style={{marginLeft: index > 0 ? 10 : 0}}
+            style={{marginRight: index === attachmentData.length - 1 ? 0 : 10}}
             stackAttachment={index === 1 ? morePhoto : undefined}
           />
         );
@@ -195,7 +195,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 20,
     alignSelf: 'flex-end',
-    marginLeft: 10,
   },
   stackView: {
     position: 'absolute',

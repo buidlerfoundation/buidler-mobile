@@ -32,7 +32,6 @@ target 'notable' do
     # Pods for testing
   end
 
-  pod 'GoogleSignIn', '~> 6.1.0'
   # Permission
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
   pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary"

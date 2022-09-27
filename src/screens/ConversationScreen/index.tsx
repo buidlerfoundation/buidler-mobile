@@ -154,8 +154,9 @@ const ConversationScreen = () => {
               setAttachments(current =>
                 current.map(el => {
                   if (el.randomId === randomId) {
-                    el.url = res.file_url;
+                    el.url = res.data.file_url;
                     el.loading = false;
+                    el.id = res.data?.file?.file_id;
                   }
                   return el;
                 }),
@@ -214,6 +215,7 @@ const ConversationScreen = () => {
   const onPinPress = useCallback(() => {
     navigation.navigate(ScreenID.PinPostScreen);
   }, [navigation]);
+  const onMoveShouldSetResponder = useCallback(() => true, []);
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom}>
       <View style={styles.container}>
@@ -248,6 +250,7 @@ const ConversationScreen = () => {
             ListHeaderComponent={<View style={{height: 15}} />}
             onEndReached={onEndReached}
             renderSectionFooter={renderFooter}
+            onMoveShouldSetResponder={onMoveShouldSetResponder}
             ListFooterComponent={
               loadMoreMessage ? (
                 <View style={styles.footerMessage}>
