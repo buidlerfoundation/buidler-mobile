@@ -6,7 +6,7 @@ function useUserRole() {
   const teamUserData = useTeamUserData();
   const userData = useAppSelector(state => state.user.userData);
   return useMemo(
-    () => teamUserData.find(el => el.user_id === userData.user_id).role,
+    () => teamUserData.find(el => el.user_id === userData.user_id)?.role,
     [teamUserData, userData.user_id],
   );
 }

@@ -68,7 +68,7 @@ const ChannelItem = ({
           isLast && {
             borderBottomLeftRadius: 5,
             borderBottomRightRadius: 5,
-            height: 5,
+            height: 10,
           },
         ]}
       />
@@ -83,7 +83,7 @@ const ChannelItem = ({
         isLast && {
           borderBottomLeftRadius: 5,
           borderBottomRightRadius: 5,
-          paddingBottom: 5,
+          paddingBottom: 10,
         },
       ]}>
       <Touchable
