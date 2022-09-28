@@ -4,7 +4,6 @@ export default {
   LoginScreen: 'LoginScreen',
   ChannelScreen: 'ChannelScreen',
   ConversationScreen: 'ConversationScreen',
-  TaskScreen: 'TaskScreen',
   CreatePasswordScreen: 'CreatePasswordScreen',
   StoreSeedPhraseScreen: 'StoreSeedPhraseScreen',
   BackupScreen: 'BackupScreen',

@@ -32,6 +32,26 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
 ) => {
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.UPDATE_TASK_REQUEST: {
+      const {taskId, channelId, data} = payload;
+      const newMessageData = {...state.messageData};
+      if (newMessageData[channelId]) {
+        newMessageData[channelId] = {
+          ...newMessageData[channelId],
+          data: newMessageData[channelId]?.data?.map?.(msg => {
+            if (msg.message_id === taskId && msg.task) {
+              msg.task = {...msg.task, ...data};
+              return {...msg};
+            }
+            return msg;
+          }),
+        };
+      }
+      return {
+        ...state,
+        messageData: newMessageData,
+      };
+    }
     case actionTypes.UPDATE_HIGHLIGHT_MESSAGE: {
       return {
         ...state,
@@ -166,7 +186,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
     }
     case actionTypes.DELETE_MESSAGE: {
       const {messageId, channelId, currentChannelId} = payload;
-      const newMessageData = state.messageData;
+      const newMessageData = {...state.messageData};
       if (currentChannelId !== channelId && newMessageData[currentChannelId]) {
         const currentIdx = newMessageData[currentChannelId].data.findIndex(
           el => el.message_id === messageId,
@@ -234,7 +254,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
       }
       return {
         ...state,
-        messageData: {...newMessageData},
+        messageData: newMessageData,
       };
     }
     case actionTypes.EDIT_MESSAGE: {
@@ -312,7 +332,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
     }
     case actionTypes.RECEIVE_MESSAGE: {
       const {data, currentChannelId} = payload;
-      const newMessageData = state.messageData;
+      const newMessageData = {...state.messageData};
       if (data.entity_type === 'post') {
         if (newMessageData[currentChannelId]?.data) {
           newMessageData[currentChannelId] = {
@@ -333,6 +353,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
                       parseInt(msg.task.total_messages || '0') + 1
                     }`,
                   };
+                  return {...msg};
                 }
                 return msg;
               }),

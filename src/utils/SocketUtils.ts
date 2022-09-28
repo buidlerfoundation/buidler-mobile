@@ -753,7 +753,7 @@ class SocketUtil {
       if (res) {
         store.dispatch({
           type: actionTypes.RECEIVE_MESSAGE,
-          payload: {data: res},
+          payload: {data: res, currentChannelId: currentChannel.channel_id},
         });
       }
     });

@@ -15,8 +15,6 @@ import {
   SectionList,
 } from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
-import MessageInput from './MessageInput';
-import MessageItem from './MessageItem';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import Modal from 'react-native-modal';
@@ -24,7 +22,6 @@ import api from 'services/api';
 import {getUniqueId} from 'helpers/GenerateUUID';
 import {resizeImage} from 'helpers/ImageHelpers';
 import SocketUtils from 'utils/SocketUtils';
-import MenuMessage from './MenuMessage';
 import {titleMessageFromNow} from 'utils/DateUtils';
 import useThemeColor from 'hook/useThemeColor';
 import useCurrentChannel from 'hook/useCurrentChannel';
@@ -32,16 +29,26 @@ import useTeamUserData from 'hook/useTeamUserData';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useAppSelector from 'hook/useAppSelector';
 import useAppDispatch from 'hook/useAppDispatch';
-import {getMessages} from 'actions/MessageActions';
+import {deleteMessage, getMessages} from 'actions/MessageActions';
 import useMessageData from 'hook/useMessageData';
-import {createTask} from 'actions/TaskActions';
+import {createTask, updateTask, uploadToIPFS} from 'actions/TaskActions';
 import ChannelIcon from 'components/ChannelIcon';
 import {useNavigation} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
+import useUserRole from 'hook/useUserRole';
+import Clipboard from '@react-native-clipboard/clipboard';
+import {buidlerURL} from 'helpers/LinkHelper';
+import Toast from 'react-native-toast-message';
+import MenuMessage from 'components/MenuMessage';
+import MessageInput from 'components/MessageInput';
+import MessageItem from 'components/MessageItem';
+import MenuPinPost from 'components/MenuPinPost';
+// import {useGlobalModalContext} from 'components/ModalContainer';
 
 const ConversationScreen = () => {
   const navigation = useNavigation();
   const messageData = useMessageData();
+  // const {showModal} = useGlobalModalContext();
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
   );
@@ -51,12 +58,15 @@ const ConversationScreen = () => {
     [messageData?.canMore],
   );
   const userData = useAppSelector(state => state.user.userData);
+  const userRole = useUserRole();
   const currentTeam = useCurrentCommunity();
   const currentChannel = useCurrentChannel();
   const teamUserData = useTeamUserData();
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
+  const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
+  const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenGallery, setOpenGallery] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const dispatch = useAppDispatch();
@@ -111,6 +121,11 @@ const ConversationScreen = () => {
   );
   const openMenuMessage = useCallback((message: MessageData) => {
     setSelectedMessage(message);
+    if (message.task) {
+      setOpenMenuPinPost(true);
+    } else {
+      setOpenMenuMessage(true);
+    }
   }, []);
   const onEndReached = useCallback(() => {
     if (!messageCanMore || loadMoreMessage) return;
@@ -128,7 +143,9 @@ const ConversationScreen = () => {
   ]);
   const onSelectPhoto = useCallback(
     async (items: Array<any>) => {
-      if (!SocketUtils.generateId) {
+      if (messageEdit) {
+        SocketUtils.generateId = messageEdit.message_id;
+      } else if (!SocketUtils.generateId) {
         SocketUtils.generateId = getUniqueId();
       }
       toggleGallery();
@@ -169,46 +186,145 @@ const ConversationScreen = () => {
           });
       });
     },
-    [currentTeam.team_id, toggleGallery],
+    [currentTeam.team_id, messageEdit, toggleGallery],
   );
-  const onCloseMenuMessage = useCallback(() => {
-    setSelectedMessage(null);
+  const onCloseMenuPinPost = useCallback(() => {
+    setOpenMenuPinPost(false);
   }, []);
-  const onCreateTask = useCallback(() => {
+  const onCloseMenuMessage = useCallback(() => {
+    setOpenMenuMessage(false);
+  }, []);
+  const onCreatePinPost = useCallback(() => {
     const body: any = {
-      title: selectedMessage?.plain_text,
+      content: selectedMessage?.content,
       status: 'pinned',
       channel_ids: [currentChannel?.channel_id],
-      file_ids: selectedMessage?.message_attachment?.map?.(
-        (a: any) => a.file_id,
-      ),
-      task_id: selectedMessage.message_id,
+      task_id: selectedMessage?.message_id,
       team_id: currentTeam.team_id,
     };
     dispatch(createTask(currentChannel?.channel_id, body));
-    setSelectedMessage(null);
+    onCloseMenuMessage();
   }, [
     currentChannel?.channel_id,
     currentTeam.team_id,
     dispatch,
-    selectedMessage?.message_attachment,
+    onCloseMenuMessage,
+    selectedMessage?.content,
     selectedMessage?.message_id,
-    selectedMessage?.plain_text,
+  ]);
+  const onDeleteMessage = useCallback(() => {
+    if (!selectedMessage) return;
+    dispatch(
+      deleteMessage(
+        selectedMessage?.message_id,
+        selectedMessage?.reply_message_id,
+        currentChannel.channel_id,
+      ),
+    );
+  }, [currentChannel.channel_id, dispatch, selectedMessage]);
+  const onMenuPin = useCallback(() => {
+    onCreatePinPost();
+    onCloseMenuMessage();
+  }, [onCloseMenuMessage, onCreatePinPost]);
+  const onMenuDelete = useCallback(() => {
+    onCloseMenuMessage();
+    onCloseMenuPinPost();
+    onDeleteMessage();
+  }, [onCloseMenuMessage, onCloseMenuPinPost, onDeleteMessage]);
+  const onMenuCopyPinPost = useCallback(async () => {
+    await Clipboard.setString(
+      `${buidlerURL}/channels/${currentTeam.team_id}/${currentChannel.channel_id}/post/${selectedMessage?.task?.task_id}`,
+    );
+    onCloseMenuPinPost();
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [
+    currentChannel.channel_id,
+    currentTeam.team_id,
+    onCloseMenuPinPost,
+    selectedMessage?.task?.task_id,
+  ]);
+  const onReplyPinPost = useCallback(() => {
+    navigation.navigate(ScreenID.PinPostDetailScreen, {
+      postId: selectedMessage?.task?.task_id,
+      reply: true,
+    });
+    onCloseMenuPinPost();
+  }, [navigation, onCloseMenuPinPost, selectedMessage?.task?.task_id]);
+  const onArchive = useCallback(() => {
+    dispatch(
+      updateTask(selectedMessage?.message_id, currentChannel.channel_id, {
+        status: 'archived',
+      }),
+    );
+    onCloseMenuPinPost();
+  }, [
+    currentChannel.channel_id,
+    dispatch,
+    onCloseMenuPinPost,
+    selectedMessage?.message_id,
+  ]);
+  const onUnarchive = useCallback(() => {
+    dispatch(
+      updateTask(selectedMessage?.message_id, currentChannel.channel_id, {
+        status: 'pinned',
+      }),
+    );
+    onCloseMenuPinPost();
+  }, [
+    currentChannel.channel_id,
+    dispatch,
+    onCloseMenuPinPost,
+    selectedMessage?.message_id,
+  ]);
+  const onUploadToIPFS = useCallback(() => {
+    dispatch(
+      uploadToIPFS(selectedMessage?.task?.task_id, currentChannel.channel_id),
+    );
+    onCloseMenuPinPost();
+  }, [
+    currentChannel.channel_id,
+    dispatch,
+    onCloseMenuPinPost,
+    selectedMessage?.task?.task_id,
+  ]);
+  const onMenuCopyMessage = useCallback(async () => {
+    await Clipboard.setString(
+      `${buidlerURL}/channels/${currentTeam.team_id}/${currentChannel.channel_id}/message/${selectedMessage?.message_id}`,
+    );
+    onCloseMenuMessage();
+    onCloseMenuPinPost();
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [
+    currentChannel.channel_id,
+    currentTeam.team_id,
+    onCloseMenuMessage,
+    onCloseMenuPinPost,
+    selectedMessage?.message_id,
   ]);
   const onClearReply = useCallback(() => {
     setMessageEdit(null);
     setMessageReply(null);
+    setAttachments([]);
   }, []);
   const onReplyMessage = useCallback(() => {
     setMessageEdit(null);
     setMessageReply(selectedMessage);
-    setSelectedMessage(null);
-  }, [selectedMessage]);
+    onCloseMenuMessage();
+  }, [onCloseMenuMessage, selectedMessage]);
   const onEditMessage = useCallback(() => {
     setMessageReply(null);
     setMessageEdit(selectedMessage);
-    setSelectedMessage(null);
-  }, [selectedMessage]);
+    onCloseMenuMessage();
+    setAttachments(
+      selectedMessage?.message_attachments?.map?.(el => ({
+        ...el,
+        type: el.mimetype,
+        id: el.file_id,
+        fileName: el.original_name,
+        url: el.file_url,
+      })),
+    );
+  }, [onCloseMenuMessage, selectedMessage]);
   const openSideMenu = useCallback(() => {
     navigation.openDrawer();
   }, [navigation]);
@@ -245,8 +361,8 @@ const ConversationScreen = () => {
             inverted
             keyExtractor={item => item.message_id}
             renderItem={renderItem}
-            initialNumToRender={10}
-            windowSize={2}
+            initialNumToRender={20}
+            windowSize={3}
             ListHeaderComponent={<View style={{height: 15}} />}
             onEndReached={onEndReached}
             renderSectionFooter={renderFooter}
@@ -277,7 +393,7 @@ const ConversationScreen = () => {
           />
         </View>
         <Modal
-          isVisible={!!selectedMessage}
+          isVisible={isOpenMenuMessage}
           style={styles.modalMenuMessage}
           avoidKeyboard
           onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
@@ -285,12 +401,57 @@ const ConversationScreen = () => {
           backdropOpacity={0.9}
           swipeDirection={['down']}
           onSwipeComplete={onCloseMenuMessage}
-          onBackdropPress={onCloseMenuMessage}>
+          onBackdropPress={onCloseMenuMessage}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
           <MenuMessage
-            onCreateTask={onCreateTask}
+            onPin={onMenuPin}
             onReply={onReplyMessage}
             onEdit={onEditMessage}
+            onCopyMessage={onMenuCopyMessage}
+            onDelete={onMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
+            canDelete={selectedMessage?.sender_id === userData.user_id}
+            canPin={userRole === 'Admin' || userRole === 'Owner'}
+          />
+        </Modal>
+        <Modal
+          isVisible={isOpenMenuPinPost}
+          style={styles.modalMenuMessage}
+          avoidKeyboard
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+          backdropColor={colors.backdrop}
+          backdropOpacity={0.9}
+          swipeDirection={['down']}
+          onSwipeComplete={onCloseMenuPinPost}
+          onBackdropPress={onCloseMenuPinPost}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
+          <MenuPinPost
+            onReply={onReplyPinPost}
+            onCopyMessage={onMenuCopyMessage}
+            onCopyPostLink={onMenuCopyPinPost}
+            onDelete={onMenuDelete}
+            canDelete={selectedMessage?.sender_id === userData.user_id}
+            onArchive={onArchive}
+            onUnarchive={onUnarchive}
+            onUploadToIPFS={onUploadToIPFS}
+            canUploadToIPFS={
+              selectedMessage?.sender_id === userData.user_id &&
+              !selectedMessage?.task?.cid
+            }
+            canUnarchive={
+              (userRole === 'Admin' ||
+                userRole === 'Owner' ||
+                selectedMessage?.sender_id === userData.user_id) &&
+              selectedMessage?.task?.status === 'archived'
+            }
+            canArchive={
+              (userRole === 'Admin' ||
+                userRole === 'Owner' ||
+                selectedMessage?.sender_id === userData.user_id) &&
+              selectedMessage?.task?.status !== 'archived'
+            }
           />
         </Modal>
         <Modal
@@ -301,7 +462,9 @@ const ConversationScreen = () => {
           backdropColor={colors.backdrop}
           backdropOpacity={0.9}
           onSwipeComplete={toggleGallery}
-          swipeDirection={['down']}>
+          swipeDirection={['down']}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle title="Photos" onClosePress={toggleGallery} />

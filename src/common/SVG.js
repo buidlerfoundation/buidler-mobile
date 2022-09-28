@@ -37,6 +37,16 @@ import IconPinReply from '../assets/images/ic_pin_reply.svg';
 import IconMessageReply from '../assets/images/ic_message_reply.svg';
 import IconBan from '../assets/images/ic_ban.svg';
 import IconReplyAttachment from '../assets/images/ic_reply_attachment.svg';
+import IconMenuReply from '../assets/images/ic_menu_reply.svg';
+import IconMenuPin from '../assets/images/ic_menu_pin.svg';
+import IconMenuEdit from '../assets/images/ic_menu_edit.svg';
+import IconMenuCopyMessage from '../assets/images/ic_menu_copy_message.svg';
+import IconMenuDelete from '../assets/images/ic_menu_delete.svg';
+import IconMenuUploadIPFS from '../assets/images/ic_menu_upload_ipfs.svg';
+import IconMenuCopyPost from '../assets/images/ic_menu_copy_post.svg';
+import IconMenuArchive from '../assets/images/ic_menu_archive.svg';
+import IconMenuUnarchive from '../assets/images/ic_menu_unarchive.svg';
+import IconMenuJumpMessage from '../assets/images/ic_menu_jump_message.svg';
 
 export default {
   IconExpand,
@@ -78,4 +88,14 @@ export default {
   IconMessageReply,
   IconBan,
   IconReplyAttachment,
+  IconMenuReply,
+  IconMenuPin,
+  IconMenuEdit,
+  IconMenuCopyMessage,
+  IconMenuDelete,
+  IconMenuUploadIPFS,
+  IconMenuCopyPost,
+  IconMenuArchive,
+  IconMenuUnarchive,
+  IconMenuJumpMessage,
 };

@@ -16,21 +16,26 @@ import SocketUtils from 'utils/SocketUtils';
 import FastImage from 'react-native-fast-image';
 import Spinner from 'components/Spinner';
 import api from 'services/api';
-import ImageHelper from 'helpers/ImageHelper';
-import Blockies from 'components/Blockies';
 import {encryptMessage} from 'helpers/ChannelHelper';
-import {normalizeUserName} from 'helpers/MessageHelper';
+import {
+  normalizeMessageText,
+  normalizeMessageTextPlain,
+  normalizeUserName,
+} from 'helpers/MessageHelper';
 import useThemeColor from 'hook/useThemeColor';
 import useAppSelector from 'hook/useAppSelector';
 import useTeamUserData from 'hook/useTeamUserData';
 import {getUniqueId} from 'helpers/GenerateUUID';
+import AvatarView from 'components/AvatarView';
+import ImageHelper from 'helpers/ImageHelper';
 
 type AttachmentItemProps = {
   attachment: any;
   onPress: (id: any) => void;
+  teamId: string;
 };
 
-const AttachmentItem = ({attachment, onPress}: AttachmentItemProps) => {
+const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
   const {colors} = useThemeColor();
   const handlePress = useCallback(async () => {
     if (!attachment.id) return;
@@ -40,7 +45,11 @@ const AttachmentItem = ({attachment, onPress}: AttachmentItemProps) => {
   return (
     <View style={styles.attachmentItem}>
       <FastImage
-        source={{uri: attachment.uri}}
+        source={{
+          uri:
+            attachment.uri ||
+            ImageHelper.normalizeImage(attachment.url, teamId),
+        }}
         style={{borderRadius: 5, width: 150, height: 90}}
         resizeMode="cover"
       />
@@ -80,6 +89,8 @@ type MessageInputProps = {
   postId?: string;
   inputStyle?: ViewStyle;
   onSent?: () => void;
+  inputRef?: any;
+  autoFocus?: boolean;
 };
 
 const MessageInput = ({
@@ -97,6 +108,8 @@ const MessageInput = ({
   postId,
   inputStyle,
   onSent,
+  inputRef,
+  autoFocus,
 }: MessageInputProps) => {
   const [val, setVal] = useState('');
   const teamUserData = useTeamUserData();
@@ -106,7 +119,7 @@ const MessageInput = ({
   const {colors} = useThemeColor();
   useEffect(() => {
     if (messageEdit) {
-      setVal(messageEdit.plain_text);
+      setVal(normalizeMessageText(messageEdit.content, undefined, true));
     }
   }, [messageEdit]);
 
@@ -216,41 +229,32 @@ const MessageInput = ({
       const sender = teamUserData?.find?.(
         u => u.user_id === messageReply?.sender_id,
       );
-      const data = ImageHelper.normalizeAvatar(
-        sender?.avatar_url,
-        sender?.user_id,
-      );
       return (
         <View style={[styles.replyContainer, {borderColor: colors.border}]}>
           <View
             style={[styles.replyIndicator, {backgroundColor: colors.subtext}]}
           />
-          {typeof data === 'string' ? (
-            <FastImage
-              source={{
-                uri: data,
-              }}
-              style={{
-                width: 25,
-                height: 25,
-                borderRadius: 12.5,
-                marginLeft: 18,
-              }}
-            />
-          ) : (
-            <Blockies
-              blockies={data.address}
-              size={8}
-              style={{
-                width: 25,
-                height: 25,
-                borderRadius: 12.5,
-                marginLeft: 18,
-              }}
-            />
+          <View style={{marginLeft: 20}}>
+            <AvatarView user={sender} size={20} />
+          </View>
+          <Text style={[styles.replyName, {color: colors.lightText}]}>
+            {sender.user_name}
+          </Text>
+          {messageReply.message_attachments.length > 0 && (
+            <View style={{marginLeft: 8}}>
+              <SVG.IconReplyAttachment fill={colors.lightText} />
+            </View>
           )}
-          <Text style={[styles.replyContent, {color: colors.text}]}>
-            {messageReply.plain_text}
+          <Text
+            style={[styles.replyContent, {color: colors.lightText}]}
+            ellipsizeMode="tail"
+            numberOfLines={1}>
+            {normalizeMessageTextPlain(
+              messageReply.content || 'Attachment',
+              undefined,
+              undefined,
+              true,
+            )}
           </Text>
           <Touchable
             style={{padding: 10, margin: 10}}
@@ -266,10 +270,7 @@ const MessageInput = ({
           <View
             style={[styles.replyIndicator, {backgroundColor: colors.subtext}]}
           />
-          <View style={{marginLeft: 18}}>
-            <SVG.IconEdit />
-          </View>
-          <Text style={[styles.replyContent, {color: colors.text}]}>
+          <Text style={[styles.replyContent, {color: colors.lightText}]}>
             Edit message
           </Text>
           <Touchable
@@ -283,8 +284,8 @@ const MessageInput = ({
     return null;
   }, [
     colors.border,
+    colors.lightText,
     colors.subtext,
-    colors.text,
     messageEdit,
     messageReply,
     onClearReplyPress,
@@ -302,7 +303,11 @@ const MessageInput = ({
             horizontal
             showsHorizontalScrollIndicator={false}
             renderItem={({item}) => (
-              <AttachmentItem attachment={item} onPress={onRemoveAttachment} />
+              <AttachmentItem
+                attachment={item}
+                onPress={onRemoveAttachment}
+                teamId={teamId}
+              />
             )}
           />
         )}
@@ -325,6 +330,8 @@ const MessageInput = ({
             value={val}
             onChangeText={handleChangeText}
             keyboardAppearance="dark"
+            ref={inputRef}
+            autoFocus={autoFocus}
           />
           {(!!val || attachments.length > 0) && (
             <Touchable style={{padding: 5}} onPress={onSend}>
@@ -353,13 +360,18 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 5,
   },
+  replyName: {
+    fontFamily: Fonts.SemiBold,
+    fontSize: 14,
+    lineHeight: 22,
+    marginLeft: 10,
+  },
   replyContent: {
     fontFamily: Fonts.Medium,
-    fontSize: 16,
-    lineHeight: 19,
-    marginLeft: 16,
+    fontSize: 14,
+    lineHeight: 22,
     flex: 1,
-    paddingVertical: 20,
+    marginLeft: 8,
   },
   inputContainer: {
     flexDirection: 'row',

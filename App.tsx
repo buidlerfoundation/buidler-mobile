@@ -9,6 +9,9 @@ import BottomActionSheet from 'components/BottomActionSheet';
 import ImageViewer from 'components/ImageViewer';
 import notifee, {EventType} from '@notifee/react-native';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
+import ModalContainer from 'components/ModalContainer';
+import ToastContainer from 'components/ToastContainer';
+
 // import {encrypt, decrypt} from 'eciesjs';
 
 LogBox.ignoreAllLogs();
@@ -54,7 +57,9 @@ const App = () => {
     <Provider store={store}>
       <View style={{flex: 1}}>
         <StatusBar barStyle="light-content" translucent />
-        <RootNavigator />
+        <ModalContainer>
+          <RootNavigator />
+        </ModalContainer>
         <Spinner
           visible={false}
           ref={ref => {
@@ -66,6 +71,7 @@ const App = () => {
           ref={ref => (NavigationServices.bottomActionSheet = ref)}
         />
         <ImageViewer ref={ref => (NavigationServices.imageViewer = ref)} />
+        <ToastContainer />
       </View>
     </Provider>
   );

@@ -41,6 +41,8 @@ export const normalizeMessageTextPlain = (
   text: string,
   messageReply?: boolean,
   isEdited?: boolean,
+  withoutHtml?: boolean,
+  isArchived?: boolean,
 ) => {
   if (!text) return '';
   let res = text
@@ -55,7 +57,7 @@ export const normalizeMessageTextPlain = (
     .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
     .replace(/\n$/gim, '<br />');
 
-  if (messageReply) {
+  if (messageReply || withoutHtml) {
     res = res.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2');
   } else {
     res = res
@@ -72,8 +74,13 @@ export const normalizeMessageTextPlain = (
         '<a href="https://community.buidler.app/channels/user/$4" class="mention-string">@$2</a>',
       );
   }
+  if (withoutHtml) return res;
   return `<div class='${
-    messageReply ? 'message-text-reply' : 'message-text'
+    isArchived
+      ? 'message-text-archived'
+      : messageReply
+      ? 'message-text-reply'
+      : 'message-text'
   }'>${res}${
     isEdited ? ' <span class="edited-string">edited</span>' : ''
   }</div>`;
@@ -84,6 +91,7 @@ export const normalizeMessageText = (
   wrapParagraph?: boolean,
   messageEdit?: boolean,
   isEdited?: boolean,
+  isArchived?: boolean,
 ) => {
   if (!text) return '';
   if (messageEdit) {
@@ -129,7 +137,9 @@ export const normalizeMessageText = (
   if (wrapParagraph) {
     res = res.replace(/^([^<]*)([^<]*)$/gim, '<p>$1</p>');
   }
-  return `<div class='message-text'>${res}${
+  return `<div class=${
+    isArchived ? 'message-text-archived' : 'message-text'
+  }>${res}${
     isEdited ? ' <span class="edited-string">edited</span>' : ''
   }</div>`;
 };

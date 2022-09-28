@@ -2,7 +2,7 @@ import {MessageData} from 'models';
 import React, {useCallback, memo, useMemo} from 'react';
 import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
 import Fonts from 'common/Fonts';
-import MessagePhoto from './MessagePhoto';
+import MessagePhoto from '../MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
 import {
   normalizeMessageText,
@@ -101,7 +101,9 @@ const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
       )}
       <Touchable style={[styles.container]} onLongPress={handleLongPress}>
         {showAvatar ? (
-          <AvatarView user={sender} size={35} />
+          <View style={{marginTop: 5}}>
+            <AvatarView user={sender} size={35} />
+          </View>
         ) : (
           <View style={{width: 35}} />
         )}
@@ -121,6 +123,7 @@ const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
               pinPost={{...item.task, message_sender_id: item.sender_id}}
               embeds
               style={[styles.pinPostContainer, {borderColor: colors.border}]}
+              onLongPress={handleLongPress}
             />
           ) : (
             <>
@@ -160,11 +163,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
   },
-  avatar: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-  },
   bodyMessage: {
     marginLeft: 15,
     flex: 1,
@@ -177,12 +175,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Fonts.Medium,
     marginLeft: 5,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   senderName: {
     fontSize: 16,
     lineHeight: 26,
-    fontFamily: Fonts.Bold,
+    fontFamily: Fonts.SemiBold,
   },
   message: {
     fontFamily: Fonts.Medium,

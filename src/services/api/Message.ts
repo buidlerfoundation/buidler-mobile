@@ -17,6 +17,9 @@ export const getPinPostMessage = async (
   return ApiCaller.get<Array<MessageData>>(uri, undefined, controller);
 };
 
+export const deleteMessage = (messageId: string) =>
+  ApiCaller.delete(`message/${messageId}`);
+
 export const getMessages = async (
   channelId: string,
   limit = 20,

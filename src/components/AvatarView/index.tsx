@@ -73,6 +73,10 @@ const AvatarView = ({user, size = 25, withStatus = true}: AvatarViewProps) => {
             {
               backgroundColor: colors.success,
               borderColor: colors.backgroundHeader,
+              width: size > 20 ? 14 : 10,
+              height: size > 20 ? 14 : 10,
+              borderRadius: size > 20 ? 7 : 5,
+              borderWidth: 2,
             },
           ]}
         />
@@ -83,10 +87,6 @@ const AvatarView = ({user, size = 25, withStatus = true}: AvatarViewProps) => {
 
 const styles = StyleSheet.create({
   onlineStatus: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
     position: 'absolute',
     bottom: -2,
     right: -2,

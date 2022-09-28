@@ -1,5 +1,5 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
-import {getPinPostMessages} from 'actions/MessageActions';
+import {deleteMessage, getPinPostMessages} from 'actions/MessageActions';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
@@ -20,9 +20,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {StyleSheet, View, Text, FlatList} from 'react-native';
-import MessageInput from 'screens/ConversationScreen/MessageInput';
-import MessageItem from 'screens/ConversationScreen/MessageItem';
+import {StyleSheet, View, Text, FlatList, TextInput} from 'react-native';
 import Modal from 'react-native-modal';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
@@ -31,10 +29,19 @@ import {getUniqueId} from 'helpers/GenerateUUID';
 import {resizeImage} from 'helpers/ImageHelpers';
 import api from 'services/api';
 import KeyboardLayout from 'components/KeyboardLayout';
+import Clipboard from '@react-native-clipboard/clipboard';
+import {buidlerURL} from 'helpers/LinkHelper';
+import Toast from 'react-native-toast-message';
+import MenuMessage from 'components/MenuMessage';
+import MessageInput from 'components/MessageInput';
+import MessageItem from 'components/MessageItem';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
   const listRef = useRef<FlatList>();
+  const inputRef = useRef<TextInput>();
+  const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
   const [isOpenGallery, setOpenGallery] = useState(false);
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
@@ -44,12 +51,14 @@ const PinPostDetailScreen = () => {
     [],
   );
   const {colors} = useThemeColor();
+  const userData = useAppSelector(state => state.user.userData);
   const teamUserData = useTeamUserData();
   const community = useCurrentCommunity();
   const currentChannel = useCurrentChannel();
   const navigation = useNavigation();
   const route = useRoute();
   const postId = useMemo(() => route.params?.postId, [route.params?.postId]);
+  const isReply = useMemo(() => route.params?.reply, [route.params?.reply]);
   const pinPost = usePostData(postId);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
   const {messageData} = useAppSelector(state => state.message);
@@ -58,10 +67,24 @@ const PinPostDetailScreen = () => {
     [messageData, postId],
   );
   useEffect(() => {
+    if (isReply) {
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 400);
+    }
+  }, [isReply]);
+  useEffect(() => {
     if (postId) {
       dispatch(getPinPostMessages(postId));
     }
   }, [dispatch, postId]);
+  const openMenuMessage = useCallback((message: MessageData) => {
+    setSelectedMessage(message);
+    setOpenMenuMessage(true);
+  }, []);
+  const onCloseMenuMessage = useCallback(() => {
+    setOpenMenuMessage(false);
+  }, []);
   const onClearReply = useCallback(() => {
     setMessageEdit(null);
     setMessageReply(null);
@@ -127,9 +150,54 @@ const PinPostDetailScreen = () => {
   );
   const onKeyboardShow = useCallback(() => {
     setTimeout(() => {
-      listRef.current.scrollToIndex({index: 0});
+      if (messages?.length > 0) listRef.current.scrollToIndex({index: 0});
     }, 300);
-  }, []);
+  }, [messages?.length]);
+  const onReplyMessage = useCallback(() => {
+    setMessageEdit(null);
+    setMessageReply(selectedMessage);
+    onCloseMenuMessage();
+  }, [onCloseMenuMessage, selectedMessage]);
+  const onEditMessage = useCallback(() => {
+    setMessageReply(null);
+    setMessageEdit(selectedMessage);
+    onCloseMenuMessage();
+    setAttachments(
+      selectedMessage?.message_attachments?.map?.(el => ({
+        ...el,
+        type: el.mimetype,
+        id: el.file_id,
+        fileName: el.original_name,
+        url: el.file_url,
+      })),
+    );
+  }, [onCloseMenuMessage, selectedMessage]);
+  const onDeleteMessage = useCallback(() => {
+    if (!selectedMessage) return;
+    dispatch(
+      deleteMessage(
+        selectedMessage?.message_id,
+        selectedMessage?.reply_message_id,
+        currentChannel.channel_id,
+      ),
+    );
+  }, [currentChannel.channel_id, dispatch, selectedMessage]);
+  const onMenuDelete = useCallback(() => {
+    onCloseMenuMessage();
+    onDeleteMessage();
+  }, [onCloseMenuMessage, onDeleteMessage]);
+  const onMenuCopyMessage = useCallback(async () => {
+    await Clipboard.setString(
+      `${buidlerURL}/channels/${community.team_id}/${currentChannel.channel_id}/message/${selectedMessage.message_id}`,
+    );
+    onCloseMenuMessage();
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [
+    currentChannel.channel_id,
+    community.team_id,
+    onCloseMenuMessage,
+    selectedMessage?.message_id,
+  ]);
   if (!pinPost.data) return null;
   return (
     <KeyboardLayout
@@ -166,7 +234,11 @@ const PinPostDetailScreen = () => {
           }
           keyExtractor={item => item.message_id}
           renderItem={({item}) => (
-            <MessageItem item={item} teamId={community.team_id} />
+            <MessageItem
+              item={item}
+              teamId={community.team_id}
+              onLongPress={openMenuMessage}
+            />
           )}
         />
         <View>
@@ -183,8 +255,31 @@ const PinPostDetailScreen = () => {
             teamUserData={teamUserData}
             postId={postId}
             onSent={onKeyboardShow}
+            inputRef={inputRef}
           />
         </View>
+        <Modal
+          isVisible={isOpenMenuMessage}
+          style={styles.modalMenuMessage}
+          avoidKeyboard
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+          backdropColor={colors.backdrop}
+          backdropOpacity={0.9}
+          swipeDirection={['down']}
+          onSwipeComplete={onCloseMenuMessage}
+          onBackdropPress={onCloseMenuMessage}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
+          <MenuMessage
+            onReply={onReplyMessage}
+            onEdit={onEditMessage}
+            onCopyMessage={onMenuCopyMessage}
+            onDelete={onMenuDelete}
+            canEdit={selectedMessage?.sender_id === userData.user_id}
+            canDelete={selectedMessage?.sender_id === userData.user_id}
+            canPin={false}
+          />
+        </Modal>
         <Modal
           isVisible={isOpenGallery}
           style={styles.modalGallery}
@@ -254,6 +349,10 @@ const styles = StyleSheet.create({
     height: '90%',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  modalMenuMessage: {
+    justifyContent: 'flex-end',
+    margin: 0,
   },
 });
 

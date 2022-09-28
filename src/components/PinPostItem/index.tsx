@@ -3,6 +3,7 @@ import Fonts from 'common/Fonts';
 import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
+import MessagePhoto from 'components/MessagePhoto';
 import PinChannelView from 'components/PinChannelView';
 import ReactView from 'components/ReactView';
 import RenderHTML from 'components/RenderHTML';
@@ -25,8 +26,8 @@ import {
   Text,
   ViewStyle,
   useWindowDimensions,
+  ActivityIndicator,
 } from 'react-native';
-import MessagePhoto from 'screens/ConversationScreen/MessagePhoto';
 import {lastReplyFromNow, messageFromNow} from 'utils/DateUtils';
 
 type UserReplyProps = {
@@ -82,9 +83,16 @@ type PinPostItemProps = {
   embeds?: boolean;
   style?: ViewStyle;
   detail?: boolean;
+  onLongPress?: () => void;
 };
 
-const PinPostItem = ({pinPost, embeds, detail, style}: PinPostItemProps) => {
+const PinPostItem = ({
+  pinPost,
+  embeds,
+  detail,
+  style,
+  onLongPress,
+}: PinPostItemProps) => {
   const contentRef = useRef();
   const navigation = useNavigation();
   const {width} = useWindowDimensions();
@@ -92,21 +100,24 @@ const PinPostItem = ({pinPost, embeds, detail, style}: PinPostItemProps) => {
   const community = useCurrentCommunity();
   const teamUserData = useTeamUserData();
   const reactData = useAppSelector(state => state.reactReducer.reactData);
-  // const userData = useAppSelector(
-  //   state =>
-  //     teamUserData.find(el => el.user_id === state.user.userData.user_id) ||
-  //     state.user.userData,
-  // );
   const reacts = useMemo(
     () => reactData[pinPost.task_id] || [],
     [pinPost.task_id, reactData],
   );
   const {colors} = useThemeColor();
+  const isArchived = useMemo(
+    () => pinPost.status === 'archived',
+    [pinPost.status],
+  );
   const creator = useMemo(
     () => teamUserData.find(el => el.user_id === pinPost.message_sender_id),
     [pinPost.message_sender_id, teamUserData],
   );
   const isIPFS = useMemo(() => !!pinPost.cid, [pinPost.cid]);
+  const isUploadingToIPFS = useMemo(
+    () => !!pinPost.uploadingIPFS,
+    [pinPost.uploadingIPFS],
+  );
   const onContentLayout = useCallback(() => {
     contentRef.current.measure((ox, oy, w, h) => {
       setIsMore(h > 130);
@@ -117,12 +128,17 @@ const PinPostItem = ({pinPost, embeds, detail, style}: PinPostItemProps) => {
       postId: pinPost.task_id,
     });
   }, [navigation, pinPost.task_id]);
+  const handleLongPress = useCallback(
+    () => onLongPress?.(pinPost),
+    [onLongPress, pinPost],
+  );
   if (!creator) return null;
   return (
     <Touchable
       style={[styles.container, style]}
       onPress={onPinPostPress}
-      disabled={detail}>
+      disabled={detail}
+      onLongPress={handleLongPress}>
       <View style={styles.header}>
         <AvatarView user={creator} size={detail ? 35 : 20} />
         <View
@@ -146,10 +162,18 @@ const PinPostItem = ({pinPost, embeds, detail, style}: PinPostItemProps) => {
                   </Text>
                 </View>
               )}
+              {isUploadingToIPFS && detail && (
+                <View style={styles.ipfsWrap}>
+                  <ActivityIndicator size="small" color={colors.mention} />
+                </View>
+              )}
             </View>
           )}
         </View>
         {isIPFS && !detail && <SVG.IconIPFSLock fill={colors.mention} />}
+        {isUploadingToIPFS && !detail && (
+          <ActivityIndicator size="small" color={colors.mention} />
+        )}
       </View>
       {embeds && (
         <Text style={[styles.createdAt, {color: colors.subtext, marginTop: 5}]}>
@@ -164,8 +188,20 @@ const PinPostItem = ({pinPost, embeds, detail, style}: PinPostItemProps) => {
           <RenderHTML
             html={
               detail
-                ? normalizeMessageText(pinPost.content)
-                : normalizeMessageTextPlain(pinPost.content)
+                ? normalizeMessageText(
+                    pinPost.content,
+                    undefined,
+                    undefined,
+                    undefined,
+                    isArchived,
+                  )
+                : normalizeMessageTextPlain(
+                    pinPost.content,
+                    undefined,
+                    undefined,
+                    undefined,
+                    isArchived,
+                  )
             }
             defaultTextProps={
               detail
