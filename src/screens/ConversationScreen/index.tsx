@@ -352,32 +352,30 @@ const ConversationScreen = () => {
             <SVG.IconPin fill={colors.text} />
           </Touchable>
         </View>
-        <View style={styles.body}>
-          <SectionList
-            sections={normalizeMessages(messages).map(el => ({
-              data: normalizeMessage(el.data),
-              title: el.title,
-            }))}
-            inverted
-            keyExtractor={item => item.message_id}
-            renderItem={renderItem}
-            initialNumToRender={20}
-            windowSize={3}
-            ListHeaderComponent={<View style={{height: 15}} />}
-            onEndReached={onEndReached}
-            renderSectionFooter={renderFooter}
-            onMoveShouldSetResponder={onMoveShouldSetResponder}
-            ListFooterComponent={
-              loadMoreMessage ? (
-                <View style={styles.footerMessage}>
-                  <ActivityIndicator />
-                </View>
-              ) : (
-                <View />
-              )
-            }
-          />
-        </View>
+        <SectionList
+          style={{flex: 1}}
+          sections={normalizeMessages(messages).map(el => ({
+            data: normalizeMessage(el.data),
+            title: el.title,
+          }))}
+          inverted
+          keyExtractor={item => item.message_id}
+          renderItem={renderItem}
+          initialNumToRender={20}
+          ListHeaderComponent={<View style={{height: 15}} />}
+          onEndReached={onEndReached}
+          renderSectionFooter={renderFooter}
+          onMoveShouldSetResponder={onMoveShouldSetResponder}
+          ListFooterComponent={
+            loadMoreMessage ? (
+              <View style={styles.footerMessage}>
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <View />
+            )
+          }
+        />
         <View style={styles.bottomView}>
           <MessageInput
             currentChannel={currentChannel}
