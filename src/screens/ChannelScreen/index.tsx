@@ -122,7 +122,6 @@ const ChannelScreen = () => {
   const openDrawer = useCallback(() => {
     navigation.getParent(DrawerID.CommunityDrawer).openDrawer();
   }, [navigation]);
-  const onMoveShouldSetResponder = useCallback(() => true, []);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -148,7 +147,6 @@ const ChannelScreen = () => {
             ListHeaderComponent={<View style={{height: 10}} />}
             SectionSeparatorComponent={renderItemSeparate}
             renderItem={renderItem}
-            onMoveShouldSetResponder={onMoveShouldSetResponder}
             showsVerticalScrollIndicator={false}
           />
         </View>

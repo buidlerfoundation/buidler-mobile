@@ -7,13 +7,16 @@ import {View, StyleSheet, Text} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import useThemeColor from 'hook/useThemeColor';
+import GlobalVariable from 'services/GlobalVariable';
 
 const LoginScreen = () => {
   const {colors} = useThemeColor();
   const onCreatePress = useCallback(() => {
+    GlobalVariable.sessionExpired = false;
     NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen);
   }, []);
   const onImportPress = useCallback(() => {
+    GlobalVariable.sessionExpired = false;
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
   }, []);
   return (

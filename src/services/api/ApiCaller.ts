@@ -1,8 +1,14 @@
 import {BaseDataApi} from 'models';
 import store from 'store';
-import AppConfig from 'common/AppConfig';
+import AppConfig, {whiteListRefreshTokenApis} from 'common/AppConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
+import api from '.';
+import GlobalVariable from 'services/GlobalVariable';
+import Toast from 'react-native-toast-message';
+import {logout} from 'actions/UserActions';
+import NavigationServices from 'services/NavigationServices';
+import {StackID} from 'common/ScreenID';
 
 const METHOD_GET = 'get';
 const METHOD_POST = 'post';
@@ -10,15 +16,78 @@ const METHOD_PUT = 'put';
 const METHOD_DELETE = 'delete';
 const METHOD_PATCH = 'patch';
 
+const handleRefreshToken = async () => {
+  const refreshTokenExpire = await AsyncStorage.getItem(
+    AsyncKey.refreshTokenExpire,
+  );
+  const refreshToken = await AsyncStorage.getItem(AsyncKey.refreshTokenKey);
+  if (
+    !refreshTokenExpire ||
+    !refreshToken ||
+    new Date().getTime() / 1000 > refreshTokenExpire
+  ) {
+    return false;
+  }
+  const refreshTokenRes = await api.refreshToken(refreshToken);
+  if (refreshTokenRes.success) {
+    await AsyncStorage.setItem(
+      AsyncKey.accessTokenKey,
+      refreshTokenRes?.data?.token,
+    );
+    await AsyncStorage.setItem(
+      AsyncKey.refreshTokenKey,
+      refreshTokenRes?.data?.refresh_token,
+    );
+    await AsyncStorage.setItem(
+      AsyncKey.tokenExpire,
+      refreshTokenRes?.data?.token_expire_at?.toString(),
+    );
+    await AsyncStorage.setItem(
+      AsyncKey.refreshTokenExpire,
+      refreshTokenRes?.data?.refresh_token_expire_at?.toString(),
+    );
+  }
+  return refreshTokenRes.success;
+};
+
 async function requestAPI<T = any>(
   method: string,
   uri: string,
   body?: any,
   serviceBaseUrl?: string,
   controller?: AbortController,
+  h?: any,
 ): Promise<BaseDataApi<T>> {
+  if (GlobalVariable.sessionExpired) {
+    return {
+      success: false,
+      statusCode: 403,
+    };
+  }
+  if (!whiteListRefreshTokenApis.includes(`${method}-${uri}`)) {
+    const expireTokenTime = await AsyncStorage.getItem(AsyncKey.tokenExpire);
+    if (!expireTokenTime || new Date().getTime() / 1000 > expireTokenTime) {
+      const success = await handleRefreshToken();
+      if (!success) {
+        if (!GlobalVariable.sessionExpired) {
+          GlobalVariable.sessionExpired = true;
+          Toast.show({
+            type: 'customError',
+            props: {message: 'Session expired'},
+          });
+          await AsyncStorage.clear();
+          store.dispatch(logout());
+          NavigationServices.reset(StackID.AuthStack);
+        }
+        return {
+          success: false,
+          statusCode: 403,
+        };
+      }
+    }
+  }
   // Build API header
-  const headers: any = {
+  let headers: any = {
     Accept: '*/*',
     'Access-Control-Allow-Origin': '*',
   };
@@ -53,6 +122,13 @@ async function requestAPI<T = any>(
 
   if (chainId) {
     headers['Chain-Id'] = chainId;
+  }
+
+  if (h) {
+    headers = {
+      ...headers,
+      ...h,
+    };
   }
 
   // Build API body
@@ -123,8 +199,9 @@ const ApiCaller = {
     data?: any,
     baseUrl?: string,
     controller?: AbortController,
+    h?: any,
   ) {
-    return requestAPI<T>(METHOD_POST, url, data, baseUrl, controller);
+    return requestAPI<T>(METHOD_POST, url, data, baseUrl, controller, h);
   },
 
   patch<T>(

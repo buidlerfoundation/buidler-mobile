@@ -333,9 +333,8 @@ const ConversationScreen = () => {
   const onPinPress = useCallback(() => {
     navigation.navigate(ScreenID.PinPostScreen);
   }, [navigation]);
-  const onMoveShouldSetResponder = useCallback(() => true, []);
   return (
-    <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom}>
+    <KeyboardLayout>
       <View style={styles.container}>
         <View style={styles.header}>
           <Touchable onPress={openSideMenu}>
@@ -367,7 +366,6 @@ const ConversationScreen = () => {
           ListHeaderComponent={<View style={{height: 15}} />}
           onEndReached={onEndReached}
           renderSectionFooter={renderFooter}
-          onMoveShouldSetResponder={onMoveShouldSetResponder}
           ListFooterComponent={
             loadMoreMessage ? (
               <View style={styles.footerMessage}>

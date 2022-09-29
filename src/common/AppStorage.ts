@@ -3,6 +3,7 @@ const PrefixKey = 'Buidler_AsyncKey';
 export const AsyncKey = {
   theme: PrefixKey + '_Theme',
   accessTokenKey: `${PrefixKey}_access_token`,
+  refreshTokenKey: `${PrefixKey}_refresh_token`,
   lastChannelId: `${PrefixKey}_last_channel_id`,
   lastTeamId: `${PrefixKey}_last_team_id`,
   ivKey: `${PrefixKey}_iv_key`,
@@ -10,4 +11,6 @@ export const AsyncKey = {
   deviceCode: `${PrefixKey}_device_code`,
   encryptedSeedKey: `${PrefixKey}_encrypted_seed_key`,
   channelPrivateKey: `${PrefixKey}_channel_private_key`,
+  tokenExpire: `${PrefixKey}_token_expire_key`,
+  refreshTokenExpire: `${PrefixKey}_refresh_token_expire_key`,
 };

@@ -26,7 +26,6 @@ const SideBarCommunity = ({navigation}: any) => {
     },
     [handlePress],
   );
-  const onMoveShouldSetResponder = useCallback(() => true, []);
   return (
     <View style={[styles.container]}>
       <Text style={[styles.title, {color: colors.text}]}>Community</Text>
@@ -38,7 +37,6 @@ const SideBarCommunity = ({navigation}: any) => {
         ListHeaderComponent={<View style={{height: 10}} />}
         ListFooterComponent={<View style={{height: 10}} />}
         ItemSeparatorComponent={() => <View style={{height: 10}} />}
-        onMoveShouldSetResponder={onMoveShouldSetResponder}
         showsVerticalScrollIndicator={false}
       />
     </View>

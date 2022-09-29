@@ -31,31 +31,33 @@ const ImportSeedPhraseScreen = () => {
     <KeyboardLayout>
       <View style={styles.container}>
         <NavigationHeader title="Add seed phrase" />
-        <View
-          style={[
-            styles.inputWrapper,
-            {
-              backgroundColor: colors.activeBackgroundLight,
-              borderColor: colors.border,
-            },
-          ]}>
-          <TextInput
-            style={[styles.input, {color: colors.text}]}
-            placeholder="Your seed phrase"
-            placeholderTextColor={colors.subtext}
-            keyboardAppearance={dark ? 'dark' : 'light'}
-            autoFocus
-            autoCorrect={false}
-            value={seed}
-            onChangeText={onChangeSeed}
-            multiline
-            autoCapitalize="none"
-          />
-          <Touchable style={styles.buttonPaste} onPress={fetchCopiedText}>
-            <Text style={[styles.textPaste, {color: colors.subtext}]}>
-              Paste
-            </Text>
-          </Touchable>
+        <View style={{flex: 1}}>
+          <View
+            style={[
+              styles.inputWrapper,
+              {
+                backgroundColor: colors.activeBackgroundLight,
+                borderColor: colors.border,
+              },
+            ]}>
+            <TextInput
+              style={[styles.input, {color: colors.text}]}
+              placeholder="Your seed phrase"
+              placeholderTextColor={colors.subtext}
+              keyboardAppearance={dark ? 'dark' : 'light'}
+              autoFocus
+              autoCorrect={false}
+              value={seed}
+              onChangeText={onChangeSeed}
+              multiline
+              autoCapitalize="none"
+            />
+            <Touchable style={styles.buttonPaste} onPress={fetchCopiedText}>
+              <Text style={[styles.textPaste, {color: colors.subtext}]}>
+                Paste
+              </Text>
+            </Touchable>
+          </View>
         </View>
         <Touchable
           style={[styles.buttonNext, {backgroundColor: colors.primary}]}
@@ -96,10 +98,6 @@ const styles = StyleSheet.create({
   },
   buttonNext: {
     height: 60,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },

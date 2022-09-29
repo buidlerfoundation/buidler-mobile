@@ -27,8 +27,33 @@ const ToastContainer = () => {
           </View>
         );
       },
+      customError: ({props}) => {
+        return (
+          <View
+            style={[
+              styles.toastContainer,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.activeBackgroundLight,
+              },
+            ]}>
+            <Text style={[styles.title, {color: colors.urgent}]}>
+              {props?.title || 'Error'}
+            </Text>
+            <Text style={[styles.message, {color: colors.text}]}>
+              {props?.message}
+            </Text>
+          </View>
+        );
+      },
     }),
-    [colors.activeBackgroundLight, colors.border, colors.success, colors.text],
+    [
+      colors.activeBackgroundLight,
+      colors.border,
+      colors.success,
+      colors.text,
+      colors.urgent,
+    ],
   );
   return <Toast config={toastConfigs} />;
 };

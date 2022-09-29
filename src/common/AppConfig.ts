@@ -6,4 +6,11 @@ const AppConfig = {
   maximumFileSize: 100000000,
 };
 
+export const whiteListRefreshTokenApis = [
+  'get-initial',
+  'post-user/refresh',
+  'post-user/address',
+  'post-user',
+];
+
 export default AppConfig;

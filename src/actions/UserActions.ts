@@ -237,6 +237,18 @@ export const accessApp =
         if (res.statusCode === 200) {
           dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
           await AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);
+          await AsyncStorage.setItem(
+            AsyncKey.refreshTokenKey,
+            res.refresh_token,
+          );
+          await AsyncStorage.setItem(
+            AsyncKey.tokenExpire,
+            res.token_expire_at?.toString(),
+          );
+          await AsyncStorage.setItem(
+            AsyncKey.refreshTokenExpire,
+            res.refresh_token_expire_at?.toString(),
+          );
           NavigationServices.reset(ScreenID.SplashScreen);
         } else {
           err = res.message;

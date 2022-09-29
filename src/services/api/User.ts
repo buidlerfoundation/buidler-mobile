@@ -157,3 +157,14 @@ export const addDeviceToken = (data: {
   device_token: string;
   platform: string;
 }) => ApiCaller.post('device_token', data);
+
+export const refreshToken = (token: string) => {
+  return ApiCaller.post<{
+    token: string;
+    token_expire_at: number;
+    refresh_token: string;
+    refresh_token_expire_at: number;
+  }>('user/refresh', undefined, undefined, undefined, {
+    'Refresh-Token': token,
+  });
+};

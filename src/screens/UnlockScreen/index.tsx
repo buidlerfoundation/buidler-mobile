@@ -11,9 +11,6 @@ import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import {Team} from 'models';
 import NavigationServices from 'services/NavigationServices';
 import {DrawerID} from 'common/ScreenID';
-import FastImage from 'react-native-fast-image';
-import Blockies from 'components/Blockies';
-import ImageHelper from 'helpers/ImageHelper';
 import Fonts from 'common/Fonts';
 import {decryptString, getIV} from 'utils/DataCrypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -27,6 +24,7 @@ import useAppSelector from 'hook/useAppSelector';
 import {findTeamAndChannel, setCurrentTeam} from 'actions/UserActions';
 import {useCallback} from 'react';
 import useThemeColor from 'hook/useThemeColor';
+import AvatarView from 'components/AvatarView';
 
 const UnlockScreen = () => {
   const [pass, setPass] = useState('');
@@ -85,25 +83,12 @@ const UnlockScreen = () => {
     setLoading(false);
   }, [accessApp, dispatch, pass, user.user_id, loading]);
   if (!user) return <View style={styles.container} />;
-  const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
+
   return (
     <KeyboardLayout>
       <View style={styles.container}>
         <View style={styles.body}>
-          {typeof data === 'string' ? (
-            <FastImage
-              style={{width: 120, height: 120, borderRadius: 60}}
-              source={{
-                uri: data,
-              }}
-            />
-          ) : (
-            <Blockies
-              blockies={data.address}
-              size={8}
-              style={{width: 120, height: 120, borderRadius: 60}}
-            />
-          )}
+          <AvatarView user={user} withStatus={false} size={120} />
           <Text style={[styles.userName, {color: colors.text}]}>
             {user?.user_name}
           </Text>
@@ -146,7 +131,6 @@ const UnlockScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
     flex: 1,
   },
   body: {
