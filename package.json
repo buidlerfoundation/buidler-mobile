@@ -19,6 +19,7 @@
     "@react-native-clipboard/clipboard": "^1.8.5",
     "@react-native-firebase/app": "^13.0.1",
     "@react-native-firebase/messaging": "^13.0.1",
+    "@react-navigation/bottom-tabs": "^6.4.0",
     "@react-navigation/drawer": "^6.5.0",
     "@react-navigation/material-top-tabs": "^6.0.6",
     "@react-navigation/native": "^6.0.6",

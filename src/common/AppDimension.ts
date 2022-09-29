@@ -16,7 +16,7 @@ class AppDimension {
         ? 44
         : 20
       : StatusBar.currentHeight;
-  headerHeight = 42;
+  headerHeight = 62;
   bottomTabbarHeight = Platform.OS === 'ios' ? 49 : 56;
   // logo app
   largeLogo = 178;

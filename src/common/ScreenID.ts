@@ -11,6 +11,8 @@ export default {
   EnterOTPScreen: 'EnterOTP',
   PinPostScreen: 'PinPostScreen',
   PinPostDetailScreen: 'PinPostDetailScreen',
+  WalletScreen: 'WalletScreen',
+  ProfileScreen: 'ProfileScreen',
 };
 
 export const StackID = {

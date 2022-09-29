@@ -47,6 +47,11 @@ import IconMenuCopyPost from '../assets/images/ic_menu_copy_post.svg';
 import IconMenuArchive from '../assets/images/ic_menu_archive.svg';
 import IconMenuUnarchive from '../assets/images/ic_menu_unarchive.svg';
 import IconMenuJumpMessage from '../assets/images/ic_menu_jump_message.svg';
+import IconTabChat from '../assets/images/ic_tab_chat.svg';
+import IconTabWallet from '../assets/images/ic_tab_wallet.svg';
+import IconArrowRight from '../assets/images/ic_arrow_right.svg';
+import IconVerifyBadge from '../assets/images/ic_verify_badge.svg';
+import IconMenuLogout from '../assets/images/ic_menu_logout.svg';
 
 export default {
   IconExpand,
@@ -98,4 +103,9 @@ export default {
   IconMenuArchive,
   IconMenuUnarchive,
   IconMenuJumpMessage,
+  IconTabChat,
+  IconTabWallet,
+  IconArrowRight,
+  IconVerifyBadge,
+  IconMenuLogout,
 };

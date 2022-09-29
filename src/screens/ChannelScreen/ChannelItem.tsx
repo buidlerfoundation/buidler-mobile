@@ -33,8 +33,8 @@ const ChannelItem = ({
   );
 
   const handlePress = useCallback(() => {
-    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
     dispatch(setCurrentChannel(c));
+    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
   }, [c, dispatch]);
   const isUnSeen = useMemo(() => !c?.seen, [c?.seen]);
   const isMuted = useMemo(

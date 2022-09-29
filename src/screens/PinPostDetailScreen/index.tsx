@@ -256,6 +256,7 @@ const PinPostDetailScreen = () => {
             postId={postId}
             onSent={onKeyboardShow}
             inputRef={inputRef}
+            inputStyle={styles.inputContainer}
           />
         </View>
         <Modal
@@ -353,6 +354,9 @@ const styles = StyleSheet.create({
   modalMenuMessage: {
     justifyContent: 'flex-end',
     margin: 0,
+  },
+  inputContainer: {
+    paddingBottom: AppDimension.extraBottom + 10,
   },
 });
 

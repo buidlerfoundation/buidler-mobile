@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Fonts.Medium,
     marginLeft: 5,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   senderName: {
     fontSize: 16,

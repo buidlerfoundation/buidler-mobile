@@ -1,4 +1,3 @@
-import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
@@ -347,7 +346,6 @@ const MessageInput = ({
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    paddingBottom: AppDimension.extraBottom + 10,
   },
   replyContainer: {
     flexDirection: 'row',

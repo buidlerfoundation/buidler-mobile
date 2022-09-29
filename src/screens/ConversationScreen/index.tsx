@@ -75,15 +75,17 @@ const ConversationScreen = () => {
     [],
   );
   useEffect(() => {
-    dispatch(
-      getMessages(
-        currentChannel.channel_id,
-        'Public',
-        undefined,
-        undefined,
-        true,
-      ),
-    );
+    if (currentChannel.channel_id) {
+      dispatch(
+        getMessages(
+          currentChannel.channel_id,
+          'Public',
+          undefined,
+          undefined,
+          true,
+        ),
+      );
+    }
   }, [currentChannel.channel_id, dispatch]);
   const {colors} = useThemeColor();
   const onRemoveAttachment = useCallback(
@@ -500,7 +502,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    height: 42,
+    height: AppDimension.headerHeight,
   },
   titleWrap: {
     flex: 1,
