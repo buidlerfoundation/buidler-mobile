@@ -12,6 +12,7 @@ import {utils} from 'ethers';
 import RNGoldenKeystore from 'react-native-golden-keystore';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
+import {isValidPrivateKey} from 'helpers/SeedHelper';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -211,12 +212,19 @@ export const accessApp =
     dispatch({type: actionTypes.ACCESS_APP_REQUEST});
     try {
       const iv = await getIV();
-      const {private_key} = await RNGoldenKeystore.createHDKeyPair(
-        seed,
-        '',
-        RNGoldenKeystore.CoinType.ETH.path,
-        0,
-      );
+      let private_key;
+      if (isValidPrivateKey(seed)) {
+        private_key = seed;
+      } else {
+        private_key = (
+          await RNGoldenKeystore.createHDKeyPair(
+            seed,
+            '',
+            RNGoldenKeystore.CoinType.ETH.path,
+            0,
+          )
+        ).private_key;
+      }
       dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: private_key});
       const publicKey = utils.computePublicKey(`0x${private_key}`, true);
       const data = {[publicKey]: private_key};

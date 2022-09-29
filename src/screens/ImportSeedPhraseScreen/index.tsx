@@ -10,6 +10,8 @@ import RNGoldenKeystore from 'react-native-golden-keystore';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import useThemeColor from 'hook/useThemeColor';
+import {isValidPrivateKey} from 'helpers/SeedHelper';
+import Toast from 'react-native-toast-message';
 
 const ImportSeedPhraseScreen = () => {
   const {colors, dark} = useThemeColor();
@@ -20,11 +22,12 @@ const ImportSeedPhraseScreen = () => {
   }, []);
   const onNextPress = useCallback(async () => {
     const isValid = await RNGoldenKeystore.mnemonicIsValid(seed);
-    if (isValid === '0') {
-      alert('Invalid seed phrase');
+    if (isValid === '1' || isValidPrivateKey(seed)) {
+      NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {seed});
       return;
     }
-    NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {seed});
+
+    Toast.show({type: 'customError', props: {message: 'Invalid seed phrase'}});
   }, [seed]);
   const onChangeSeed = useCallback(text => setSeed(text), []);
   return (
