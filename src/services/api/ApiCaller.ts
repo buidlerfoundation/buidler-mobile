@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import {logout} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
+import SocketUtils from 'utils/SocketUtils';
 
 const METHOD_GET = 'get';
 const METHOD_POST = 'post';
@@ -46,6 +47,7 @@ const handleRefreshToken = async () => {
       AsyncKey.refreshTokenExpire,
       refreshTokenRes?.data?.refresh_token_expire_at?.toString(),
     );
+    SocketUtils.init();
   }
   return refreshTokenRes.success;
 };

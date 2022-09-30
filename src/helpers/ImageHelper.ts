@@ -1,3 +1,5 @@
+import {utils} from 'ethers';
+
 type imageOptions = {
   w?: number;
   h?: number;
@@ -15,7 +17,8 @@ class ImageHelper {
 
   normalizeAvatar = (name: string, id: string) => {
     if (!name && id?.substring(0, 2) === '0x') {
-      return {address: id};
+      const address = utils.computeAddress(id);
+      return {address};
     }
     if (name?.includes?.('http')) return name;
     return `${this.imgDomain}${id}/${name}`;

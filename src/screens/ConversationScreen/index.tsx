@@ -43,6 +43,7 @@ import MenuMessage from 'components/MenuMessage';
 import MessageInput from 'components/MessageInput';
 import MessageItem from 'components/MessageItem';
 import MenuPinPost from 'components/MenuPinPost';
+import HapticUtils from 'utils/HapticUtils';
 // import {useGlobalModalContext} from 'components/ModalContainer';
 
 const ConversationScreen = () => {
@@ -122,6 +123,7 @@ const ConversationScreen = () => {
     [colors.secondary, colors.separator],
   );
   const openMenuMessage = useCallback((message: MessageData) => {
+    HapticUtils.trigger();
     setSelectedMessage(message);
     if (message.task) {
       setOpenMenuPinPost(true);

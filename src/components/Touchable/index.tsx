@@ -8,7 +8,7 @@ interface TouchableProps extends TouchableOpacityProps {
 
 const Touchable = (props: TouchableProps) => {
   return (
-    <TouchableOpacity activeOpacity={0.7} {...props}>
+    <TouchableOpacity activeOpacity={0.7} delayLongPress={150} {...props}>
       {props.children}
     </TouchableOpacity>
   );

@@ -30,6 +30,7 @@ import {buidlerURL} from 'helpers/LinkHelper';
 import Toast from 'react-native-toast-message';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import ScreenID from 'common/ScreenID';
+import HapticUtils from 'utils/HapticUtils';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
@@ -47,6 +48,7 @@ const PinPostScreen = () => {
   const userRole = useUserRole();
   const [selectedPinPost, setSelectedPinPost] = useState<TaskData>(null);
   const openMenuPinPost = useCallback((pinPost: TaskData) => {
+    HapticUtils.trigger();
     setSelectedPinPost(pinPost);
     setOpenMenuPinPost(true);
   }, []);
