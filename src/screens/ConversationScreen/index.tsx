@@ -334,7 +334,7 @@ const ConversationScreen = () => {
     navigation.navigate(ScreenID.PinPostScreen);
   }, [navigation]);
   return (
-    <KeyboardLayout>
+    <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Touchable onPress={openSideMenu}>
