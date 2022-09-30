@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import {useDispatch} from 'react-redux';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
-import {Team} from 'models';
 import NavigationServices from 'services/NavigationServices';
 import {DrawerID} from 'common/ScreenID';
 import Fonts from 'common/Fonts';
@@ -21,7 +20,11 @@ import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
 import store from '../../store';
 import useAppSelector from 'hook/useAppSelector';
-import {findTeamAndChannel, setCurrentTeam} from 'actions/UserActions';
+import {
+  findTeamAndChannel,
+  setCurrentChannel,
+  setCurrentTeam,
+} from 'actions/UserActions';
 import {useCallback} from 'react';
 import useThemeColor from 'hook/useThemeColor';
 import AvatarView from 'components/AvatarView';
@@ -39,14 +42,22 @@ const UnlockScreen = () => {
       PushNotificationHelper.initialNotification &&
       PushNotificationHelper.initNotificationData
     ) {
-      const {team} = store.getState()?.user;
+      const {team, currentTeamId, channelMap} = store.getState()?.user;
+      const channels = channelMap?.[currentTeamId];
       const {data, type} = PushNotificationHelper.initNotificationData;
-      params = {type};
       const {team_id} = data.notification_data;
-      const {channel_id} = data.message_data;
-      const teamNotification = team?.find?.((t: Team) => t.team_id === team_id);
-      if (teamNotification) {
-        await dispatch(setCurrentTeam(teamNotification, channel_id));
+      const {entity_id, entity_type} = data.message_data;
+      params = {type, entity_id, entity_type};
+      const teamNotification = team?.find?.(t => t.team_id === team_id);
+      const channelNotification = channels.find(
+        el => el.channel_id === entity_id,
+      );
+      if (currentTeamId === team_id) {
+        if (channelNotification) {
+          await dispatch(setCurrentChannel(channelNotification));
+        }
+      } else if (teamNotification) {
+        await dispatch(setCurrentTeam(teamNotification, entity_id));
       }
       PushNotificationHelper.reset();
     }

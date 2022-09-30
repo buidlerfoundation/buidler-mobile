@@ -7,7 +7,6 @@ import {AsyncKey} from 'common/AppStorage';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import messaging from '@react-native-firebase/messaging';
 import api from 'services/api';
-import {Community} from 'models';
 import {uniqChannelPrivateKey} from 'helpers/ChannelHelper';
 import store from '../../store';
 import useAppDispatch from 'hook/useAppDispatch';
@@ -15,6 +14,7 @@ import {
   findTeamAndChannel,
   findUser,
   getInitial,
+  setCurrentChannel,
   setCurrentTeam,
 } from 'actions/UserActions';
 import useAppSelector from 'hook/useAppSelector';
@@ -25,21 +25,27 @@ const SplashScreen = () => {
   const privateKey = useAppSelector(state => state.configs.privateKey);
   const accessApp = useCallback(async () => {
     await dispatch(findTeamAndChannel?.());
-    const {team} = store.getState()?.user;
+    const {team, currentTeamId, channelMap} = store.getState()?.user;
+    const channels = channelMap?.[currentTeamId];
     let params = {};
     if (
       PushNotificationHelper.initialNotification &&
       PushNotificationHelper.initNotificationData
     ) {
       const {data, type} = PushNotificationHelper.initNotificationData;
-      params = {type};
       const {team_id} = data.notification_data;
-      const {channel_id} = data.message_data;
-      const teamNotification = team?.find?.(
-        (t: Community) => t.team_id === team_id,
+      const {entity_id, entity_type} = data.message_data;
+      params = {type, entity_id, entity_type};
+      const teamNotification = team?.find?.(t => t.team_id === team_id);
+      const channelNotification = channels.find(
+        el => el.channel_id === entity_id,
       );
-      if (teamNotification) {
-        await dispatch(setCurrentTeam(teamNotification, channel_id));
+      if (currentTeamId === team_id) {
+        if (channelNotification) {
+          await dispatch(setCurrentChannel(channelNotification));
+        }
+      } else if (teamNotification) {
+        await dispatch(setCurrentTeam(teamNotification, entity_id));
       }
       PushNotificationHelper.reset();
     }

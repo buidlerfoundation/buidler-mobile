@@ -4,14 +4,10 @@ import messaging, {
 import Permissions from 'react-native-permissions';
 import notifee from '@notifee/react-native';
 import {actionTypes} from 'actions/actionTypes';
-import api from 'services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {AsyncKey} from 'common/AppStorage';
-import SocketUtils from 'utils/SocketUtils';
 import store from '../store';
-import {Team} from 'models';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
+import {setCurrentTeam} from 'actions/UserActions';
 
 type NotificationPayload = {data: any; type: string};
 
@@ -55,40 +51,35 @@ class PushNotificationHelper {
 
   notificationTapped = async ({data, type}: NotificationPayload) => {
     if (type === 'message') {
-      const {currentTeam, teamUserData, team, channel, userData} =
+      const {currentTeamId, currentChannelId, team, channelMap} =
         store.getState()?.user;
+      const channel = channelMap?.[currentTeamId];
       const {team_id} = data.notification_data;
-      const {channel_id} = data.message_data;
+      const {entity_id, entity_type} = data.message_data;
 
-      const teamNotification = team.find((t: any) => t.team_id === team_id);
-      const channelNotification = channel.find(
-        (c: any) => c.channel_id === channel_id,
-      );
-      if (channelNotification?.channel_type === 'Direct') {
-        channelNotification.user = teamUserData.find(
-          (u: any) =>
-            u.user_id ===
-            channelNotification.channel_member.find(
-              (el: string) => el !== userData?.user_id,
-            ),
-        );
+      const teamNotification = team.find(t => t.team_id === team_id);
+      const channelNotification = channel.find(c => c.channel_id === entity_id);
+      if (currentChannelId === entity_id) {
+        // Do nothing
+      } else if (currentTeamId === team_id) {
+        if (channelNotification) {
+          store.dispatch({
+            type: actionTypes.SET_CURRENT_CHANNEL,
+            payload: {channel: channelNotification},
+          });
+        }
+      } else if (teamNotification) {
+        await store.dispatch(setCurrentTeam(teamNotification, entity_id));
       }
-      if (currentTeam.team_id === team_id) {
-        store.dispatch({
-          type: actionTypes.SET_CURRENT_CHANNEL,
-          payload: {channel: channelNotification},
+      if (entity_type === 'post') {
+        NavigationServices.pushToScreen(ScreenID.PinPostDetailScreen, {
+          postId: entity_id,
         });
       } else {
-        await this.setTeamFromNotification(
-          teamNotification,
-          channel_id,
-          store.dispatch,
-        );
+        if (NavigationServices.currentRouteName === ScreenID.ConversationScreen)
+          return;
+        NavigationServices.pushToScreen(ScreenID.ConversationScreen);
       }
-
-      if (NavigationServices.currentRouteName === ScreenID.ConversationScreen)
-        return;
-      NavigationServices.pushToScreen(ScreenID.ConversationScreen);
     }
   };
 
@@ -110,66 +101,17 @@ class PushNotificationHelper {
 
   async checkPermission() {
     const res = await Permissions.checkNotifications();
-    return res.status == Permissions.RESULTS.GRANTED;
+    return res.status === Permissions.RESULTS.GRANTED;
   }
 
   requestPermissionNotification = async () => {
     const res = await Permissions.requestNotifications(['alert', 'sound']);
-    return res.status == Permissions.RESULTS.GRANTED;
+    return res.status === Permissions.RESULTS.GRANTED;
   };
 
   reset = () => {
     this.initialNotification = false;
     this.initNotificationData = null;
-  };
-
-  setTeamFromNotification = async (
-    team: Team,
-    channelId: string,
-    dispatch: any,
-  ) => {
-    dispatch({
-      type: actionTypes.CHANNEL_REQUEST,
-    });
-    const teamUsersRes = await api.getTeamUsers(team.team_id);
-    let lastChannelId = null;
-    if (channelId) {
-      lastChannelId = channelId;
-    } else {
-      lastChannelId = await AsyncStorage.getItem(AsyncKey.lastChannelId);
-    }
-    const resChannel = await api.findChannel(team.team_id);
-    if (teamUsersRes.statusCode === 200) {
-      dispatch({
-        type: actionTypes.GET_TEAM_USER,
-        payload: {teamUsers: teamUsersRes.data, teamId: team.team_id},
-      });
-    }
-    SocketUtils.changeTeam(team.team_id);
-    dispatch({
-      type: actionTypes.SET_CURRENT_TEAM,
-      payload: {team, resChannel, lastChannelId},
-    });
-    AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
-    const resSpaceChannel = await api.getSpaceChannel(team.team_id);
-    if (resSpaceChannel.statusCode === 200) {
-      dispatch({
-        type: actionTypes.GROUP_CHANNEL,
-        payload: resSpaceChannel.data,
-      });
-    }
-    if (resChannel.statusCode === 200) {
-      if (resChannel.data.length > 0) {
-        dispatch({
-          type: actionTypes.CHANNEL_SUCCESS,
-          payload: {channel: resChannel.data},
-        });
-      } else {
-        dispatch({
-          type: actionTypes.CHANNEL_FAIL,
-        });
-      }
-    }
   };
 }
 
