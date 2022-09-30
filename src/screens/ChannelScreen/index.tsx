@@ -2,7 +2,7 @@ import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Space} from 'models';
 import React, {memo, useCallback, useState} from 'react';
-import {View, StyleSheet, Text, SectionList} from 'react-native';
+import {View, StyleSheet, Text, FlatList} from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import Fonts from 'common/Fonts';
 import MemberItem from './MemberItem';
@@ -12,10 +12,8 @@ import useThemeColor from 'hook/useThemeColor';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useSpaceChannel from 'hook/useSpaceChannel';
 import useAppSelector from 'hook/useAppSelector';
-import useCurrentChannel from 'hook/useCurrentChannel';
 import useTeamUserData from 'hook/useTeamUserData';
 import {useMemo} from 'react';
-import ChannelItem from './ChannelItem';
 import CommunityLogo from 'components/CommunityLogo';
 import {DrawerID} from 'common/ScreenID';
 import {useNavigation} from '@react-navigation/native';
@@ -26,7 +24,6 @@ const ChannelScreen = () => {
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
   const currentTeam = useCurrentCommunity();
-  const currentChannel = useCurrentChannel();
   const [isCollapsed, setCollapsed] = useState(false);
   const toggleCollapsed = useCallback(
     () => setCollapsed(current => !current),
@@ -73,52 +70,16 @@ const ChannelScreen = () => {
     user,
     userData.user_id,
   ]);
-  const renderSectionHeader = useCallback(
-    (e: {section: {title: Space; data: Array<string>}}) => {
-      return (
-        <SpaceItem
-          isEmpty={e.section.data.length === 0}
-          item={e.section.title}
-          teamId={currentTeam.team_id}
-        />
-      );
+  const renderSpace = useCallback(
+    ({item}: {item: Space}) => {
+      return <SpaceItem item={item} teamId={currentTeam.team_id} />;
     },
     [currentTeam.team_id],
   );
 
-  const renderItemSeparate = useCallback(e => {
-    return <View style={{height: e.leadingItem ? 10 : 0}} />;
+  const renderItemSeparate = useCallback(() => {
+    return <View style={{height: 10}} />;
   }, []);
-  const renderItem = useCallback(
-    ({
-      item,
-      index,
-      section,
-    }: {
-      item: string;
-      index: number;
-      section: {data: Array<string>; title: Space};
-    }) => {
-      const isActive = currentChannel.channel_id === item;
-      return (
-        <ChannelItem
-          channelId={item}
-          isActive={isActive}
-          isLast={index === section.data.length - 1}
-          isCollapsed={!section.title.isExpanded}
-        />
-      );
-    },
-    [currentChannel.channel_id],
-  );
-  const spaceData = useMemo(
-    () =>
-      spaceChannel.map(el => ({
-        data: el.channel_ids || [],
-        title: el,
-      })),
-    [spaceChannel],
-  );
   const openDrawer = useCallback(() => {
     navigation.getParent(DrawerID.CommunityDrawer).openDrawer();
   }, [navigation]);
@@ -138,7 +99,15 @@ const ChannelScreen = () => {
               {currentTeam.team_display_name}
             </Text>
           </View>
-          <SectionList
+          <FlatList
+            data={spaceChannel}
+            keyExtractor={item => item.space_id}
+            renderItem={renderSpace}
+            ListFooterComponent={renderFooter}
+            ListHeaderComponent={<View style={{height: 10}} />}
+            ItemSeparatorComponent={renderItemSeparate}
+          />
+          {/* <SectionList
             sections={spaceData}
             renderSectionHeader={renderSectionHeader}
             stickySectionHeadersEnabled={false}
@@ -148,7 +117,7 @@ const ChannelScreen = () => {
             SectionSeparatorComponent={renderItemSeparate}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-          />
+          /> */}
         </View>
       </View>
     </View>

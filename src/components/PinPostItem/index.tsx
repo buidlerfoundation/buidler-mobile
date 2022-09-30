@@ -224,7 +224,7 @@ const PinPostItem = ({
         attachments={pinPost.task_attachments}
         teamId={community.team_id}
         imageWidth={embeds ? (width - 132) / 2 : (width - 50) / 2}
-        stackAttachment={!detail}
+        stack={!detail}
       />
       {!embeds && (
         <PinChannelView

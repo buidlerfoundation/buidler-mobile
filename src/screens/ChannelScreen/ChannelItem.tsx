@@ -4,33 +4,22 @@ import ScreenID from 'common/ScreenID';
 import ChannelIcon from 'components/ChannelIcon';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
-import useChannel from 'hook/useChannel';
 import useThemeColor from 'hook/useThemeColor';
+import {Channel} from 'models';
 import React, {memo, useMemo} from 'react';
 import {useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 
 type ChannelItemProps = {
-  channelId: string;
+  c: Channel;
   isActive: boolean;
-  isLast: boolean;
-  isCollapsed?: boolean;
+  isFirst?: boolean;
 };
 
-const ChannelItem = ({
-  channelId,
-  isActive,
-  isLast,
-  isCollapsed,
-}: ChannelItemProps) => {
+const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
-  const channel = useChannel();
-  const c = useMemo(
-    () => channel.find(el => el.channel_id === channelId),
-    [channel, channelId],
-  );
 
   const handlePress = useCallback(() => {
     dispatch(setCurrentChannel(c));
@@ -54,44 +43,16 @@ const ChannelItem = ({
     isMuted,
     isUnSeen,
   ]);
-  const hide = useMemo(
-    () => isCollapsed && !isActive && !isUnSeen,
-    [isActive, isCollapsed, isUnSeen],
-  );
-
-  if (hide) {
-    return (
-      <View
-        style={[
-          styles.container,
-          {backgroundColor: colors.background},
-          isLast && {
-            borderBottomLeftRadius: 5,
-            borderBottomRightRadius: 5,
-            height: 10,
-          },
-        ]}
-      />
-    );
-  }
 
   return (
-    <View
-      style={[
-        styles.container,
-        {backgroundColor: colors.background},
-        isLast && {
-          borderBottomLeftRadius: 5,
-          borderBottomRightRadius: 5,
-          paddingBottom: 10,
-        },
-      ]}>
+    <View style={[styles.container]}>
       <Touchable
         style={[
           styles.channelItem,
           isActive && {
             backgroundColor: colors.activeBackground,
           },
+          isFirst && {marginTop: 5},
         ]}
         onPress={handlePress}>
         <ChannelIcon channel={c} color={titleColor} />
@@ -114,7 +75,6 @@ const ChannelItem = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 10,
-    marginHorizontal: 10,
   },
   channelItem: {
     paddingHorizontal: 10,

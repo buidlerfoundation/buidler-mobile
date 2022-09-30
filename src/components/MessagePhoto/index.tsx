@@ -154,7 +154,7 @@ const MessagePhoto = ({
             onPress={onFilePress}
             teamId={teamId}
             imageWidth={Math.min(imageWidth, 300)}
-            style={{marginRight: index === attachmentData.length - 1 ? 0 : 10}}
+            style={{marginRight: index % 2 === 0 ? 10 : 0}}
             stackAttachment={index === 1 ? morePhoto : undefined}
           />
         );

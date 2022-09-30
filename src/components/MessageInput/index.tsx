@@ -56,18 +56,19 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
         <Spinner size="small" backgroundColor="#11111180" />
       )}
       {attachment.id && (
-        <Touchable
+        <View
           style={{
-            padding: 10,
             position: 'absolute',
             top: -15,
             right: -15,
-          }}
-          onPress={handlePress}>
-          <View style={[styles.clearButton, {backgroundColor: colors.subtext}]}>
-            <SVG.IconClose fill={colors.text} />
-          </View>
-        </Touchable>
+          }}>
+          <Touchable onPress={handlePress} style={{padding: 10}}>
+            <View
+              style={[styles.clearButton, {backgroundColor: colors.subtext}]}>
+              <SVG.IconClose fill={colors.text} />
+            </View>
+          </Touchable>
+        </View>
       )}
     </View>
   );
@@ -121,6 +122,18 @@ const MessageInput = ({
       setVal(normalizeMessageText(messageEdit.content, undefined, true));
     }
   }, [messageEdit]);
+
+  useEffect(() => {
+    if (currentChannel.channel_id) {
+      setVal('');
+    }
+  }, [currentChannel.channel_id]);
+
+  useEffect(() => {
+    if (postId) {
+      setVal('');
+    }
+  }, [postId]);
 
   const handleChangeText = useCallback(text => setVal(text), []);
 

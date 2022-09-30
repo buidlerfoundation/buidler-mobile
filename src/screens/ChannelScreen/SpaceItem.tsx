@@ -8,15 +8,19 @@ import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import {actionTypes} from 'actions/actionTypes';
+import ChannelItem from './ChannelItem';
+import useCurrentChannel from 'hook/useCurrentChannel';
+import useChannel from 'hook/useChannel';
 
 type SpaceItemProps = {
   item: Space;
   teamId: string;
-  isEmpty: boolean;
 };
 
-const SpaceItem = ({item, isEmpty}: SpaceItemProps) => {
+const SpaceItem = ({item}: SpaceItemProps) => {
   const isCollapsed = useMemo(() => !item.isExpanded, [item.isExpanded]);
+  const currentChannel = useCurrentChannel();
+  const channel = useChannel();
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const toggleSpace = useCallback(() => {
@@ -28,18 +32,24 @@ const SpaceItem = ({item, isEmpty}: SpaceItemProps) => {
       },
     });
   }, [dispatch, isCollapsed, item.space_id]);
+  const channelData = useMemo(() => {
+    return item.channel_ids
+      .map(el => channel.find(c => c.channel_id === el))
+      .filter(el => {
+        if (isCollapsed)
+          return (
+            !!el && (!el.seen || el.channel_id === currentChannel.channel_id)
+          );
+        return !!el;
+      });
+  }, [channel, currentChannel.channel_id, isCollapsed, item.channel_ids]);
   return (
     <Touchable
       style={[
         styles.space,
         {
           backgroundColor: colors.background,
-          borderColor: colors.background,
-        },
-        isEmpty && {
-          borderBottomLeftRadius: 5,
-          borderBottomRightRadius: 5,
-          paddingBottom: 5,
+          borderColor: isCollapsed ? colors.background : colors.border,
         },
       ]}
       onPress={toggleSpace}>
@@ -63,6 +73,15 @@ const SpaceItem = ({item, isEmpty}: SpaceItemProps) => {
           </View>
         )}
       </View>
+      {channelData.map((el, idx) => (
+        <ChannelItem
+          c={el}
+          isActive={currentChannel.channel_id === el.channel_id}
+          key={el.channel_id}
+          isFirst={idx === 0}
+        />
+      ))}
+      <View style={{height: 10}} />
     </Touchable>
   );
 };
@@ -70,16 +89,15 @@ const SpaceItem = ({item, isEmpty}: SpaceItemProps) => {
 const styles = StyleSheet.create({
   space: {
     marginHorizontal: 10,
-    paddingLeft: 10,
-    paddingTop: 5,
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
+    paddingTop: 15,
+    borderRadius: 5,
     borderWidth: 1,
   },
   groupHead: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 5,
   },
   groupName: {
     fontFamily: Fonts.Bold,
