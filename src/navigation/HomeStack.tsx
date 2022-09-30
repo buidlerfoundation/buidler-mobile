@@ -12,10 +12,12 @@ import useThemeColor from 'hook/useThemeColor';
 import SVG from 'common/SVG';
 import useAppSelector from 'hook/useAppSelector';
 import AvatarView from 'components/AvatarView';
+import {useRoute} from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();
 
 const HomeStack = () => {
+  const route = useRoute();
   const userData = useAppSelector(state => state.user.userData);
   const {colors} = useThemeColor();
   const openOTP = useSelector((state: any) => state.configs.openOTP);
@@ -76,6 +78,7 @@ const HomeStack = () => {
           options={{tabBarIcon: tabBarIconChat}}
           name={DrawerID.ChannelDrawer}
           component={ChannelDrawer}
+          initialParams={route.params}
         />
         <Tab.Screen
           options={{tabBarIcon: tabBarIconWallet}}

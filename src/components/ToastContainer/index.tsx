@@ -4,58 +4,51 @@ import React, {memo, useMemo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import Toast from 'react-native-toast-message';
 
-const ToastContainer = () => {
+type ToastComponentProps = {
+  type: 'success' | 'error' | 'information';
+  title?: string;
+  message: string;
+};
+
+const ToastComponent = ({type, title, message}: ToastComponentProps) => {
   const {colors} = useThemeColor();
+  const titleColor = useMemo(() => {
+    switch (type) {
+      case 'success':
+        return colors.success;
+      case 'error':
+        return colors.urgent;
+      case 'information':
+        return colors.text;
+      default:
+        return colors.success;
+    }
+  }, [colors.success, colors.text, colors.urgent, type]);
+  return (
+    <View
+      style={[
+        styles.toastContainer,
+        {
+          borderColor: colors.border,
+          backgroundColor: colors.activeBackgroundLight,
+        },
+      ]}>
+      <Text style={[styles.title, {color: titleColor}]}>{title || type}</Text>
+      <Text style={[styles.message, {color: colors.text}]}>{message}</Text>
+    </View>
+  );
+};
+
+const ToastContainer = () => {
   const toastConfigs = useMemo(
     () => ({
-      customSuccess: ({props}) => {
-        return (
-          <View
-            style={[
-              styles.toastContainer,
-              {
-                borderColor: colors.border,
-                backgroundColor: colors.activeBackgroundLight,
-              },
-            ]}>
-            <Text style={[styles.title, {color: colors.success}]}>
-              {props?.title || 'Success'}
-            </Text>
-            <Text style={[styles.message, {color: colors.text}]}>
-              {props?.message}
-            </Text>
-          </View>
-        );
-      },
-      customError: ({props}) => {
-        return (
-          <View
-            style={[
-              styles.toastContainer,
-              {
-                borderColor: colors.border,
-                backgroundColor: colors.activeBackgroundLight,
-              },
-            ]}>
-            <Text style={[styles.title, {color: colors.urgent}]}>
-              {props?.title || 'Error'}
-            </Text>
-            <Text style={[styles.message, {color: colors.text}]}>
-              {props?.message}
-            </Text>
-          </View>
-        );
-      },
+      customSuccess: ({props}) => <ToastComponent {...props} type="success" />,
+      customError: ({props}) => <ToastComponent {...props} type="error" />,
+      customInfo: ({props}) => <ToastComponent {...props} type="information" />,
     }),
-    [
-      colors.activeBackgroundLight,
-      colors.border,
-      colors.success,
-      colors.text,
-      colors.urgent,
-    ],
+    [],
   );
-  return <Toast config={toastConfigs} />;
+  return <Toast config={toastConfigs} visibilityTime={2000} />;
 };
 
 const styles = StyleSheet.create({
@@ -70,6 +63,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     fontFamily: Fonts.SemiBold,
+    textTransform: 'capitalize',
   },
   message: {
     fontSize: 12,

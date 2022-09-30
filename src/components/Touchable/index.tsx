@@ -1,8 +1,6 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  TouchableOpacityProps,
-} from 'react-native-gesture-handler';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import {TouchableOpacityProps} from 'react-native';
 
 interface TouchableProps extends TouchableOpacityProps {
   children: any;

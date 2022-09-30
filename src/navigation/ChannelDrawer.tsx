@@ -5,9 +5,11 @@ import ScreenID, {DrawerID} from 'common/ScreenID';
 import ChannelScreen from 'screens/ChannelScreen';
 import useThemeColor from 'hook/useThemeColor';
 import ConversationScreen from 'screens/ConversationScreen';
+import {useRoute} from '@react-navigation/native';
 const Drawer = createDrawerNavigator();
 
 const ChannelDrawer = () => {
+  const route = useRoute();
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
   const drawerContent = useCallback(props => <ChannelScreen {...props} />, []);
@@ -28,6 +30,7 @@ const ChannelDrawer = () => {
       <Drawer.Screen
         name={ScreenID.ConversationScreen}
         component={ConversationScreen}
+        initialParams={route.params}
       />
     </Drawer.Navigator>
   );

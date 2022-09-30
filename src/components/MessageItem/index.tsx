@@ -67,7 +67,10 @@ const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
           {isReplyExisted ? (
             <>
               <AvatarView user={replier} size={20} />
-              <Text style={[styles.replierName, {color: colors.lightText}]}>
+              <Text
+                style={[styles.replierName, {color: colors.lightText}]}
+                numberOfLines={1}
+                ellipsizeMode="middle">
                 {replier.user_name}
               </Text>
               {replyMessage.message_attachments.length > 0 && (
@@ -200,6 +203,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
     fontSize: 14,
     lineHeight: 22,
+    maxWidth: 100,
   },
   deletedReplyWrap: {
     marginLeft: 4,

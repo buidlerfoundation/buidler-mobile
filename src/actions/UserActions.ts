@@ -52,6 +52,7 @@ export const findUser = () => async (dispatch: Dispatch) => {
   dispatch({type: actionTypes.USER_REQUEST});
   const res = await api.findUser();
   if (res.statusCode === 200) {
+    actionFetchWalletBalance(dispatch);
     dispatch({type: actionTypes.USER_SUCCESS, payload: {user: res.data}});
   } else {
     dispatch({type: actionTypes.USER_FAIL, payload: res});
