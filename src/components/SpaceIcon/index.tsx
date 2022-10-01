@@ -43,7 +43,7 @@ const SpaceIcon = ({space, size = 30, borderRadius = 8}: SpaceIconProps) => {
         styles.spaceDefaultIcon,
         {width: size, height: size, borderRadius},
       ]}>
-      <Text style={[styles.spaceDefaultIconText, {fontSize: size - 10}]}>
+      <Text style={[styles.spaceDefaultIconText]}>
         {spaceNameToAvatar(space.space_name)}
       </Text>
     </View>
@@ -58,7 +58,9 @@ const styles = StyleSheet.create({
   },
   spaceDefaultIconText: {
     color: 'white',
-    fontFamily: Fonts.Bold,
+    fontFamily: Fonts.Helvetica,
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 
