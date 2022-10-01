@@ -140,7 +140,7 @@ const MessagePhoto = ({
     return 0;
   }, [attachments?.length, stack]);
   const attachmentData = useMemo(() => {
-    if (stack) return attachments.slice(0, 2);
+    if (stack) return attachments?.slice?.(0, 2);
     return attachments;
   }, [attachments, stack]);
   if (!attachments || attachments.length === 0) return null;
