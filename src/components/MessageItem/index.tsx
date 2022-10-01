@@ -137,6 +137,7 @@ const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
                     undefined,
                     undefined,
                     !item.isSending && item.createdAt !== item.updatedAt,
+                    item.isSending ? 'message-text-sending' : undefined,
                   )}
                 />
               )) || <View style={{height: 8}} />}

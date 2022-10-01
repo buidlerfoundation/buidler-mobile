@@ -91,7 +91,7 @@ export const normalizeMessageText = (
   wrapParagraph?: boolean,
   messageEdit?: boolean,
   isEdited?: boolean,
-  isArchived?: boolean,
+  customClass?: string,
 ) => {
   if (!text) return '';
   if (messageEdit) {
@@ -137,9 +137,7 @@ export const normalizeMessageText = (
   if (wrapParagraph) {
     res = res.replace(/^([^<]*)([^<]*)$/gim, '<p>$1</p>');
   }
-  return `<div class=${
-    isArchived ? 'message-text-archived' : 'message-text'
-  }>${res}${
+  return `<div class=${customClass ? customClass : 'message-text'}>${res}${
     isEdited ? ' <span class="edited-string">edited</span>' : ''
   }</div>`;
 };

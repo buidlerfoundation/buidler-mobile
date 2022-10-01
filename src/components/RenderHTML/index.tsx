@@ -67,6 +67,14 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
         color: colors.text,
         whiteSpace: 'pre',
       },
+      'message-text-sending': {
+        fontFamily: Fonts.Medium,
+        fontSize: 16,
+        lineHeight: 26,
+        marginTop: 5,
+        color: colors.subtext,
+        whiteSpace: 'pre',
+      },
       'message-text-archived': {
         fontFamily: Fonts.Medium,
         fontSize: 16,

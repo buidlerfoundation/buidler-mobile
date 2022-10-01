@@ -193,7 +193,7 @@ const PinPostItem = ({
                     undefined,
                     undefined,
                     undefined,
-                    isArchived,
+                    'message-text-archived',
                   )
                 : normalizeMessageTextPlain(
                     pinPost.content,

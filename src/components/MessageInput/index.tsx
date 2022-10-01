@@ -1,8 +1,8 @@
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {Channel, MessageData} from 'models';
-import React, {useState, useEffect, useCallback, memo} from 'react';
+import {Channel, MessageData, UserData} from 'models';
+import React, {useState, useEffect, useCallback, memo, useMemo} from 'react';
 import {
   View,
   StyleSheet,
@@ -10,23 +10,23 @@ import {
   Text,
   ViewStyle,
   FlatList,
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData,
 } from 'react-native';
 import SocketUtils from 'utils/SocketUtils';
 import FastImage from 'react-native-fast-image';
 import Spinner from 'components/Spinner';
 import api from 'services/api';
-import {encryptMessage} from 'helpers/ChannelHelper';
 import {
-  normalizeMessageText,
   normalizeMessageTextPlain,
   normalizeUserName,
 } from 'helpers/MessageHelper';
 import useThemeColor from 'hook/useThemeColor';
-import useAppSelector from 'hook/useAppSelector';
 import useTeamUserData from 'hook/useTeamUserData';
 import {getUniqueId} from 'helpers/GenerateUUID';
 import AvatarView from 'components/AvatarView';
 import ImageHelper from 'helpers/ImageHelper';
+import MentionItem from 'components/MentionItem';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -112,56 +112,115 @@ const MessageInput = ({
   autoFocus,
 }: MessageInputProps) => {
   const [val, setVal] = useState('');
+  const [isFocus, setFocus] = useState(true);
+  const [cursorPos, setCursorPos] = useState(0);
+  const [mentionStr, setMentionStr] = useState('');
+  const [mentions, setMentions] = useState([]);
+  const [isOpenPopupMention, setOpenPopupMention] = useState(false);
   const teamUserData = useTeamUserData();
-  const channelPrivateKey = useAppSelector(
-    state => state.configs.channelPrivateKey,
-  );
   const {colors} = useThemeColor();
   useEffect(() => {
-    if (messageEdit) {
-      setVal(normalizeMessageText(messageEdit.content, undefined, true));
+    const startMention = val.substring(0, cursorPos).lastIndexOf('@');
+    const beforeMention = val?.[startMention - 1];
+    if (
+      (beforeMention === '\n' || beforeMention === ' ' || startMention === 0) &&
+      startMention < cursorPos
+    ) {
+      if (!isOpenPopupMention) {
+        setOpenPopupMention(true);
+      }
+      const str = val.substring(startMention + 1, cursorPos);
+      setMentionStr(str);
+    } else {
+      setOpenPopupMention(false);
     }
-  }, [messageEdit]);
+  }, [cursorPos, isOpenPopupMention, val]);
+  const dataMention = useMemo(() => {
+    return teamUserData.filter(
+      el =>
+        !el.is_deleted &&
+        el?.user_name
+          ?.toLowerCase?.()
+          ?.includes?.(mentionStr?.toLowerCase?.() || ''),
+    );
+  }, [mentionStr, teamUserData]);
+  const normalizeMessageEdit = useCallback((content: string) => {
+    let res = content;
+    const matchRegex = /(<@)(.*?)(-)(.*?)(>)/gim;
+    const matchMentions = content.match(matchRegex);
+    matchMentions.forEach(element => {
+      const mentionMatch = /(<@)(.*?)(-)(.*?)(>)/.exec(element);
+      if (mentionMatch.length > 0) {
+        res = res.replace(mentionMatch[0], `@${mentionMatch[2]}`);
+        setMentions(current => {
+          if (current.includes(mentionMatch[2])) {
+            return current;
+          }
+          return [...current, mentionMatch[2]];
+        });
+      }
+    });
+    setVal(res);
+  }, []);
+  useEffect(() => {
+    if (messageEdit) {
+      normalizeMessageEdit(messageEdit.content);
+    }
+  }, [messageEdit, normalizeMessageEdit]);
 
   useEffect(() => {
     if (currentChannel.channel_id) {
       setVal('');
+      onClearAttachment?.();
+      setMentions([]);
     }
-  }, [currentChannel.channel_id]);
+  }, [currentChannel.channel_id, onClearAttachment]);
 
   useEffect(() => {
     if (postId) {
       setVal('');
+      onClearAttachment?.();
+      setMentions([]);
     }
-  }, [postId]);
+  }, [onClearAttachment, postId]);
 
-  const handleChangeText = useCallback(text => setVal(text), []);
+  const handleFocus = useCallback(() => setFocus(true), []);
+
+  const handleBlur = useCallback(() => setFocus(false), []);
+
+  const handleChangeText = useCallback(text => {
+    setVal(text);
+  }, []);
+
+  const normalizeContentMessageSubmit = useCallback(
+    (text: string) => {
+      let res = text;
+      mentions.forEach(el => {
+        const user = teamUserData.find(u => u.user_name === el);
+        if (user) {
+          res = res.replace(
+            new RegExp(`@${el}`, 'g'),
+            `<@${user.user_name}-${user.user_id}>`,
+          );
+        }
+      });
+      return res;
+    },
+    [mentions, teamUserData],
+  );
 
   const submitMessage = useCallback(async () => {
     if (attachments.find(el => el.loading)) {
       alert('Attachment is uploading');
       return;
     }
+    const text = normalizeContentMessageSubmit(val);
     const message: any = {
-      content: val,
+      content: text,
       plain_text: val,
-      text: val,
+      text,
       entity_type: postId ? 'post' : 'channel',
     };
-    if (
-      (currentChannel.channel_type === 'Private' ||
-        currentChannel.channel_type === 'Direct') &&
-      currentChannel.channel_id
-    ) {
-      const {key} =
-        channelPrivateKey[currentChannel.channel_id][
-          channelPrivateKey[currentChannel.channel_id].length - 1
-        ];
-      const content = await encryptMessage(message.content, key);
-      const plain_text = await encryptMessage(message.plain_text, key);
-      message.content = content;
-      message.plain_text = plain_text;
-    }
     if (postId) {
       message.entity_id = postId;
     } else if (currentChannel.channel_id) {
@@ -184,15 +243,14 @@ const MessageInput = ({
     onClearAttachment?.();
   }, [
     attachments,
-    channelPrivateKey,
+    val,
+    normalizeContentMessageSubmit,
+    postId,
     currentChannel.channel_id,
-    currentChannel.channel_type,
     currentChannel.user,
     messageReply,
     onClearAttachment,
     teamId,
-    val,
-    postId,
   ]);
   const editMessage = useCallback(async () => {
     if (attachments.find(el => el.loading)) {
@@ -200,26 +258,16 @@ const MessageInput = ({
       return;
     }
     if (!val && attachments.length === 0) return;
-    let content = val.trim();
+    let content = normalizeContentMessageSubmit(val.trim());
     let plain_text = val.trim();
-    if (currentChannel.channel_type === 'Private') {
-      const {key} =
-        channelPrivateKey[currentChannel.channel_id][
-          channelPrivateKey[currentChannel.channel_id].length - 1
-        ];
-      content = await encryptMessage(content, key);
-      plain_text = await encryptMessage(plain_text, key);
-    }
-    await api.editMessage(messageEdit.message_id, content, plain_text);
+    await api.editMessage(messageEdit?.message_id, content, plain_text);
     setVal('');
     onClearReply?.();
     onClearAttachment?.();
   }, [
     attachments,
-    channelPrivateKey,
-    currentChannel.channel_id,
-    currentChannel.channel_type,
     messageEdit?.message_id,
+    normalizeContentMessageSubmit,
     onClearAttachment,
     onClearReply,
     val,
@@ -303,10 +351,65 @@ const MessageInput = ({
     onClearReplyPress,
     teamUserData,
   ]);
+  const onSelectionChange = useCallback(
+    (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+      const {end, start} = e.nativeEvent.selection;
+      if (end === start) {
+        setCursorPos(start);
+      } else {
+        setCursorPos(0);
+      }
+    },
+    [],
+  );
+  const handlePressMention = useCallback(
+    (user: UserData) => {
+      setMentions(current => {
+        if (current.includes(user.user_name)) {
+          return current;
+        }
+        return [...current, user.user_name];
+      });
+      setOpenPopupMention(false);
+      setVal(
+        current =>
+          `${current.substring(0, cursorPos - mentionStr.length - 1)}@${
+            user.user_name
+          } ${current.substring(cursorPos)}`,
+      );
+    },
+    [cursorPos, mentionStr],
+  );
+  const parsedText = useMemo(() => {
+    return val.split(/(\s)/g).map((el, index) => {
+      if (/@[a-zA-Z0-9]+/.test(el) && mentions.includes(el.substring(1))) {
+        return (
+          <Text style={[{color: colors.mention}]} key={`${el}-${index}`}>
+            {el}
+          </Text>
+        );
+      }
+      return <Text key={`${el}-${index}`}>{el}</Text>;
+    });
+  }, [colors.mention, mentions, val]);
+  const renderMentionItem = useCallback(
+    ({item}: {item: UserData}) => (
+      <MentionItem user={item} onPress={handlePressMention} />
+    ),
+    [handlePressMention],
+  );
   return (
     <View style={[{backgroundColor: colors.activeBackgroundLight}, style]}>
       {renderReply()}
       <View style={[styles.container, inputStyle]}>
+        {isOpenPopupMention && isFocus && dataMention.length > 0 && (
+          <FlatList
+            style={styles.mentionView}
+            data={dataMention}
+            keyExtractor={el => el.user_id}
+            renderItem={renderMentionItem}
+          />
+        )}
         {attachments.length > 0 && (
           <FlatList
             style={styles.attachmentView}
@@ -339,13 +442,17 @@ const MessageInput = ({
             }
             multiline
             placeholderTextColor={colors.subtext}
-            value={val}
             onChangeText={handleChangeText}
             keyboardAppearance="dark"
             ref={inputRef}
             autoFocus={autoFocus}
-          />
-          {(!!val || attachments.length > 0) && (
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            value=""
+            onSelectionChange={onSelectionChange}>
+            <Text>{parsedText}</Text>
+          </TextInput>
+          {(!!val?.trim() || attachments.length > 0) && (
             <Touchable style={{padding: 5}} onPress={onSend}>
               <SVG.IconArrowSend />
             </Touchable>
@@ -395,6 +502,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 10,
     paddingTop: 10,
+  },
+  mentionView: {
+    maxHeight: 150,
+    marginBottom: 10,
   },
   attachmentView: {
     marginBottom: 10,

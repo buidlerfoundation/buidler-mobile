@@ -308,7 +308,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
       };
     }
     case actionTypes.EMIT_NEW_MESSAGE: {
-      const newMessageData = state.messageData;
+      const newMessageData = {...state.messageData};
       if (newMessageData[payload.entity_id]?.data) {
         newMessageData[payload.entity_id] = {
           ...newMessageData[payload.entity_id],
