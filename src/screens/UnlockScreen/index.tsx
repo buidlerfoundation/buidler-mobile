@@ -9,7 +9,7 @@ import {
 import {useDispatch} from 'react-redux';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import NavigationServices from 'services/NavigationServices';
-import {DrawerID} from 'common/ScreenID';
+import {StackID} from 'common/ScreenID';
 import Fonts from 'common/Fonts';
 import {decryptString, getIV} from 'utils/DataCrypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -61,7 +61,7 @@ const UnlockScreen = () => {
       }
       PushNotificationHelper.reset();
     }
-    NavigationServices.replace(DrawerID.CommunityDrawer, params);
+    NavigationServices.replace(StackID.HomeStack, params);
   }, [dispatch]);
   const checkPassword = useCallback(async () => {
     if (loading) return;

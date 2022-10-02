@@ -139,16 +139,28 @@ const PinPostItem = ({
       onPress={onPinPostPress}
       disabled={detail}
       onLongPress={handleLongPress}>
-      <View style={styles.header}>
-        <AvatarView user={creator} size={detail ? 35 : 20} />
+      <View style={[styles.header, embeds && {alignItems: 'flex-start'}]}>
+        <AvatarView
+          user={creator}
+          size={detail ? 35 : embeds ? 25 : 20}
+          style={{marginTop: embeds ? 4 : 0}}
+        />
         <View
-          style={[styles.userNameWrap, detail && styles.userNameDetailWrap]}>
+          style={[
+            styles.userNameWrap,
+            (detail || embeds) && styles.userNameDetailWrap,
+          ]}>
           <Text
             style={[styles.userName, {color: colors.text}]}
             ellipsizeMode="tail"
             numberOfLines={1}>
             {creator.user_name}
           </Text>
+          {embeds && (
+            <Text style={[styles.createdAt, {color: colors.subtext}]}>
+              {messageFromNow(pinPost.message_created_at)}
+            </Text>
+          )}
           {!embeds && (
             <View style={styles.createdAtWrap}>
               <Text style={[styles.createdAt, {color: colors.subtext}]}>
@@ -170,16 +182,15 @@ const PinPostItem = ({
             </View>
           )}
         </View>
-        {isIPFS && !detail && <SVG.IconIPFSLock fill={colors.mention} />}
+        {isIPFS && !detail && (
+          <View style={{marginTop: embeds ? 4 : 0}}>
+            <SVG.IconIPFSLock fill={colors.mention} />
+          </View>
+        )}
         {isUploadingToIPFS && !detail && (
           <ActivityIndicator size="small" color={colors.mention} />
         )}
       </View>
-      {embeds && (
-        <Text style={[styles.createdAt, {color: colors.subtext, marginTop: 5}]}>
-          {messageFromNow(pinPost.message_created_at)}
-        </Text>
-      )}
       {!!pinPost.content && (
         <View
           ref={contentRef}

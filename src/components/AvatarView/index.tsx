@@ -1,7 +1,7 @@
 import ImageHelper from 'helpers/ImageHelper';
 import {UserData} from 'models';
 import React, {useMemo, memo, useCallback} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Blockies from 'components/Blockies';
 import useThemeColor from 'hook/useThemeColor';
@@ -11,9 +11,15 @@ type AvatarViewProps = {
   user: UserData;
   size?: number;
   withStatus?: boolean;
+  style?: ViewStyle;
 };
 
-const AvatarView = ({user, size = 25, withStatus = true}: AvatarViewProps) => {
+const AvatarView = ({
+  user,
+  size = 25,
+  withStatus = true,
+  style,
+}: AvatarViewProps) => {
   const {colors} = useThemeColor();
   const data = useMemo(
     () => ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id),
@@ -64,7 +70,7 @@ const AvatarView = ({user, size = 25, withStatus = true}: AvatarViewProps) => {
   }, [colors.border, data, size]);
 
   return (
-    <View style={{width: size, height: size}}>
+    <View style={[style, {width: size, height: size}]}>
       {renderBody()}
       {withStatus && user.status === 'online' && (
         <View
@@ -73,9 +79,9 @@ const AvatarView = ({user, size = 25, withStatus = true}: AvatarViewProps) => {
             {
               backgroundColor: colors.success,
               borderColor: colors.backgroundHeader,
-              width: size > 20 ? 14 : 10,
-              height: size > 20 ? 14 : 10,
-              borderRadius: size > 20 ? 7 : 5,
+              width: size > 25 ? 14 : 10,
+              height: size > 25 ? 14 : 10,
+              borderRadius: size > 25 ? 7 : 5,
               borderWidth: 2,
             },
           ]}

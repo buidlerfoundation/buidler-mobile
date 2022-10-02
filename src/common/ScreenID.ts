@@ -13,14 +13,15 @@ export default {
   PinPostDetailScreen: 'PinPostDetailScreen',
   WalletScreen: 'WalletScreen',
   ProfileScreen: 'ProfileScreen',
+  CommunityScreen: 'CommunityScreen',
 };
 
 export const StackID = {
   HomeStack: 'HomeStack',
   AuthStack: 'AuthStack',
+  ConversationStack: 'ConversationStack',
 };
 
 export const DrawerID = {
-  CommunityDrawer: 'CommunityDrawer',
   ChannelDrawer: 'ChannelDrawer',
 };

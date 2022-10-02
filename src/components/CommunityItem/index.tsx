@@ -35,7 +35,8 @@ const CommunityItem = ({community, onPress}: CommunityItemProps) => {
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 10,
-    padding: 10,
+    height: 70,
+    paddingHorizontal: 10,
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,11 +1,10 @@
 import React, {memo, useCallback, useEffect} from 'react';
 import {View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import ScreenID, {DrawerID} from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import {useSelector} from 'react-redux';
 import NavigationServices from 'services/NavigationServices';
 import ModalOtp from 'components/ModalOtp';
-import ChannelDrawer from './ChannelDrawer';
 import WalletScreen from 'screens/WalletScreen';
 import ProfileScreen from 'screens/ProfileScreen';
 import useThemeColor from 'hook/useThemeColor';
@@ -13,6 +12,8 @@ import SVG from 'common/SVG';
 import useAppSelector from 'hook/useAppSelector';
 import AvatarView from 'components/AvatarView';
 import {useRoute} from '@react-navigation/native';
+import ConversationStack from './ConversationStack';
+import SideBarCommunity from 'components/SideBarCommunity';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,6 +31,12 @@ const HomeStack = () => {
     }
   }, [openOTP, requestOtpCode]);
   const header = useCallback(() => null, []);
+  const tabBarIconHome = useCallback(
+    ({color}: {focused: boolean; color: string}) => {
+      return <SVG.IconTabHome fill={color} />;
+    },
+    [],
+  );
   const tabBarIconChat = useCallback(
     ({color}: {focused: boolean; color: string}) => {
       return <SVG.IconTabChat fill={color} />;
@@ -66,18 +73,23 @@ const HomeStack = () => {
   return (
     <>
       <Tab.Navigator
-        initialRouteName={DrawerID.ChannelDrawer}
+        initialRouteName={StackID.ConversationStack}
         screenOptions={{
           header,
           tabBarInactiveTintColor: colors.subtext,
           tabBarActiveTintColor: colors.text,
-          tabBarStyle: {backgroundColor: colors.backgroundHeader},
+          tabBarStyle: {backgroundColor: colors.background},
           tabBarShowLabel: false,
         }}>
         <Tab.Screen
+          options={{tabBarIcon: tabBarIconHome}}
+          name={ScreenID.CommunityScreen}
+          component={SideBarCommunity}
+        />
+        <Tab.Screen
           options={{tabBarIcon: tabBarIconChat}}
-          name={DrawerID.ChannelDrawer}
-          component={ChannelDrawer}
+          name={StackID.ConversationStack}
+          component={ConversationStack}
           initialParams={route.params}
         />
         <Tab.Screen

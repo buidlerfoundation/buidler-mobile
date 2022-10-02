@@ -1,6 +1,8 @@
+import {useNavigation} from '@react-navigation/native';
 import {setCurrentTeam} from 'actions/UserActions';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
+import {StackID} from 'common/ScreenID';
 import CommunityItem from 'components/CommunityItem';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
@@ -9,14 +11,15 @@ import {Community} from 'models';
 import React, {memo, useCallback} from 'react';
 import {StyleSheet, Text, View, FlatList} from 'react-native';
 
-const SideBarCommunity = ({navigation}: any) => {
+const SideBarCommunity = () => {
   const {colors} = useThemeColor();
+  const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const team = useAppSelector(state => state.user.team || []);
   const handlePress = useCallback(
-    (item: Community) => {
-      dispatch(setCurrentTeam(item));
-      navigation.closeDrawer();
+    async (item: Community) => {
+      await dispatch(setCurrentTeam(item));
+      navigation.navigate(StackID.ConversationStack);
     },
     [dispatch, navigation],
   );
@@ -27,7 +30,8 @@ const SideBarCommunity = ({navigation}: any) => {
     [handlePress],
   );
   return (
-    <View style={[styles.container]}>
+    <View
+      style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
       <Text style={[styles.title, {color: colors.text}]}>Community</Text>
       <FlatList
         style={{flex: 1}}
