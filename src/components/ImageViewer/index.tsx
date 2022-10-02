@@ -69,6 +69,7 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
             index={index}
             saveToLocalByLongPress={false}
             onCancel={this.close}
+            swipeDownThreshold={10}
           />
 
           <TouchableOpacity style={styles.button} onPress={this.close}>

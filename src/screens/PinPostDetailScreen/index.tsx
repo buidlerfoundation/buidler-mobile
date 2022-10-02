@@ -322,7 +322,8 @@ const styles = StyleSheet.create({
   },
   separate: {
     marginHorizontal: 20,
-    marginVertical: 24,
+    marginTop: 24,
+    marginBottom: 9,
     height: 1,
   },
   textMore: {

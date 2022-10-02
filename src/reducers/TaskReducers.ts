@@ -209,16 +209,25 @@ const taskReducers: Reducer<TaskReducerState, AnyAction> = (
     }
     case actionTypes.UPDATE_TASK_REQUEST: {
       const {taskId, data, channelId} = payload;
-      if (!state.taskData[channelId]) return state;
+      let pinPostDetail = state.pinPostDetail ? {...state.pinPostDetail} : null;
+      if (!state.taskData[channelId]) {
+        return {
+          ...state,
+          pinPostDetail:
+            pinPostDetail?.task_id === taskId
+              ? {...pinPostDetail, ...data}
+              : pinPostDetail,
+        };
+      }
       const {tasks, archivedTasks} = state.taskData[channelId];
       let newTasks = [...(tasks || [])];
       let newArchivedTasks = [...(archivedTasks || [])];
       const task =
         newTasks.find(t => t.task_id === taskId) ||
         newArchivedTasks.find(t => t.task_id === taskId);
-      if (data.task_id === state.pinPostDetail?.task_id) {
-        state.pinPostDetail = {
-          ...state.pinPostDetail,
+      if (data.task_id === pinPostDetail?.task_id) {
+        pinPostDetail = {
+          ...pinPostDetail,
           ...data,
         };
       }
@@ -228,6 +237,7 @@ const taskReducers: Reducer<TaskReducerState, AnyAction> = (
       if (!task?.channels?.find(el => el.channel_id === channelId)) {
         return {
           ...state,
+          pinPostDetail,
         };
       }
       const taskStatus = data?.status || task?.status;
@@ -266,6 +276,7 @@ const taskReducers: Reducer<TaskReducerState, AnyAction> = (
             archivedTasks: newArchivedTasks.sort(sortPinPost),
           },
         },
+        pinPostDetail,
       };
     }
     case actionTypes.DROP_TASK: {
