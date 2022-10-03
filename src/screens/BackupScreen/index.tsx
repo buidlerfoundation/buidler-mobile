@@ -45,7 +45,8 @@ const ShuffleSeedItem = ({
         },
       ]}
       disabled={disabled}
-      onPress={handlePress}>
+      onPress={handlePress}
+      useReactNative>
       <Text
         style={[
           styles.seedText,
@@ -93,7 +94,8 @@ const ConfirmSeedItem = ({
         },
       ]}
       disabled={disabled}
-      onPress={handlePress}>
+      onPress={handlePress}
+      useReactNative>
       <Text
         style={[
           styles.seedText,
@@ -174,6 +176,7 @@ const BackupScreen = ({route}: Props) => {
                 index={index}
                 title={el.title}
                 onPress={onConfirmItemPress}
+                space={space}
               />
             );
           })}
@@ -190,6 +193,7 @@ const BackupScreen = ({route}: Props) => {
                 margin={margin}
                 disabled={disabled}
                 onPress={handleShufflePress}
+                space={space}
               />
             );
           })}
