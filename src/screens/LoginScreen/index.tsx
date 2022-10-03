@@ -21,26 +21,32 @@ const LoginScreen = () => {
   }, []);
   return (
     <View style={styles.container}>
-      <SVG.Logo width={80} height={80} />
+      <SVG.Logo width={90} height={90} />
       <Text style={[styles.title, {color: colors.text}]}>
-        {'Your chats is\nYour tasks'}
+        {'A new home\nfor your community\nto buidl together'}
       </Text>
       <Text style={[styles.description, {color: colors.text}]}>
-        Buidler is a daily tool for chat, tasks, meeting for remote working.
+        Web3 application for your community, teams, and supporters to connect,
+        communicate and collaborate.
       </Text>
       <Touchable
-        style={[styles.createButton, {backgroundColor: colors.primary}]}
+        useReactNative
+        style={[styles.createButton, {backgroundColor: colors.border}]}
         onPress={onCreatePress}>
-        <Text style={[styles.text, {color: colors.text}]}>
-          Create a new wallet
-        </Text>
+        <Text style={[styles.text, {color: colors.text}]}>New wallet</Text>
+        <View style={styles.plusWrap}>
+          <SVG.IconPlus width={16} height={16} fill={colors.text} />
+        </View>
       </Touchable>
       <Touchable
-        style={[styles.importButton, {backgroundColor: colors.border}]}
-        onPress={onImportPress}>
-        <Text style={[styles.text, {color: colors.text}]}>
-          Import existing wallet
-        </Text>
+        style={[
+          styles.createButton,
+          {backgroundColor: colors.border, marginTop: 15},
+        ]}
+        onPress={onImportPress}
+        useReactNative>
+        <Text style={[styles.text, {color: colors.text}]}>Import wallet</Text>
+        <SVG.IconArrowImport fill={colors.text} />
       </Touchable>
     </View>
   );
@@ -70,23 +76,25 @@ const styles = StyleSheet.create({
     marginLeft: 32,
   },
   title: {
-    fontSize: 34,
-    lineHeight: 40,
+    fontSize: 31,
+    lineHeight: 38,
     fontFamily: Fonts.Bold,
-    marginTop: 30,
+    marginTop: 25,
   },
   description: {
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 26,
     fontFamily: Fonts.SemiBold,
-    marginTop: 30,
+    marginTop: 25,
   },
   createButton: {
     marginTop: 70,
     borderRadius: 5,
     height: 60,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    paddingHorizontal: 20,
   },
   importButton: {
     marginTop: 20,
@@ -97,8 +105,14 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    lineHeight: 19,
+    lineHeight: 26,
     fontFamily: Fonts.SemiBold,
+  },
+  plusWrap: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

@@ -85,10 +85,12 @@ const ConversationScreen = () => {
     [],
   );
   useEffect(() => {
-    if (currentChannel.channel_id) {
-      navigation?.closeDrawer?.();
+    if (currentTeam.team_id) {
+      navigation?.openDrawer?.();
     }
-    if (currentChannel.channel_id && !messages) {
+  }, [currentTeam.team_id, navigation]);
+  useEffect(() => {
+    if (currentChannel.channel_id) {
       dispatch(
         getMessages(
           currentChannel.channel_id,
@@ -99,7 +101,7 @@ const ConversationScreen = () => {
         ),
       );
     }
-  }, [currentChannel.channel_id, dispatch, messages, navigation]);
+  }, [currentChannel.channel_id, dispatch, navigation]);
   const {colors} = useThemeColor();
   const onRemoveAttachment = useCallback(
     id =>
