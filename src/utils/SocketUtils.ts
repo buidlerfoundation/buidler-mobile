@@ -16,7 +16,11 @@ import {actionTypes} from 'actions/actionTypes';
 import store from 'store';
 import api from 'services/api';
 import {createRefreshSelector} from 'reducers/selectors';
-import {actionFetchWalletBalance} from 'actions/UserActions';
+import {
+  actionFetchWalletBalance,
+  logout,
+  refreshToken,
+} from 'actions/UserActions';
 import {getTransactions} from 'actions/TransactionActions';
 import {formatTokenValue} from 'helpers/TokenHelper';
 import {normalizeUserName} from 'helpers/MessageHelper';
@@ -26,6 +30,8 @@ import {getDeviceCode} from 'helpers/GenerateUUID';
 import AppConfig from 'common/AppConfig';
 import {AsyncKey} from 'common/AppStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NavigationServices from 'services/NavigationServices';
+import {StackID} from 'common/ScreenID';
 
 const getTasks = async (channelId: string, dispatch: Dispatch) => {
   dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
@@ -173,10 +179,10 @@ const loadMessageIfNeeded = async () => {
 
 class SocketUtil {
   socket: any = null;
-  firstLoad = false;
+  firstLoad = true;
   generateId: string | null = null;
   async init(teamId?: string) {
-    this.firstLoad = false;
+    this.firstLoad = true;
     if (this.socket?.connected) return;
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     const deviceCode = await getDeviceCode();
@@ -189,10 +195,10 @@ class SocketUtil {
     });
     this.socket.on('connect', () => {
       console.log('socket connected', teamId);
-      if (this.firstLoad) {
+      if (!this.firstLoad) {
         this.reloadData();
       }
-      this.firstLoad = true;
+      this.firstLoad = false;
       this.listenSocket();
       this.socket.on('disconnect', (reason: string) => {
         console.log(`socket disconnect: ${reason}`);
@@ -228,6 +234,7 @@ class SocketUtil {
         this.socket.off('ON_VIEW_MESSAGE_IN_CHANNEL');
         this.socket.off('ON_USER_LEAVE_TEAM');
         this.socket.off('disconnect');
+        this.socket.off('error');
       });
       // this.emitOnline(teamId || store.getState().user?.currentTeamId);
     });
@@ -282,6 +289,19 @@ class SocketUtil {
     });
   };
   listenSocket() {
+    this.socket.on('error', async err => {
+      const message = err.message || err;
+      if (message === 'Authentication error') {
+        const res = await store.dispatch(refreshToken());
+        if (res) {
+          this.init();
+        } else {
+          await AsyncStorage.clear();
+          store.dispatch(logout());
+          NavigationServices.reset(StackID.AuthStack);
+        }
+      }
+    });
     this.socket.on('ON_VIEW_MESSAGE_IN_CHANNEL', data => {
       store.dispatch({
         type: actionTypes.MARK_SEEN_CHANNEL,
@@ -681,8 +701,6 @@ class SocketUtil {
     this.socket.on('ON_NEW_MESSAGE', async (data: any) => {
       const {message_data, notification_data} = data;
       const {notification_type} = notification_data;
-      const configs: any = store.getState()?.configs;
-      const {channelPrivateKey} = configs;
       const user = store.getState()?.user;
       const {userData, teamUserMap, channelMap, currentTeamId} = user;
       const currentChannel = getCurrentChannel();
@@ -732,24 +750,7 @@ class SocketUtil {
           }
         }
       }
-      let res = message_data;
-      if (
-        message_data.entity_type !== 'post' &&
-        (!channelNotification ||
-          channelNotification?.channel_type === 'Private' ||
-          channelNotification?.channel_type === 'Direct')
-      ) {
-        const keys = channelPrivateKey[message_data.entity_id];
-        if (keys?.length > 0) {
-          res = await normalizeMessageItem(
-            message_data,
-            keys[keys.length - 1].key,
-            message_data.entity_id,
-          );
-        } else {
-          res = null;
-        }
-      }
+      const res = message_data;
       if (res) {
         store.dispatch({
           type: actionTypes.RECEIVE_MESSAGE,

@@ -22,7 +22,8 @@ export const normalizeMessage = (messages: Array<any>) => {
   });
 };
 
-export const normalizeMessages = (messages: Array<any>) => {
+export const normalizeMessages = (messages?: Array<any>) => {
+  if (!messages) return [];
   return messages.reduce((result: Array<any>, val) => {
     const date = moment(new Date(val.createdAt)).format('YYYY-MM-DD');
     const index = result.findIndex(el => el.title === date);

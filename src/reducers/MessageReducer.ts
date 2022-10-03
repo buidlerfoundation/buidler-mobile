@@ -8,7 +8,7 @@ type MessageReducerState = {
   messageData: {
     [key: string]: {
       canMore: boolean;
-      data: Array<MessageData>;
+      data?: Array<MessageData>;
       scrollData: {showScrollDown: boolean; unreadCount?: number};
       canMoreAfter: boolean;
     };

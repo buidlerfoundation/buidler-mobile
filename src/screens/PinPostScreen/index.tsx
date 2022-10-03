@@ -57,7 +57,9 @@ const PinPostScreen = () => {
   }, []);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
   useEffect(() => {
-    dispatch(getTasks(currentChannel.channel_id));
+    if (currentChannel.channel_id) {
+      dispatch(getTasks(currentChannel.channel_id));
+    }
   }, [currentChannel.channel_id, dispatch]);
   const renderPinPost = useCallback(
     ({item}: {item: TaskData}) => {
@@ -251,8 +253,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: Fonts.Bold,
-    fontSize: 16,
-    lineHeight: 19,
+    fontSize: 17,
+    lineHeight: 26,
     marginLeft: 10,
   },
   body: {

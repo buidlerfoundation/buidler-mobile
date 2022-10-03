@@ -6,13 +6,21 @@ import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
 import {normalizeMessage, normalizeMessages} from 'helpers/MessageHelper';
 import {MessageData} from 'models';
-import React, {memo, useEffect, useState, useMemo, useCallback} from 'react';
+import React, {
+  memo,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ActivityIndicator,
   SectionList,
+  TextInput,
 } from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
 import BottomSheetHandle from 'components/BottomSheetHandle';
@@ -53,7 +61,8 @@ const ConversationScreen = () => {
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
   );
-  const messages = useMemo(() => messageData?.data || [], [messageData?.data]);
+  const inputRef = useRef<TextInput>();
+  const messages = useMemo(() => messageData?.data, [messageData?.data]);
   const messageCanMore = useMemo(
     () => messageData?.canMore,
     [messageData?.canMore],
@@ -77,6 +86,9 @@ const ConversationScreen = () => {
   );
   useEffect(() => {
     if (currentChannel.channel_id) {
+      navigation?.closeDrawer?.();
+    }
+    if (currentChannel.channel_id && !messages) {
       dispatch(
         getMessages(
           currentChannel.channel_id,
@@ -87,7 +99,7 @@ const ConversationScreen = () => {
         ),
       );
     }
-  }, [currentChannel.channel_id, dispatch]);
+  }, [currentChannel.channel_id, dispatch, messages, navigation]);
   const {colors} = useThemeColor();
   const onRemoveAttachment = useCallback(
     id =>
@@ -390,6 +402,7 @@ const ConversationScreen = () => {
             messageEdit={messageEdit}
             onClearReply={onClearReply}
             teamUserData={teamUserData}
+            inputRef={inputRef}
           />
         </View>
         <Modal
@@ -512,8 +525,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: Fonts.Bold,
-    fontSize: 16,
-    lineHeight: 19,
+    fontSize: 17,
+    lineHeight: 26,
     marginHorizontal: 5,
     flex: 1,
   },

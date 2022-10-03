@@ -25,6 +25,55 @@ export const logout: ActionCreator<any> = () => (dispatch: Dispatch) => {
   dispatch({type: actionTypes.LOGOUT});
 };
 
+export const refreshToken = () => async (dispatch: Dispatch) => {
+  dispatch({type: actionTypes.REFRESH_TOKEN_REQUEST});
+  try {
+    const refreshTokenExpire = await AsyncStorage.getItem(
+      AsyncKey.refreshTokenExpire,
+    );
+    const refreshToken = await AsyncStorage.getItem(AsyncKey.refreshTokenKey);
+    if (
+      !refreshTokenExpire ||
+      !refreshToken ||
+      new Date().getTime() / 1000 > refreshTokenExpire
+    ) {
+      return false;
+    }
+    const refreshTokenRes = await api.refreshToken(refreshToken);
+    if (refreshTokenRes.success) {
+      await AsyncStorage.setItem(
+        AsyncKey.accessTokenKey,
+        refreshTokenRes?.data?.token,
+      );
+      await AsyncStorage.setItem(
+        AsyncKey.refreshTokenKey,
+        refreshTokenRes?.data?.refresh_token,
+      );
+      await AsyncStorage.setItem(
+        AsyncKey.tokenExpire,
+        refreshTokenRes?.data?.token_expire_at?.toString(),
+      );
+      await AsyncStorage.setItem(
+        AsyncKey.refreshTokenExpire,
+        refreshTokenRes?.data?.refresh_token_expire_at?.toString(),
+      );
+      dispatch({
+        type: actionTypes.REFRESH_TOKEN_SUCCESS,
+        payload: refreshTokenRes,
+      });
+    } else {
+      dispatch({
+        type: actionTypes.REFRESH_TOKEN_FAIL,
+        payload: refreshTokenRes,
+      });
+    }
+    return refreshTokenRes.success;
+  } catch (error) {
+    dispatch({type: actionTypes.REFRESH_TOKEN_FAIL, payload: error});
+    return false;
+  }
+};
+
 export const login: ActionCreator<any> =
   (access_token, callback: (res: boolean) => void) =>
   async (dispatch: Dispatch) => {
@@ -167,10 +216,11 @@ const actionSetCurrentTeam = async (
     payload: {controller, team},
   });
   try {
-    const teamUsersRes = await api.getTeamUsers(team.team_id, controller);
     let lastChannelId: any = null;
-    const resSpace = await api.getSpaceChannel(team.team_id, controller);
-    const resChannel = await api.findChannel(team.team_id, controller);
+    const [resSpace, resChannel] = await Promise.all([
+      api.getSpaceChannel(team.team_id, controller),
+      api.findChannel(team.team_id, controller),
+    ]);
     const lastChannel = getState?.().user?.lastChannel?.[team.team_id];
     if (channelId) {
       lastChannelId = channelId;
@@ -184,16 +234,18 @@ const actionSetCurrentTeam = async (
     if (lastChannelId) {
       await AsyncStorage.setItem(AsyncKey.lastChannelId, lastChannelId);
     }
-    if (teamUsersRes.statusCode === 200) {
-      dispatch({
-        type: actionTypes.GET_TEAM_USER,
-        payload: {teamUsers: teamUsersRes, teamId: team.team_id},
-      });
-    }
+    api.getTeamUsers(team.team_id, controller).then(teamUsersRes => {
+      if (teamUsersRes.statusCode === 200) {
+        dispatch({
+          type: actionTypes.GET_TEAM_USER,
+          payload: {teamUsers: teamUsersRes, teamId: team.team_id},
+        });
+      }
+    });
     SocketUtils.changeTeam(team.team_id);
     dispatch({
       type: actionTypes.CURRENT_TEAM_SUCCESS,
-      payload: {team, resChannel, lastChannelId, teamUsersRes, resSpace},
+      payload: {team, resChannel, lastChannelId, resSpace},
     });
     AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
   } catch (error) {

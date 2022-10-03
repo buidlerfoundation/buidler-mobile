@@ -4,7 +4,7 @@ import ApiCaller from './ApiCaller';
 
 export const getPinPostMessage = async (
   postId: string,
-  limit = 20,
+  limit = 15,
   before = new Date().toISOString(),
   after?: string,
   controller?: AbortController,
@@ -22,7 +22,7 @@ export const deleteMessage = (messageId: string) =>
 
 export const getMessages = async (
   channelId: string,
-  limit = 20,
+  limit = 15,
   before?: string,
   after?: string,
   controller?: AbortController,

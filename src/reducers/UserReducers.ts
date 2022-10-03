@@ -555,19 +555,15 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
       };
     }
     case actionTypes.CURRENT_TEAM_REQUEST: {
-      state.apiTeamController = payload.controller;
-      state.currentTeamId = payload.team.team_id;
-      state.currentChannelId = lastChannel?.[payload.team.team_id]?.channel_id;
-      return state;
+      return {
+        ...state,
+        apiTeamController: payload.controller,
+        currentTeamId: payload.team.team_id,
+        currentChannelId: lastChannel?.[payload.team.team_id]?.channel_id,
+      };
     }
     case actionTypes.CURRENT_TEAM_SUCCESS: {
-      const {
-        lastChannelId,
-        resChannel,
-        directChannelUser,
-        teamUsersRes,
-        resSpace,
-      } = payload;
+      const {lastChannelId, resChannel, directChannelUser, resSpace} = payload;
       let channel: Channel = defaultChannel;
       if (directChannelUser && lastChannelId) {
         const directChannelData = resChannel.data.find(
@@ -592,11 +588,6 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
               c.channel_id === lastChannelId ||
               c.channel_id === lastChannel?.[payload.team.team_id]?.channel_id,
           ) || resChannel.data.filter(c => c.channel_type !== 'Direct')[0];
-        if (channel?.channel_type === 'Direct') {
-          channel.user = teamUsersRes?.data?.find(
-            u => u.direct_channel === channel.channel_id,
-          );
-        }
       }
       AsyncStorage.setItem(AsyncKey.lastChannelId, channel?.channel_id);
       return {

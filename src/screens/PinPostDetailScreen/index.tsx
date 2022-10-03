@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: Fonts.Bold,
-    fontSize: 16,
+    fontSize: 17,
     lineHeight: 26,
     marginLeft: 20,
     flex: 1,

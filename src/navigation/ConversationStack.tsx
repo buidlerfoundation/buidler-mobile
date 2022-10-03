@@ -1,4 +1,4 @@
-import React, {memo} from 'react';
+import React, {memo, useCallback} from 'react';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import ScreenID, {DrawerID} from 'common/ScreenID';
 import PinPostScreen from 'screens/PinPostScreen';
@@ -8,11 +8,13 @@ const Tab = createMaterialTopTabNavigator();
 
 const ConversationStack = () => {
   const {width} = useWindowDimensions();
+  const tabBar = useCallback(() => null, []);
   return (
     <Tab.Navigator
       initialLayout={{width}}
-      tabBar={() => null}
-      initialRouteName={ScreenID.ConversationScreen}>
+      tabBar={tabBar}
+      initialRouteName={DrawerID.ChannelDrawer}
+      screenOptions={{lazy: true}}>
       <Tab.Screen name={DrawerID.ChannelDrawer} component={ChannelDrawer} />
       <Tab.Screen name={ScreenID.PinPostScreen} component={PinPostScreen} />
     </Tab.Navigator>

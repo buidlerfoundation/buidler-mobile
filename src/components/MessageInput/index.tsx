@@ -89,7 +89,7 @@ type MessageInputProps = {
   postId?: string;
   inputStyle?: ViewStyle;
   onSent?: () => void;
-  inputRef?: any;
+  inputRef?: React.MutableRefObject<TextInput>;
   autoFocus?: boolean;
 };
 
@@ -144,24 +144,30 @@ const MessageInput = ({
           ?.includes?.(mentionStr?.toLowerCase?.() || ''),
     );
   }, [mentionStr, teamUserData]);
-  const normalizeMessageEdit = useCallback((content: string) => {
-    let res = content;
-    const matchRegex = /(<@)(.*?)(-)(.*?)(>)/gim;
-    const matchMentions = content.match(matchRegex);
-    matchMentions.forEach(element => {
-      const mentionMatch = /(<@)(.*?)(-)(.*?)(>)/.exec(element);
-      if (mentionMatch.length > 0) {
-        res = res.replace(mentionMatch[0], `@${mentionMatch[2]}`);
-        setMentions(current => {
-          if (current.includes(mentionMatch[2])) {
-            return current;
-          }
-          return [...current, mentionMatch[2]];
-        });
-      }
-    });
-    setVal(res);
-  }, []);
+  const normalizeMessageEdit = useCallback(
+    (content: string) => {
+      let res = content;
+      const matchRegex = /(<@)(.*?)(-)(.*?)(>)/gim;
+      const matchMentions = content.match(matchRegex);
+      matchMentions?.forEach?.(element => {
+        const mentionMatch = /(<@)(.*?)(-)(.*?)(>)/.exec(element);
+        if (mentionMatch.length > 0) {
+          res = res.replace(mentionMatch[0], `@${mentionMatch[2]}`);
+          setMentions(current => {
+            if (current.includes(mentionMatch[2])) {
+              return current;
+            }
+            return [...current, mentionMatch[2]];
+          });
+        }
+      });
+      setVal(res);
+      setTimeout(() => {
+        inputRef?.current?.focus();
+      }, 400);
+    },
+    [inputRef],
+  );
   useEffect(() => {
     if (messageEdit) {
       normalizeMessageEdit(messageEdit.content);
@@ -399,7 +405,15 @@ const MessageInput = ({
     [handlePressMention],
   );
   return (
-    <View style={[{backgroundColor: colors.activeBackgroundLight}, style]}>
+    <View
+      style={[
+        {
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderColor: colors.border,
+        },
+        style,
+      ]}>
       {renderReply()}
       <View style={[styles.container, inputStyle]}>
         {isOpenPopupMention && isFocus && dataMention.length > 0 && (
@@ -471,7 +485,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderTopWidth: 1,
   },
   replyIndicator: {
     width: 4,

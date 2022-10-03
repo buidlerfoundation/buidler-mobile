@@ -11,7 +11,7 @@ import useThemeColor from 'hook/useThemeColor';
 import SVG from 'common/SVG';
 import useAppSelector from 'hook/useAppSelector';
 import AvatarView from 'components/AvatarView';
-import {useRoute} from '@react-navigation/native';
+import {ParamListBase, RouteProp, useRoute} from '@react-navigation/native';
 import ConversationStack from './ConversationStack';
 import SideBarCommunity from 'components/SideBarCommunity';
 
@@ -70,17 +70,27 @@ const HomeStack = () => {
     },
     [userData],
   );
+  const screenOptions = useCallback(
+    (props: {route: RouteProp<ParamListBase, string>; navigation: any}) => ({
+      header,
+      tabBarInactiveTintColor: colors.subtext,
+      tabBarActiveTintColor: colors.text,
+      tabBarStyle: {
+        backgroundColor: colors.background,
+        borderTopColor:
+          props.route.name !== StackID.ConversationStack
+            ? colors.border
+            : colors.background,
+      },
+      tabBarShowLabel: false,
+    }),
+    [colors.background, colors.border, colors.subtext, colors.text, header],
+  );
   return (
     <>
       <Tab.Navigator
         initialRouteName={StackID.ConversationStack}
-        screenOptions={{
-          header,
-          tabBarInactiveTintColor: colors.subtext,
-          tabBarActiveTintColor: colors.text,
-          tabBarStyle: {backgroundColor: colors.background},
-          tabBarShowLabel: false,
-        }}>
+        screenOptions={screenOptions}>
         <Tab.Screen
           options={{tabBarIcon: tabBarIconHome}}
           name={ScreenID.CommunityScreen}

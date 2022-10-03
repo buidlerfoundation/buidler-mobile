@@ -1,4 +1,4 @@
-import React, {memo, useCallback} from 'react';
+import React, {memo, useCallback, useMemo} from 'react';
 import {useWindowDimensions, View} from 'react-native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import ScreenID, {DrawerID} from 'common/ScreenID';
@@ -13,20 +13,26 @@ const ChannelDrawer = () => {
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
   const drawerContent = useCallback(props => <ChannelScreen {...props} />, []);
+  const header = useCallback(() => <View />, []);
+  const screenOptions = useMemo(
+    () => ({
+      header,
+      drawerType: 'back',
+      drawerStyle: {
+        backgroundColor: colors.backgroundHeader,
+        width: width - 80,
+      },
+      swipeEdgeWidth: width,
+      swipeMinDistance: 0.1,
+    }),
+    [colors.backgroundHeader, header, width],
+  );
   return (
     <Drawer.Navigator
       id={DrawerID.ChannelDrawer}
+      initialRouteName={ScreenID.ConversationScreen}
       drawerContent={drawerContent}
-      screenOptions={{
-        header: () => <View />,
-        drawerType: 'back',
-        drawerStyle: {
-          backgroundColor: colors.backgroundHeader,
-          width: width - 80,
-        },
-        swipeEdgeWidth: width,
-        swipeMinDistance: 0.1,
-      }}>
+      screenOptions={screenOptions}>
       <Drawer.Screen
         name={ScreenID.ConversationScreen}
         component={ConversationScreen}

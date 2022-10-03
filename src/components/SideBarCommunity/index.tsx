@@ -18,8 +18,8 @@ const SideBarCommunity = () => {
   const team = useAppSelector(state => state.user.team || []);
   const handlePress = useCallback(
     async (item: Community) => {
-      await dispatch(setCurrentTeam(item));
       navigation.navigate(StackID.ConversationStack);
+      dispatch(setCurrentTeam(item));
     },
     [dispatch, navigation],
   );
