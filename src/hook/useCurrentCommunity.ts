@@ -1,9 +1,10 @@
 import {Community} from 'models';
 import React from 'react';
 import useAppSelector from './useAppSelector';
+import useCommunityId from './useCommunityId';
 
 function useCurrentCommunity() {
-  const communityId = useAppSelector(state => state.user.currentTeamId);
+  const communityId = useCommunityId();
   const community = useAppSelector(state => state.user.team);
 
   return React.useMemo<Community>(() => {

@@ -1,10 +1,10 @@
 import React from 'react';
 import {Channel} from 'models';
-import useAppSelector from './useAppSelector';
 import useChannel from './useChannel';
+import useChannelId from './useChannelId';
 
 function useCurrentChannel() {
-  const channelId = useAppSelector(state => state.user.currentChannelId);
+  const channelId = useChannelId();
   const channels = useChannel();
 
   return React.useMemo<Channel>(() => {

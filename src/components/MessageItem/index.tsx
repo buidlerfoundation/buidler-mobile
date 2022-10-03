@@ -21,13 +21,13 @@ import PinPostItem from 'components/PinPostItem';
 
 type MessageItemProps = {
   item: MessageData;
-  teamId: string;
   onLongPress?: (message: MessageData) => void;
 };
 
-const MessageItem = ({item, teamId, onLongPress}: MessageItemProps) => {
+const MessageItem = ({item, onLongPress}: MessageItemProps) => {
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
+  const teamId = useAppSelector(state => state.user.currentTeamId);
   const teamUserData = useTeamUserData();
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const replyMessage = useMemo(

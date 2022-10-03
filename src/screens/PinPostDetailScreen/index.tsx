@@ -10,7 +10,6 @@ import useAppSelector from 'hook/useAppSelector';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import usePostData from 'hook/usePostData';
-import useTeamUserData from 'hook/useTeamUserData';
 import useThemeColor from 'hook/useThemeColor';
 import React, {
   memo,
@@ -52,7 +51,6 @@ const PinPostDetailScreen = () => {
   );
   const {colors} = useThemeColor();
   const userData = useAppSelector(state => state.user.userData);
-  const teamUserData = useTeamUserData();
   const community = useCurrentCommunity();
   const currentChannel = useCurrentChannel();
   const navigation = useNavigation();
@@ -234,25 +232,18 @@ const PinPostDetailScreen = () => {
           }
           keyExtractor={item => item.message_id}
           renderItem={({item}) => (
-            <MessageItem
-              item={item}
-              teamId={community.team_id}
-              onLongPress={openMenuMessage}
-            />
+            <MessageItem item={item} onLongPress={openMenuMessage} />
           )}
         />
         <View>
           <MessageInput
-            currentChannel={currentChannel}
             openGallery={toggleGallery}
             onRemoveAttachment={onRemoveAttachment}
             attachments={attachments}
             onClearAttachment={onClearAttachment}
-            teamId={community.team_id}
             messageReply={messageReply}
             messageEdit={messageEdit}
             onClearReply={onClearReply}
-            teamUserData={teamUserData}
             postId={postId}
             onSent={onKeyboardShow}
             inputRef={inputRef}

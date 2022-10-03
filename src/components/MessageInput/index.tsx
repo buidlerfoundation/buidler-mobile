@@ -1,7 +1,7 @@
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {Channel, MessageData, UserData} from 'models';
+import {MessageData, UserData} from 'models';
 import React, {useState, useEffect, useCallback, memo, useMemo} from 'react';
 import {
   View,
@@ -27,6 +27,8 @@ import {getUniqueId} from 'helpers/GenerateUUID';
 import AvatarView from 'components/AvatarView';
 import ImageHelper from 'helpers/ImageHelper';
 import MentionItem from 'components/MentionItem';
+import useCurrentChannel from 'hook/useCurrentChannel';
+import useCommunityId from 'hook/useCommunityId';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -75,14 +77,12 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
 };
 
 type MessageInputProps = {
-  currentChannel: Channel;
   style?: ViewStyle;
   placeholder?: string;
   openGallery?: () => void;
   attachments?: Array<any>;
   onRemoveAttachment?: (randomId: number) => void;
   onClearAttachment?: () => void;
-  teamId: string;
   messageReply?: MessageData;
   messageEdit?: MessageData;
   onClearReply?: () => void;
@@ -94,12 +94,10 @@ type MessageInputProps = {
 };
 
 const MessageInput = ({
-  currentChannel,
   style,
   placeholder,
   openGallery,
   attachments = [],
-  teamId,
   onRemoveAttachment,
   onClearAttachment,
   messageEdit,
@@ -117,6 +115,8 @@ const MessageInput = ({
   const [mentionStr, setMentionStr] = useState('');
   const [mentions, setMentions] = useState([]);
   const [isOpenPopupMention, setOpenPopupMention] = useState(false);
+  const currentChannel = useCurrentChannel();
+  const teamId = useCommunityId();
   const teamUserData = useTeamUserData();
   const {colors} = useThemeColor();
   useEffect(() => {

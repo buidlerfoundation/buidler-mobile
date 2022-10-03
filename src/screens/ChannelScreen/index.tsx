@@ -17,13 +17,35 @@ import {useMemo} from 'react';
 import CommunityLogo from 'components/CommunityLogo';
 import ScreenID from 'common/ScreenID';
 import {useNavigation} from '@react-navigation/native';
+import useCommunityId from 'hook/useCommunityId';
+
+const CommunityHeader = () => {
+  const {colors} = useThemeColor();
+  const currentTeam = useCurrentCommunity();
+  const navigation = useNavigation();
+  const openDrawer = useCallback(() => {
+    navigation.navigate(ScreenID.CommunityScreen);
+  }, [navigation]);
+  return (
+    <View style={styles.communityContainer}>
+      <Touchable onPress={openDrawer}>
+        <CommunityLogo community={currentTeam} size={40} />
+      </Touchable>
+      <Text
+        style={[styles.communityTitle, {color: colors.text}]}
+        ellipsizeMode="tail"
+        numberOfLines={1}>
+        {currentTeam.team_display_name}
+      </Text>
+    </View>
+  );
+};
 
 const ChannelScreen = () => {
-  const navigation = useNavigation();
   const userData = useAppSelector(state => state.user.userData);
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
-  const currentTeam = useCurrentCommunity();
+  const communityId = useCommunityId();
   const [isCollapsed, setCollapsed] = useState(false);
   const toggleCollapsed = useCallback(
     () => setCollapsed(current => !current),
@@ -72,33 +94,20 @@ const ChannelScreen = () => {
   ]);
   const renderSpace = useCallback(
     ({item}: {item: Space}) => {
-      return <SpaceItem item={item} teamId={currentTeam.team_id} />;
+      return <SpaceItem item={item} teamId={communityId} />;
     },
-    [currentTeam.team_id],
+    [communityId],
   );
 
   const renderItemSeparate = useCallback(() => {
     return <View style={{height: 10}} />;
   }, []);
-  const openDrawer = useCallback(() => {
-    navigation.navigate(ScreenID.CommunityScreen);
-  }, [navigation]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
       <View style={styles.mainView}>
         <View style={styles.channelContainer}>
-          <View style={styles.communityContainer}>
-            <Touchable onPress={openDrawer}>
-              <CommunityLogo community={currentTeam} size={40} />
-            </Touchable>
-            <Text
-              style={[styles.communityTitle, {color: colors.text}]}
-              ellipsizeMode="tail"
-              numberOfLines={1}>
-              {currentTeam.team_display_name}
-            </Text>
-          </View>
+          <CommunityHeader />
           <FlatList
             data={spaceChannel}
             keyExtractor={item => item.space_id}
@@ -106,6 +115,8 @@ const ChannelScreen = () => {
             ListFooterComponent={renderFooter}
             ListHeaderComponent={<View style={{height: 10}} />}
             ItemSeparatorComponent={renderItemSeparate}
+            windowSize={2}
+            initialNumToRender={10}
           />
         </View>
       </View>

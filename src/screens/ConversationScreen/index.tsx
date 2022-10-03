@@ -33,8 +33,6 @@ import SocketUtils from 'utils/SocketUtils';
 import {titleMessageFromNow} from 'utils/DateUtils';
 import useThemeColor from 'hook/useThemeColor';
 import useCurrentChannel from 'hook/useCurrentChannel';
-import useTeamUserData from 'hook/useTeamUserData';
-import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useAppSelector from 'hook/useAppSelector';
 import useAppDispatch from 'hook/useAppDispatch';
 import {deleteMessage, getMessages} from 'actions/MessageActions';
@@ -52,7 +50,25 @@ import MessageInput from 'components/MessageInput';
 import MessageItem from 'components/MessageItem';
 import MenuPinPost from 'components/MenuPinPost';
 import HapticUtils from 'utils/HapticUtils';
+import useCommunityId from 'hook/useCommunityId';
+import useChannelId from 'hook/useChannelId';
 // import {useGlobalModalContext} from 'components/ModalContainer';
+
+const ChannelTitle = () => {
+  const {colors} = useThemeColor();
+  const currentChannel = useCurrentChannel();
+  return (
+    <View style={styles.titleWrap}>
+      <ChannelIcon channel={currentChannel} color={colors.text} />
+      <Text
+        style={[styles.title, {color: colors.text}]}
+        ellipsizeMode="tail"
+        numberOfLines={1}>
+        {currentChannel.channel_name}
+      </Text>
+    </View>
+  );
+};
 
 const ConversationScreen = () => {
   const navigation = useNavigation();
@@ -69,9 +85,8 @@ const ConversationScreen = () => {
   );
   const userData = useAppSelector(state => state.user.userData);
   const userRole = useUserRole();
-  const currentTeam = useCurrentCommunity();
-  const currentChannel = useCurrentChannel();
-  const teamUserData = useTeamUserData();
+  const currentTeamId = useCommunityId();
+  const currentChannelId = useChannelId();
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
@@ -85,23 +100,17 @@ const ConversationScreen = () => {
     [],
   );
   useEffect(() => {
-    if (currentTeam.team_id) {
+    if (currentTeamId) {
       navigation?.openDrawer?.();
     }
-  }, [currentTeam.team_id, navigation]);
+  }, [currentTeamId, navigation]);
   useEffect(() => {
-    if (currentChannel.channel_id) {
+    if (currentChannelId) {
       dispatch(
-        getMessages(
-          currentChannel.channel_id,
-          'Public',
-          undefined,
-          undefined,
-          true,
-        ),
+        getMessages(currentChannelId, 'Public', undefined, undefined, true),
       );
     }
-  }, [currentChannel.channel_id, dispatch, navigation]);
+  }, [currentChannelId, dispatch, navigation]);
   const {colors} = useThemeColor();
   const onRemoveAttachment = useCallback(
     id =>
@@ -114,15 +123,9 @@ const ConversationScreen = () => {
   const onMoveShouldSetResponderCapture = useCallback(() => false, []);
   const renderItem = useCallback(
     ({item}: {item: MessageData}) => {
-      return (
-        <MessageItem
-          item={item}
-          teamId={currentTeam.team_id}
-          onLongPress={openMenuMessage}
-        />
-      );
+      return <MessageItem item={item} onLongPress={openMenuMessage} />;
     },
-    [currentTeam.team_id, openMenuMessage],
+    [openMenuMessage],
   );
   const renderFooter = useCallback(
     ({section: {title}}) => (
@@ -149,16 +152,8 @@ const ConversationScreen = () => {
     if (!messageCanMore || loadMoreMessage) return;
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
-    dispatch(
-      getMessages(currentChannel.channel_id, 'Public', lastMsg.createdAt),
-    );
-  }, [
-    currentChannel.channel_id,
-    dispatch,
-    loadMoreMessage,
-    messageCanMore,
-    messages,
-  ]);
+    dispatch(getMessages(currentChannelId, 'Public', lastMsg.createdAt));
+  }, [currentChannelId, dispatch, loadMoreMessage, messageCanMore, messages]);
   const onSelectPhoto = useCallback(
     async (items: Array<any>) => {
       if (messageEdit) {
@@ -179,7 +174,7 @@ const ConversationScreen = () => {
           {uri: img.uri, randomId, loading: true},
         ]);
         api
-          .uploadFile(currentTeam.team_id, SocketUtils.generateId, {
+          .uploadFile(currentTeamId, SocketUtils.generateId, {
             uri: img.uri,
             name: img.name,
             type: 'multipart/form-data',
@@ -204,7 +199,7 @@ const ConversationScreen = () => {
           });
       });
     },
-    [currentTeam.team_id, messageEdit, toggleGallery],
+    [currentTeamId, messageEdit, toggleGallery],
   );
   const onCloseMenuPinPost = useCallback(() => {
     setOpenMenuPinPost(false);
@@ -216,15 +211,15 @@ const ConversationScreen = () => {
     const body: any = {
       content: selectedMessage?.content,
       status: 'pinned',
-      channel_ids: [currentChannel?.channel_id],
+      channel_ids: [currentChannelId],
       task_id: selectedMessage?.message_id,
-      team_id: currentTeam.team_id,
+      team_id: currentTeamId,
     };
-    dispatch(createTask(currentChannel?.channel_id, body));
+    dispatch(createTask(currentChannelId, body));
     onCloseMenuMessage();
   }, [
-    currentChannel?.channel_id,
-    currentTeam.team_id,
+    currentChannelId,
+    currentTeamId,
     dispatch,
     onCloseMenuMessage,
     selectedMessage?.content,
@@ -236,10 +231,10 @@ const ConversationScreen = () => {
       deleteMessage(
         selectedMessage?.message_id,
         selectedMessage?.reply_message_id,
-        currentChannel.channel_id,
+        currentChannelId,
       ),
     );
-  }, [currentChannel.channel_id, dispatch, selectedMessage]);
+  }, [currentChannelId, dispatch, selectedMessage]);
   const onMenuPin = useCallback(() => {
     onCreatePinPost();
     onCloseMenuMessage();
@@ -251,13 +246,13 @@ const ConversationScreen = () => {
   }, [onCloseMenuMessage, onCloseMenuPinPost, onDeleteMessage]);
   const onMenuCopyPinPost = useCallback(async () => {
     await Clipboard.setString(
-      `${buidlerURL}/channels/${currentTeam.team_id}/${currentChannel.channel_id}/post/${selectedMessage?.task?.task_id}`,
+      `${buidlerURL}/channels/${currentTeamId}/${currentChannelId}/post/${selectedMessage?.task?.task_id}`,
     );
     onCloseMenuPinPost();
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
   }, [
-    currentChannel.channel_id,
-    currentTeam.team_id,
+    currentChannelId,
+    currentTeamId,
     onCloseMenuPinPost,
     selectedMessage?.task?.task_id,
   ]);
@@ -270,51 +265,49 @@ const ConversationScreen = () => {
   }, [navigation, onCloseMenuPinPost, selectedMessage?.task?.task_id]);
   const onArchive = useCallback(() => {
     dispatch(
-      updateTask(selectedMessage?.message_id, currentChannel.channel_id, {
+      updateTask(selectedMessage?.message_id, currentChannelId, {
         status: 'archived',
       }),
     );
     onCloseMenuPinPost();
   }, [
-    currentChannel.channel_id,
+    currentChannelId,
     dispatch,
     onCloseMenuPinPost,
     selectedMessage?.message_id,
   ]);
   const onUnarchive = useCallback(() => {
     dispatch(
-      updateTask(selectedMessage?.message_id, currentChannel.channel_id, {
+      updateTask(selectedMessage?.message_id, currentChannelId, {
         status: 'pinned',
       }),
     );
     onCloseMenuPinPost();
   }, [
-    currentChannel.channel_id,
+    currentChannelId,
     dispatch,
     onCloseMenuPinPost,
     selectedMessage?.message_id,
   ]);
   const onUploadToIPFS = useCallback(() => {
-    dispatch(
-      uploadToIPFS(selectedMessage?.task?.task_id, currentChannel.channel_id),
-    );
+    dispatch(uploadToIPFS(selectedMessage?.task?.task_id, currentChannelId));
     onCloseMenuPinPost();
   }, [
-    currentChannel.channel_id,
+    currentChannelId,
     dispatch,
     onCloseMenuPinPost,
     selectedMessage?.task?.task_id,
   ]);
   const onMenuCopyMessage = useCallback(async () => {
     await Clipboard.setString(
-      `${buidlerURL}/channels/${currentTeam.team_id}/${currentChannel.channel_id}/message/${selectedMessage?.message_id}`,
+      `${buidlerURL}/channels/${currentTeamId}/${currentChannelId}/message/${selectedMessage?.message_id}`,
     );
     onCloseMenuMessage();
     onCloseMenuPinPost();
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
   }, [
-    currentChannel.channel_id,
-    currentTeam.team_id,
+    currentChannelId,
+    currentTeamId,
     onCloseMenuMessage,
     onCloseMenuPinPost,
     selectedMessage?.message_id,
@@ -356,15 +349,7 @@ const ConversationScreen = () => {
           <Touchable onPress={openSideMenu}>
             <SVG.IconSideMenu fill={colors.text} />
           </Touchable>
-          <View style={styles.titleWrap}>
-            <ChannelIcon channel={currentChannel} color={colors.text} />
-            <Text
-              style={[styles.title, {color: colors.text}]}
-              ellipsizeMode="tail"
-              numberOfLines={1}>
-              {currentChannel.channel_name}
-            </Text>
-          </View>
+          <ChannelTitle />
           <Touchable onPress={onPinPress}>
             <SVG.IconPin fill={colors.text} />
           </Touchable>
@@ -378,7 +363,8 @@ const ConversationScreen = () => {
           inverted
           keyExtractor={item => item.message_id}
           renderItem={renderItem}
-          initialNumToRender={20}
+          initialNumToRender={15}
+          windowSize={2}
           ListHeaderComponent={<View style={{height: 15}} />}
           onEndReached={onEndReached}
           renderSectionFooter={renderFooter}
@@ -394,16 +380,13 @@ const ConversationScreen = () => {
         />
         <View style={styles.bottomView}>
           <MessageInput
-            currentChannel={currentChannel}
             openGallery={toggleGallery}
             onRemoveAttachment={onRemoveAttachment}
             attachments={attachments}
             onClearAttachment={onClearAttachment}
-            teamId={currentTeam.team_id}
             messageReply={messageReply}
             messageEdit={messageEdit}
             onClearReply={onClearReply}
-            teamUserData={teamUserData}
             inputRef={inputRef}
           />
         </View>
