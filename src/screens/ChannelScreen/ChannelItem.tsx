@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   channelItem: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     flexDirection: 'row',
     height: 40,
     alignItems: 'center',
