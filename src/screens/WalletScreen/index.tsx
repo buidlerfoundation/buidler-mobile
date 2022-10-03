@@ -81,7 +81,7 @@ const WalletScreen = () => {
             <View style={{height: 15}} />
           </View>
         }
-        data={[walletBalance.ETH, ...walletBalance.tokens]}
+        data={[walletBalance?.ETH, ...walletBalance?.tokens]}
         keyExtractor={item => item.contract.contract_address}
         renderItem={({item}) => <TokenItem item={item} />}
         ItemSeparatorComponent={renderSeparate}

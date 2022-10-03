@@ -25,12 +25,15 @@ export const formatNumber = (number: string | number, removeZero = true) => {
     : `${number}`;
   if (str.includes('.')) {
     const splitted = str.split('.');
-    const res = `${numeral(splitted[0]).format('0,0')}.${splitted[1].substring(
+    let res = `${numeral(splitted[0]).format('0,0')}.${splitted[1].substring(
       0,
       5,
     )}`;
     if (removeZero) {
-      return res.replace(/0*$/g, '');
+      res = res.replace(/0*$/g, '');
+      if (res[res.length - 1] === '.') {
+        res = res.substring(0, res.length - 1);
+      }
     }
     return res;
   }

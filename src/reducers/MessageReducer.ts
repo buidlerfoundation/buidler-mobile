@@ -400,9 +400,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
       };
     }
     case actionTypes.LOGOUT: {
-      return {
-        messageData: {},
-      };
+      return initialState;
     }
     default:
       return state;
