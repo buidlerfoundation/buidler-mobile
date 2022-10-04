@@ -1,6 +1,6 @@
 import {StackActions, CommonActions} from '@react-navigation/native';
 
-function getCurrentRoute(navigationState) {
+export function getCurrentRoute(navigationState) {
   if (!navigationState) {
     return null;
   }

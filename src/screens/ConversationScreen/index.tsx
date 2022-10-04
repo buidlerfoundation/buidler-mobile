@@ -52,6 +52,7 @@ import MenuPinPost from 'components/MenuPinPost';
 import HapticUtils from 'utils/HapticUtils';
 import useCommunityId from 'hook/useCommunityId';
 import useChannelId from 'hook/useChannelId';
+import {useDrawerStatus} from '@react-navigation/drawer';
 // import {useGlobalModalContext} from 'components/ModalContainer';
 
 const ChannelTitle = () => {
@@ -94,11 +95,15 @@ const ConversationScreen = () => {
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenGallery, setOpenGallery] = useState(false);
   const [attachments, setAttachments] = useState([]);
+  const drawerStatus = useDrawerStatus();
   const dispatch = useAppDispatch();
   const toggleGallery = useCallback(
     () => setOpenGallery(current => !current),
     [],
   );
+  useEffect(() => {
+    navigation.setParams({drawerStatus});
+  }, [drawerStatus, navigation]);
   useEffect(() => {
     if (currentTeamId) {
       navigation?.openDrawer?.();

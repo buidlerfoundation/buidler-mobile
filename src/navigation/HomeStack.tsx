@@ -3,7 +3,7 @@ import {View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import ScreenID, {StackID} from 'common/ScreenID';
 import {useSelector} from 'react-redux';
-import NavigationServices from 'services/NavigationServices';
+import NavigationServices, {getCurrentRoute} from 'services/NavigationServices';
 import ModalOtp from 'components/ModalOtp';
 import WalletScreen from 'screens/WalletScreen';
 import ProfileScreen from 'screens/ProfileScreen';
@@ -11,7 +11,7 @@ import useThemeColor from 'hook/useThemeColor';
 import SVG from 'common/SVG';
 import useAppSelector from 'hook/useAppSelector';
 import AvatarView from 'components/AvatarView';
-import {ParamListBase, RouteProp, useRoute} from '@react-navigation/native';
+import {useRoute} from '@react-navigation/native';
 import ConversationStack from './ConversationStack';
 import SideBarCommunity from 'components/SideBarCommunity';
 
@@ -71,20 +71,34 @@ const HomeStack = () => {
     [userData],
   );
   const screenOptions = useCallback(
-    (props: {route: RouteProp<ParamListBase, string>; navigation: any}) => ({
+    () => ({
       header,
       tabBarInactiveTintColor: colors.subtext,
       tabBarActiveTintColor: colors.text,
       tabBarStyle: {
         backgroundColor: colors.background,
-        borderTopColor:
-          props.route.name !== StackID.ConversationStack
-            ? colors.border
-            : colors.background,
+        borderTopColor: colors.border,
       },
       tabBarShowLabel: false,
     }),
     [colors.background, colors.border, colors.subtext, colors.text, header],
+  );
+  const conversationOptions = useCallback(
+    ({navigation}) => {
+      const currentRoute = getCurrentRoute(navigation.getState());
+      return {
+        tabBarIcon: tabBarIconChat,
+        tabBarStyle: {
+          borderTopColor:
+            currentRoute.name === ScreenID.PinPostScreen ||
+            currentRoute.params?.drawerStatus === 'open'
+              ? colors.border
+              : colors.background,
+          backgroundColor: colors.background,
+        },
+      };
+    },
+    [colors.background, colors.border, tabBarIconChat],
   );
   return (
     <>
@@ -97,7 +111,7 @@ const HomeStack = () => {
           component={SideBarCommunity}
         />
         <Tab.Screen
-          options={{tabBarIcon: tabBarIconChat}}
+          options={conversationOptions}
           name={StackID.ConversationStack}
           component={ConversationStack}
           initialParams={route.params}

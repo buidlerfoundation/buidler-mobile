@@ -3,54 +3,17 @@ import store from 'store';
 import AppConfig, {whiteListRefreshTokenApis} from 'common/AppConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
-import api from '.';
 import GlobalVariable from 'services/GlobalVariable';
 import Toast from 'react-native-toast-message';
-import {logout} from 'actions/UserActions';
+import {logout, refreshToken} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
-import SocketUtils from 'utils/SocketUtils';
 
 const METHOD_GET = 'get';
 const METHOD_POST = 'post';
 const METHOD_PUT = 'put';
 const METHOD_DELETE = 'delete';
 const METHOD_PATCH = 'patch';
-
-const handleRefreshToken = async () => {
-  const refreshTokenExpire = await AsyncStorage.getItem(
-    AsyncKey.refreshTokenExpire,
-  );
-  const refreshToken = await AsyncStorage.getItem(AsyncKey.refreshTokenKey);
-  if (
-    !refreshTokenExpire ||
-    !refreshToken ||
-    new Date().getTime() / 1000 > refreshTokenExpire
-  ) {
-    return false;
-  }
-  const refreshTokenRes = await api.refreshToken(refreshToken);
-  if (refreshTokenRes.success) {
-    await AsyncStorage.setItem(
-      AsyncKey.accessTokenKey,
-      refreshTokenRes?.data?.token,
-    );
-    await AsyncStorage.setItem(
-      AsyncKey.refreshTokenKey,
-      refreshTokenRes?.data?.refresh_token,
-    );
-    await AsyncStorage.setItem(
-      AsyncKey.tokenExpire,
-      refreshTokenRes?.data?.token_expire_at?.toString(),
-    );
-    await AsyncStorage.setItem(
-      AsyncKey.refreshTokenExpire,
-      refreshTokenRes?.data?.refresh_token_expire_at?.toString(),
-    );
-    SocketUtils.init();
-  }
-  return refreshTokenRes.success;
-};
 
 async function requestAPI<T = any>(
   method: string,
@@ -69,7 +32,7 @@ async function requestAPI<T = any>(
   if (!whiteListRefreshTokenApis.includes(`${method}-${uri}`)) {
     const expireTokenTime = await AsyncStorage.getItem(AsyncKey.tokenExpire);
     if (!expireTokenTime || new Date().getTime() / 1000 > expireTokenTime) {
-      const success = await handleRefreshToken();
+      const success = await store.dispatch(refreshToken());
       if (!success) {
         if (!GlobalVariable.sessionExpired) {
           GlobalVariable.sessionExpired = true;

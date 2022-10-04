@@ -16,6 +16,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
+import {getDeviceCode} from 'helpers/GenerateUUID';
+import api from 'services/api';
 
 const ProfileScreen = () => {
   const dispatch = useAppDispatch();
@@ -30,6 +32,10 @@ const ProfileScreen = () => {
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
   }, [address]);
   const onLogout = useCallback(async () => {
+    const deviceCode = await getDeviceCode();
+    await api.removeDevice({
+      device_code: deviceCode,
+    });
     await AsyncStorage.clear();
     dispatch(logout());
     NavigationServices.reset(StackID.AuthStack);
