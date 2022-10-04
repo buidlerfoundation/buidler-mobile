@@ -19,6 +19,121 @@ import useTeamUserData from 'hook/useTeamUserData';
 import SVG from 'common/SVG';
 import PinPostItem from 'components/PinPostItem';
 
+type ReplyMessageProps = {
+  replyMessage?: MessageData;
+  replyMessageId?: string;
+};
+
+const ReplyMessage = ({replyMessage, replyMessageId}: ReplyMessageProps) => {
+  const teamUserData = useTeamUserData();
+  const {colors} = useThemeColor();
+  const replier = useMemo(
+    () => teamUserData.find(el => el.user_id === replyMessage?.sender_id),
+    [replyMessage?.sender_id, teamUserData],
+  );
+  const isReplyExisted = useMemo(
+    () => !!replyMessage && !!replier,
+    [replier, replyMessage],
+  );
+  const showReply = useMemo(
+    () => isReplyExisted || replyMessageId,
+    [isReplyExisted, replyMessageId],
+  );
+  if (!showReply) return null;
+  return (
+    <View style={styles.replyWrap}>
+      <SVG.IconMessageReply fill={colors.lightText} />
+      <View style={{width: 15}} />
+      {isReplyExisted ? (
+        <>
+          <AvatarView user={replier} size={20} />
+          <Text
+            style={[styles.replierName, {color: colors.lightText}]}
+            numberOfLines={1}
+            ellipsizeMode="middle">
+            {replier.user_name}
+          </Text>
+          {replyMessage.message_attachments.length > 0 && (
+            <View style={{marginLeft: 8}}>
+              <SVG.IconReplyAttachment fill={colors.lightText} />
+            </View>
+          )}
+          <View style={{flex: 1}}>
+            <RenderHTML
+              html={normalizeMessageTextPlain(
+                replyMessage.content || 'View attachment',
+                true,
+                replyMessage.createdAt !== replyMessage.updatedAt,
+              )}
+              defaultTextProps={{
+                ellipsizeMode: 'tail',
+                numberOfLines: 1,
+              }}
+            />
+          </View>
+        </>
+      ) : (
+        <View style={styles.deletedReplyWrap}>
+          <SVG.IconBan fill={colors.lightText} />
+          <Text style={[styles.deletedText, {color: colors.lightText}]}>
+            Original message was deleted.
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
+type MessageAvatarProps = {
+  sender_id: string;
+  showAvatar?: boolean;
+};
+
+const MessageAvatar = ({sender_id, showAvatar}: MessageAvatarProps) => {
+  const teamUserData = useTeamUserData();
+  const sender = useMemo(
+    () => teamUserData.find(el => el.user_id === sender_id),
+    [sender_id, teamUserData],
+  );
+  if (showAvatar)
+    return (
+      <View style={{marginTop: 5}}>
+        <AvatarView user={sender} size={35} />
+      </View>
+    );
+  return <View style={{width: 35}} />;
+};
+
+type MessageSenderProps = {
+  showAvatar?: boolean;
+  sender_id: string;
+  createdAt: string;
+};
+
+const MessageSender = ({
+  showAvatar,
+  sender_id,
+  createdAt,
+}: MessageSenderProps) => {
+  const teamUserData = useTeamUserData();
+  const {colors} = useThemeColor();
+  const sender = useMemo(
+    () => teamUserData.find(el => el.user_id === sender_id),
+    [sender_id, teamUserData],
+  );
+  if (!showAvatar || !sender) return null;
+  return (
+    <View style={styles.nameWrapper}>
+      <Text style={[styles.senderName, {color: colors.text}]}>
+        {normalizeUserName(sender.user_name)}
+      </Text>
+      <Text style={[styles.messageDate, {color: colors.secondary}]}>
+        {messageFromNow(createdAt)}
+      </Text>
+    </View>
+  );
+};
+
 type MessageItemProps = {
   item: MessageData;
   onLongPress?: (message: MessageData) => void;
@@ -28,20 +143,7 @@ const MessageItem = ({item, onLongPress}: MessageItemProps) => {
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
   const teamId = useAppSelector(state => state.user.currentTeamId);
-  const teamUserData = useTeamUserData();
   const reactData = useAppSelector(state => state.reactReducer.reactData);
-  const replyMessage = useMemo(
-    () => item.conversation_data,
-    [item.conversation_data],
-  );
-  const sender = useMemo(
-    () => teamUserData.find(el => el.user_id === item.sender_id),
-    [item.sender_id, teamUserData],
-  );
-  const replier = useMemo(
-    () => teamUserData.find(el => el.user_id === replyMessage?.sender_id),
-    [replyMessage?.sender_id, teamUserData],
-  );
   const showAvatar = useMemo(() => {
     return item.isHead || !!item.reply_message_id;
   }, [item.isHead, item.reply_message_id]);
@@ -49,78 +151,20 @@ const MessageItem = ({item, onLongPress}: MessageItemProps) => {
     () => onLongPress?.(item),
     [item, onLongPress],
   );
-  const isReplyExisted = useMemo(
-    () => !!replyMessage && !!replier,
-    [replier, replyMessage],
-  );
-  const showReply = useMemo(
-    () => isReplyExisted || item.reply_message_id,
-    [isReplyExisted, item.reply_message_id],
-  );
-  if (!sender) return null;
   return (
     <View style={[styles.root, {marginTop: showAvatar ? 15 : 0}]}>
-      {showReply && (
-        <View style={styles.replyWrap}>
-          <SVG.IconMessageReply fill={colors.lightText} />
-          <View style={{width: 15}} />
-          {isReplyExisted ? (
-            <>
-              <AvatarView user={replier} size={20} />
-              <Text
-                style={[styles.replierName, {color: colors.lightText}]}
-                numberOfLines={1}
-                ellipsizeMode="middle">
-                {replier.user_name}
-              </Text>
-              {replyMessage.message_attachments.length > 0 && (
-                <View style={{marginLeft: 8}}>
-                  <SVG.IconReplyAttachment fill={colors.lightText} />
-                </View>
-              )}
-              <View style={{flex: 1}}>
-                <RenderHTML
-                  html={normalizeMessageTextPlain(
-                    replyMessage.content || 'View attachment',
-                    true,
-                    replyMessage.createdAt !== replyMessage.updatedAt,
-                  )}
-                  defaultTextProps={{
-                    ellipsizeMode: 'tail',
-                    numberOfLines: 1,
-                  }}
-                />
-              </View>
-            </>
-          ) : (
-            <View style={styles.deletedReplyWrap}>
-              <SVG.IconBan fill={colors.lightText} />
-              <Text style={[styles.deletedText, {color: colors.lightText}]}>
-                Original message was deleted.
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
+      <ReplyMessage
+        replyMessage={item.conversation_data}
+        replyMessageId={item.reply_message_id}
+      />
       <Touchable style={[styles.container]} onLongPress={handleLongPress}>
-        {showAvatar ? (
-          <View style={{marginTop: 5}}>
-            <AvatarView user={sender} size={35} />
-          </View>
-        ) : (
-          <View style={{width: 35}} />
-        )}
+        <MessageAvatar sender_id={item.sender_id} showAvatar={showAvatar} />
         <View style={styles.bodyMessage}>
-          {showAvatar && (
-            <View style={styles.nameWrapper}>
-              <Text style={[styles.senderName, {color: colors.text}]}>
-                {normalizeUserName(sender.user_name)}
-              </Text>
-              <Text style={[styles.messageDate, {color: colors.secondary}]}>
-                {messageFromNow(item.createdAt)}
-              </Text>
-            </View>
-          )}
+          <MessageSender
+            createdAt={item.createdAt}
+            sender_id={item.sender_id}
+            showAvatar={showAvatar}
+          />
           {item.task ? (
             <PinPostItem
               pinPost={{...item.task, message_sender_id: item.sender_id}}

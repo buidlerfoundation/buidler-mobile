@@ -67,6 +67,7 @@ export interface UserData {
   verified_avatar_asset_collection?: NFTCollection;
   verified_username_asset_collection?: NFTCollection;
   is_deleted?: boolean;
+  addressAvatar?: string;
 }
 
 export interface Channel {

@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 import {logout, refreshToken} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
+import SocketUtils from 'utils/SocketUtils';
 
 const METHOD_GET = 'get';
 const METHOD_POST = 'post';
@@ -48,6 +49,8 @@ async function requestAPI<T = any>(
           success: false,
           statusCode: 403,
         };
+      } else {
+        SocketUtils.init();
       }
     }
   }

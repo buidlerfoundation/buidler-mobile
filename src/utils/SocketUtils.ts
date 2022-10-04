@@ -180,10 +180,12 @@ const loadMessageIfNeeded = async () => {
 class SocketUtil {
   socket: any = null;
   firstLoad = true;
+  connecting = false;
   generateId: string | null = null;
   async init(teamId?: string) {
     this.firstLoad = true;
-    if (this.socket?.connected) return;
+    if (this.socket?.connected || this.connecting) return;
+    this.connecting = true;
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     const deviceCode = await getDeviceCode();
     this.socket = io(`${AppConfig.baseUrl}`, {
@@ -194,6 +196,7 @@ class SocketUtil {
       reconnectionDelay: 1000,
     });
     this.socket.on('connect', () => {
+      this.connecting = false;
       console.log('socket connected', teamId);
       if (!this.firstLoad) {
         this.reloadData();
@@ -201,6 +204,7 @@ class SocketUtil {
       this.firstLoad = false;
       this.listenSocket();
       this.socket.on('disconnect', (reason: string) => {
+        this.connecting = false;
         console.log(`socket disconnect: ${reason}`);
         this.socket.off('ON_NEW_MESSAGE');
         this.socket.off('ON_NEW_TASK');
@@ -234,7 +238,6 @@ class SocketUtil {
         this.socket.off('ON_VIEW_MESSAGE_IN_CHANNEL');
         this.socket.off('ON_USER_LEAVE_TEAM');
         this.socket.off('disconnect');
-        this.socket.off('error');
       });
       // this.emitOnline(teamId || store.getState().user?.currentTeamId);
     });

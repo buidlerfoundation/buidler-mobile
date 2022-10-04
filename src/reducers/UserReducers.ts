@@ -4,6 +4,7 @@ import {AsyncKey} from 'common/AppStorage';
 import {BalanceApiData, Channel, Community, Space, UserData} from 'models';
 import {AnyAction, Reducer} from 'redux';
 import {uniqBy} from 'lodash';
+import {normalizeUserData} from 'helpers/UserHelper';
 
 interface MemberRoleData {
   data: Array<UserData>;
@@ -282,7 +283,10 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         teamUserMap: {
           ...teamUserMap,
           [currentTeamId]: {
-            data: [...(teamUserMap[currentTeamId]?.data || []), payload],
+            data: [
+              ...(teamUserMap[currentTeamId]?.data || []),
+              normalizeUserData(payload),
+            ],
             total: teamUserMap[currentTeamId]?.total + 1,
           },
         },
@@ -542,7 +546,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         teamUserMap: {
           ...teamUserMap,
           [teamId]: {
-            data: teamUsers.data,
+            data: teamUsers.data.map(normalizeUserData),
             total: teamUsers?.metadata?.total,
           },
         },

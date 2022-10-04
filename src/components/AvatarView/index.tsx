@@ -1,6 +1,6 @@
 import ImageHelper from 'helpers/ImageHelper';
 import {UserData} from 'models';
-import React, {useMemo, memo, useCallback} from 'react';
+import React, {memo, useCallback} from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Blockies from 'components/Blockies';
@@ -21,12 +21,9 @@ const AvatarView = ({
   style,
 }: AvatarViewProps) => {
   const {colors} = useThemeColor();
-  const data = useMemo(
-    () => ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id),
-    [user?.avatar_url, user?.user_id],
-  );
   const renderBody = useCallback(() => {
-    if (typeof data === 'string') {
+    if (user?.avatar_url) {
+      const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
       if (data.includes('.svg')) {
         return (
           <View
@@ -57,7 +54,7 @@ const AvatarView = ({
     }
     return (
       <Blockies
-        blockies={data.address}
+        blockies={user?.addressAvatar}
         size={8}
         style={{
           width: size,
@@ -67,12 +64,18 @@ const AvatarView = ({
         }}
       />
     );
-  }, [colors.border, data, size]);
+  }, [
+    colors.border,
+    size,
+    user?.addressAvatar,
+    user?.avatar_url,
+    user?.user_id,
+  ]);
 
   return (
     <View style={[style, {width: size, height: size}]}>
       {renderBody()}
-      {withStatus && user.status === 'online' && (
+      {withStatus && user?.status === 'online' && (
         <View
           style={[
             styles.onlineStatus,
