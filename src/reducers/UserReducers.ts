@@ -555,7 +555,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     case actionTypes.USER_SUCCESS: {
       return {
         ...state,
-        userData: payload.user,
+        userData: normalizeUserData(payload.user),
       };
     }
     case actionTypes.CURRENT_TEAM_REQUEST: {
