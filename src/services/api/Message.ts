@@ -22,7 +22,7 @@ export const deleteMessage = (messageId: string) =>
 
 export const getMessages = async (
   channelId: string,
-  limit = 15,
+  limit = 20,
   before?: string,
   after?: string,
   controller?: AbortController,

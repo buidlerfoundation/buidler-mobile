@@ -405,72 +405,84 @@ const MessageInput = ({
     [handlePressMention],
   );
   return (
-    <View
-      style={[
-        {
-          backgroundColor: colors.background,
-          borderTopWidth: 1,
-          borderColor: colors.border,
-        },
-        style,
-      ]}>
-      {renderReply()}
-      <View style={[styles.container, inputStyle]}>
+    <View>
+      <View>
         {isOpenPopupMention && isFocus && dataMention.length > 0 && (
           <FlatList
-            style={styles.mentionView}
+            style={[
+              styles.mentionView,
+              {
+                backgroundColor: colors.background,
+                borderTopColor: colors.border,
+              },
+            ]}
             data={dataMention}
             keyExtractor={el => el.user_id}
             renderItem={renderMentionItem}
+            ListHeaderComponent={<View style={{height: 10}} />}
+            ListFooterComponent={<View style={{height: 10}} />}
           />
         )}
-        {attachments.length > 0 && (
-          <FlatList
-            style={styles.attachmentView}
-            data={attachments}
-            keyExtractor={attachment => attachment.id || attachment.randomId}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            renderItem={({item}) => (
-              <AttachmentItem
-                attachment={item}
-                onPress={onRemoveAttachment}
-                teamId={teamId}
-              />
-            )}
-          />
-        )}
-        <View style={styles.inputContainer}>
-          <Touchable style={{padding: 5}} onPress={openGallery}>
-            <SVG.IconPlusCircle />
-          </Touchable>
-          <TextInput
-            style={[styles.input, {color: colors.text}]}
-            placeholder={
-              placeholder ||
-              `message to ${
-                currentChannel?.user?.user_name
-                  ? normalizeUserName(currentChannel?.user?.user_name)
-                  : `# ${currentChannel?.channel_name}`
-              }`
-            }
-            multiline
-            placeholderTextColor={colors.subtext}
-            onChangeText={handleChangeText}
-            keyboardAppearance="dark"
-            ref={inputRef}
-            autoFocus={autoFocus}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            value=""
-            onSelectionChange={onSelectionChange}>
-            <Text>{parsedText}</Text>
-          </TextInput>
-          {(!!val?.trim() || attachments.length > 0) && (
-            <Touchable style={{padding: 5}} onPress={onSend}>
-              <SVG.IconArrowSend />
-            </Touchable>
+      </View>
+      <View
+        style={[
+          {
+            backgroundColor: colors.background,
+            borderTopWidth: 1,
+            borderColor: colors.border,
+          },
+          style,
+        ]}>
+        {renderReply()}
+        <View style={[styles.container, inputStyle]}>
+          {attachments.length > 0 && (
+            <FlatList
+              style={styles.attachmentView}
+              data={attachments}
+              keyExtractor={attachment => attachment.id || attachment.randomId}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              renderItem={({item}) => (
+                <AttachmentItem
+                  attachment={item}
+                  onPress={onRemoveAttachment}
+                  teamId={teamId}
+                />
+              )}
+            />
           )}
+          <View style={styles.inputContainer}>
+            <Touchable style={{padding: 5}} onPress={openGallery}>
+              <SVG.IconPlusCircle />
+            </Touchable>
+            <TextInput
+              style={[styles.input, {color: colors.text}]}
+              placeholder={
+                placeholder ||
+                `message to ${
+                  currentChannel?.user?.user_name
+                    ? normalizeUserName(currentChannel?.user?.user_name)
+                    : `# ${currentChannel?.channel_name}`
+                }`
+              }
+              multiline
+              placeholderTextColor={colors.subtext}
+              onChangeText={handleChangeText}
+              keyboardAppearance="dark"
+              ref={inputRef}
+              autoFocus={autoFocus}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              value=""
+              onSelectionChange={onSelectionChange}>
+              <Text>{parsedText}</Text>
+            </TextInput>
+            {(!!val?.trim() || attachments.length > 0) && (
+              <Touchable style={{padding: 5}} onPress={onSend}>
+                <SVG.IconArrowSend />
+              </Touchable>
+            )}
+          </View>
         </View>
       </View>
     </View>
@@ -518,7 +530,12 @@ const styles = StyleSheet.create({
   },
   mentionView: {
     maxHeight: 150,
-    marginBottom: 10,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopWidth: 1,
+    paddingHorizontal: 10,
   },
   attachmentView: {
     marginBottom: 10,

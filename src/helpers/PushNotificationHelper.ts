@@ -86,12 +86,14 @@ class PushNotificationHelper {
   showInAppNotification = async (
     notificationOpen: FirebaseMessagingTypes.RemoteMessage,
   ) => {
-    const {title, body} = notificationOpen.notification;
-    await notifee.displayNotification({
-      title,
-      body,
-      data: notificationOpen.data,
-    });
+    const {currentChannelId} = store.getState()?.user;
+    const {notification_data} = JSON.parse(notificationOpen.data.data);
+    if (notification_data?.entity_id !== currentChannelId) {
+      await notifee.displayNotification({
+        ...notification_data,
+        data: notificationOpen.data,
+      });
+    }
   };
 
   async getToken() {

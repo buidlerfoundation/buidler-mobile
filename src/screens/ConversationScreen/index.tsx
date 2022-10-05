@@ -1,4 +1,5 @@
 import {actionTypes} from 'actions/actionTypes';
+import {uniqBy} from 'lodash';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
@@ -361,15 +362,16 @@ const ConversationScreen = () => {
         </View>
         <SectionList
           style={{flex: 1}}
-          sections={normalizeMessages(messages).map(el => ({
-            data: normalizeMessage(el.data),
-            title: el.title,
-          }))}
+          sections={normalizeMessages(uniqBy(messages, 'message_id')).map(
+            el => ({
+              data: normalizeMessage(el.data),
+              title: el.title,
+            }),
+          )}
           inverted
           keyExtractor={item => item.message_id}
           renderItem={renderItem}
-          initialNumToRender={15}
-          windowSize={2}
+          initialNumToRender={20}
           ListHeaderComponent={<View style={{height: 15}} />}
           onEndReached={onEndReached}
           renderSectionFooter={renderFooter}

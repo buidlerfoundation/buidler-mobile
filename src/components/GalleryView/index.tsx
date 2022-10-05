@@ -36,7 +36,7 @@ const PhotoItem = ({item, onSelect, index, imageSize}: PhotoItemProps) => {
     [item.node.image, onSelect],
   );
   return (
-    <Touchable onPress={handlePress}>
+    <Touchable onPress={handlePress} useReactNative>
       <Image
         style={{
           width: imageSize,

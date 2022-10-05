@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
     fontSize: 14,
     lineHeight: 22,
-    maxWidth: 100,
+    maxWidth: 200,
   },
   deletedReplyWrap: {
     marginLeft: 4,

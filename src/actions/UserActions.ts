@@ -22,6 +22,7 @@ export const getInitial: ActionCreator<any> =
   };
 
 export const logout: ActionCreator<any> = () => (dispatch: Dispatch) => {
+  SocketUtils.disconnect();
   dispatch({type: actionTypes.LOGOUT});
 };
 
@@ -140,7 +141,7 @@ export const findTeamAndChannel =
             },
           });
         }
-        SocketUtils.init(currentTeam.team_id);
+        SocketUtils.init();
         const directChannelUser = teamUsersRes?.data?.find(
           (u: UserData) => u.direct_channel === lastChannelId,
         );
@@ -242,7 +243,7 @@ const actionSetCurrentTeam = async (
         });
       }
     });
-    SocketUtils.changeTeam(team.team_id);
+    SocketUtils.changeTeam();
     dispatch({
       type: actionTypes.CURRENT_TEAM_SUCCESS,
       payload: {team, resChannel, lastChannelId, resSpace},

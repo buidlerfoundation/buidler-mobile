@@ -182,7 +182,7 @@ class SocketUtil {
   firstLoad = true;
   connecting = false;
   generateId: string | null = null;
-  async init(teamId?: string) {
+  async init() {
     this.firstLoad = true;
     if (this.socket?.connected || this.connecting) return;
     this.connecting = true;
@@ -195,9 +195,23 @@ class SocketUtil {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
+    this.socket.on('connect_error', async err => {
+      this.connecting = false;
+      const message = err.message || err;
+      if (message === 'Authentication error') {
+        const res = await store.dispatch(refreshToken());
+        if (res) {
+          this.init();
+        } else {
+          await AsyncStorage.clear();
+          store.dispatch(logout());
+          NavigationServices.reset(StackID.AuthStack);
+        }
+      }
+    });
     this.socket.on('connect', () => {
       this.connecting = false;
-      console.log('socket connected', teamId);
+      console.log('socket connected');
       if (!this.firstLoad) {
         this.reloadData();
       }
@@ -292,19 +306,6 @@ class SocketUtil {
     });
   };
   listenSocket() {
-    this.socket.on('error', async err => {
-      const message = err.message || err;
-      if (message === 'Authentication error') {
-        const res = await store.dispatch(refreshToken());
-        if (res) {
-          this.init();
-        } else {
-          await AsyncStorage.clear();
-          store.dispatch(logout());
-          NavigationServices.reset(StackID.AuthStack);
-        }
-      }
-    });
     this.socket.on('ON_VIEW_MESSAGE_IN_CHANNEL', data => {
       store.dispatch({
         type: actionTypes.MARK_SEEN_CHANNEL,
@@ -817,9 +818,9 @@ class SocketUtil {
       alert(data);
     });
   }
-  async changeTeam(teamId: string) {
+  async changeTeam() {
     if (!this.socket) {
-      await this.init(teamId);
+      await this.init();
       return;
     }
     // this.emitOnline(teamId);

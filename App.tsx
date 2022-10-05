@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {StatusBar, View, LogBox} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {StatusBar, View, LogBox, AppState} from 'react-native';
 import RootNavigator from 'navigation';
 import {Provider} from 'react-redux';
 import store from './src/store';
@@ -11,10 +11,27 @@ import notifee, {EventType} from '@notifee/react-native';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import ModalContainer from 'components/ModalContainer';
 import ToastContainer from 'components/ToastContainer';
+import SocketUtils from 'utils/SocketUtils';
 
 LogBox.ignoreAllLogs();
 
 const App = () => {
+  const appState = useRef(AppState.currentState);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        SocketUtils.reconnectIfNeeded();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
   useEffect(() => {
     return notifee.onForegroundEvent(({type, detail}) => {
       switch (type) {
