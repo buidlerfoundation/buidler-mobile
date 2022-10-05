@@ -40,7 +40,7 @@ import {deleteMessage, getMessages} from 'actions/MessageActions';
 import useMessageData from 'hook/useMessageData';
 import {createTask, updateTask, uploadToIPFS} from 'actions/TaskActions';
 import ChannelIcon from 'components/ChannelIcon';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useUserRole from 'hook/useUserRole';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -74,6 +74,7 @@ const ChannelTitle = () => {
 
 const ConversationScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   const messageData = useMessageData();
   // const {showModal} = useGlobalModalContext();
   const loadMoreMessage = useAppSelector(state =>
@@ -102,6 +103,11 @@ const ConversationScreen = () => {
     () => setOpenGallery(current => !current),
     [],
   );
+  useEffect(() => {
+    if (route.params?.fromNotification) {
+      navigation.closeDrawer();
+    }
+  }, [navigation, route.params?.fromNotification]);
   useEffect(() => {
     navigation.setParams({drawerStatus});
   }, [drawerStatus, navigation]);

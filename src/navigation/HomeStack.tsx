@@ -2,7 +2,6 @@ import React, {memo, useCallback, useEffect} from 'react';
 import {View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import ScreenID, {StackID} from 'common/ScreenID';
-import {useSelector} from 'react-redux';
 import NavigationServices, {getCurrentRoute} from 'services/NavigationServices';
 import ModalOtp from 'components/ModalOtp';
 import WalletScreen from 'screens/WalletScreen';
@@ -11,7 +10,7 @@ import useThemeColor from 'hook/useThemeColor';
 import SVG from 'common/SVG';
 import useAppSelector from 'hook/useAppSelector';
 import AvatarView from 'components/AvatarView';
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import ConversationStack from './ConversationStack';
 import SideBarCommunity from 'components/SideBarCommunity';
 
@@ -19,12 +18,18 @@ const Tab = createBottomTabNavigator();
 
 const HomeStack = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const userData = useAppSelector(state => state.user.userData);
   const {colors} = useThemeColor();
-  const openOTP = useSelector((state: any) => state.configs.openOTP);
-  const requestOtpCode = useSelector(
-    (state: any) => state.configs.requestOtpCode,
-  );
+  const openOTP = useAppSelector(state => state.configs.openOTP);
+  const requestOtpCode = useAppSelector(state => state.configs.requestOtpCode);
+  useEffect(() => {
+    if (route.params?.entity_type === 'post' && route.params?.entity_id) {
+      navigation.navigate(ScreenID.PinPostDetailScreen, {
+        postId: route.params?.entity_id,
+      });
+    }
+  }, [navigation, route.params?.entity_id, route.params?.entity_type]);
   useEffect(() => {
     if (openOTP && !requestOtpCode) {
       NavigationServices.pushToScreen(ScreenID.EnterOTPScreen);

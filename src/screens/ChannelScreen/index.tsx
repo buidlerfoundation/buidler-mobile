@@ -27,17 +27,15 @@ const CommunityHeader = () => {
     navigation.navigate(ScreenID.CommunityScreen);
   }, [navigation]);
   return (
-    <View style={styles.communityContainer}>
-      <Touchable onPress={openDrawer}>
-        <CommunityLogo community={currentTeam} size={40} />
-      </Touchable>
+    <Touchable style={styles.communityContainer} onPress={openDrawer}>
+      <CommunityLogo community={currentTeam} size={40} />
       <Text
         style={[styles.communityTitle, {color: colors.text}]}
         ellipsizeMode="tail"
         numberOfLines={1}>
         {currentTeam.team_display_name}
       </Text>
-    </View>
+    </Touchable>
   );
 };
 

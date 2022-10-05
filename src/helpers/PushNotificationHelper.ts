@@ -50,6 +50,7 @@ class PushNotificationHelper {
   }
 
   notificationTapped = async ({data, type}: NotificationPayload) => {
+    console.log('XXX: ', data, type);
     if (type === 'message') {
       const {currentTeamId, currentChannelId, team, channelMap} =
         store.getState()?.user;
@@ -76,9 +77,9 @@ class PushNotificationHelper {
           postId: entity_id,
         });
       } else {
-        if (NavigationServices.currentRouteName === ScreenID.ConversationScreen)
-          return;
-        NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+        NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+          fromNotification: true,
+        });
       }
     }
   };
@@ -90,8 +91,16 @@ class PushNotificationHelper {
     const {notification_data} = JSON.parse(notificationOpen.data.data);
     if (notification_data?.entity_id !== currentChannelId) {
       await notifee.displayNotification({
-        ...notification_data,
         data: notificationOpen.data,
+        body: notification_data.body.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2'),
+        title: notification_data.title.replace(
+          /(<@)(.*?)(-)(.*?)(>)/gim,
+          '@$2',
+        ),
+        subtitle: notification_data.subtitle.replace(
+          /(<@)(.*?)(-)(.*?)(>)/gim,
+          '@$2',
+        ),
       });
     }
   };

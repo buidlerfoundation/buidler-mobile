@@ -14,7 +14,7 @@ export function getCurrentRoute(navigationState) {
 
 class NavigationServices {
   navigator = null;
-  currentRouteName = '';
+  currentRouter = null;
   loading = null;
   bottomActionSheet = null;
   imageViewer = null;
@@ -52,7 +52,7 @@ class NavigationServices {
 
   onNavigationStateChange = currentState => {
     const currentScreen = getCurrentRoute(currentState);
-    this.currentRouteName = currentScreen?.name;
+    this.currentRouter = currentScreen;
   };
 
   showLoading = () => {

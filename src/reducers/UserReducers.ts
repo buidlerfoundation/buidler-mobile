@@ -587,12 +587,14 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         };
       } else if (resChannel?.data?.length > 0) {
         channel =
+          resChannel.data.find(c => c.channel_id === lastChannelId) ||
           resChannel.data.find(
             c =>
-              c.channel_id === lastChannelId ||
               c.channel_id === lastChannel?.[payload.team.team_id]?.channel_id,
-          ) || resChannel.data.filter(c => c.channel_type !== 'Direct')[0];
+          ) ||
+          resChannel.data.filter(c => c.channel_type !== 'Direct')[0];
       }
+      console.log('XXX: ', lastChannelId, channel);
       AsyncStorage.setItem(AsyncKey.lastChannelId, channel?.channel_id);
       return {
         ...state,
