@@ -594,7 +594,6 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
           ) ||
           resChannel.data.filter(c => c.channel_type !== 'Direct')[0];
       }
-      console.log('XXX: ', lastChannelId, channel);
       AsyncStorage.setItem(AsyncKey.lastChannelId, channel?.channel_id);
       return {
         ...state,

@@ -50,7 +50,6 @@ class PushNotificationHelper {
   }
 
   notificationTapped = async ({data, type}: NotificationPayload) => {
-    console.log('XXX: ', data, type);
     if (type === 'message') {
       const {currentTeamId, currentChannelId, team, channelMap} =
         store.getState()?.user;
