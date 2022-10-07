@@ -22,6 +22,8 @@ import {
   ActivityIndicator,
   SectionList,
   TextInput,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
 import BottomSheetHandle from 'components/BottomSheetHandle';
@@ -36,7 +38,12 @@ import useThemeColor from 'hook/useThemeColor';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useAppSelector from 'hook/useAppSelector';
 import useAppDispatch from 'hook/useAppDispatch';
-import {deleteMessage, getMessages} from 'actions/MessageActions';
+import {
+  deleteMessage,
+  getAroundMessage,
+  getMessages,
+  setScrollData,
+} from 'actions/MessageActions';
 import useMessageData from 'hook/useMessageData';
 import {createTask, updateTask, uploadToIPFS} from 'actions/TaskActions';
 import ChannelIcon from 'components/ChannelIcon';
@@ -54,6 +61,8 @@ import HapticUtils from 'utils/HapticUtils';
 import useCommunityId from 'hook/useCommunityId';
 import useChannelId from 'hook/useChannelId';
 import {useDrawerStatus} from '@react-navigation/drawer';
+import moment from 'moment';
+import AppConfig from 'common/AppConfig';
 // import {useGlobalModalContext} from 'components/ModalContainer';
 
 const ChannelTitle = () => {
@@ -73,15 +82,22 @@ const ChannelTitle = () => {
 };
 
 const ConversationScreen = () => {
+  // TODO: modal confirm delete message
+  // const {showModal} = useGlobalModalContext();
+  const listRef = useRef<SectionList>();
   const navigation = useNavigation();
   const route = useRoute();
   const messageData = useMessageData();
-  // const {showModal} = useGlobalModalContext();
+  const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
   );
   const inputRef = useRef<TextInput>();
   const messages = useMemo(() => messageData?.data, [messageData?.data]);
+  const scrollData = useMemo(
+    () => messageData?.scrollData,
+    [messageData?.scrollData],
+  );
   const messageCanMore = useMemo(
     () => messageData?.canMore,
     [messageData?.canMore],
@@ -90,6 +106,7 @@ const ConversationScreen = () => {
   const userRole = useUserRole();
   const currentTeamId = useCommunityId();
   const currentChannelId = useChannelId();
+  const [isFocus, setFocus] = useState(false);
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
@@ -116,14 +133,42 @@ const ConversationScreen = () => {
       navigation?.openDrawer?.();
     }
   }, [currentTeamId, navigation]);
-  useEffect(() => {
+  const handleGetLatestMessage = useCallback(async () => {
     if (currentChannelId) {
-      dispatch(
+      await dispatch(
         getMessages(currentChannelId, 'Public', undefined, undefined, true),
       );
     }
-  }, [currentChannelId, dispatch, navigation]);
+  }, [currentChannelId, dispatch]);
+  useEffect(() => {
+    handleGetLatestMessage();
+  }, [handleGetLatestMessage]);
+  const scrollDown = useCallback(() => {
+    try {
+      if (currentChannelId) {
+        listRef.current?.scrollToLocation({
+          animated: false,
+          sectionIndex: 0,
+          itemIndex: 0,
+          viewPosition: 1,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [currentChannelId]);
+  useEffect(() => {
+    scrollDown();
+  }, [scrollDown]);
   const {colors} = useThemeColor();
+  const sections = useMemo(
+    () =>
+      normalizeMessages(uniqBy(messages, 'message_id')).map(el => ({
+        data: normalizeMessage(el.data),
+        title: el.title,
+      })),
+    [messages],
+  );
   const onRemoveAttachment = useCallback(
     id =>
       setAttachments(current =>
@@ -133,11 +178,71 @@ const ConversationScreen = () => {
   );
   const onClearAttachment = useCallback(() => setAttachments([]), []);
   const onMoveShouldSetResponderCapture = useCallback(() => false, []);
+  const onScrollToMessage = useCallback(
+    (replyMessage: MessageData, messageSections?: Array<any> = sections) => {
+      const sectionIndex = messageSections.findIndex(
+        el =>
+          el.title ===
+          moment(new Date(replyMessage.createdAt)).format('YYYY-MM-DD'),
+      );
+      const itemIndex = messageSections?.[sectionIndex]?.data?.findIndex(
+        el => el.message_id === replyMessage.message_id,
+      );
+      dispatch({
+        type: actionTypes.UPDATE_HIGHLIGHT_MESSAGE,
+        payload: replyMessage.message_id,
+      });
+      if (sectionIndex >= 0 && itemIndex >= 0) {
+        listRef.current.scrollToLocation({
+          sectionIndex,
+          itemIndex,
+          viewPosition: 0.5,
+        });
+      }
+      setTimeout(() => {
+        dispatch({
+          type: actionTypes.UPDATE_HIGHLIGHT_MESSAGE,
+          payload: null,
+        });
+      }, 1500);
+    },
+    [dispatch, sections],
+  );
+  const onPressMessageReply = useCallback(
+    async (replyMessage: MessageData) => {
+      const message = messages.find(
+        el => el.message_id === replyMessage.message_id,
+      );
+      if (message) {
+        onScrollToMessage(replyMessage);
+      } else {
+        const res: Array<MessageData> = await dispatch(
+          getAroundMessage(replyMessage.message_id, currentChannelId),
+        );
+        if (res.length > 0) {
+          const newSections = normalizeMessages(uniqBy(res, 'message_id')).map(
+            el => ({
+              data: normalizeMessage(el.data),
+              title: el.title,
+            }),
+          );
+          onScrollToMessage(replyMessage, newSections);
+        }
+      }
+    },
+    [messages, onScrollToMessage, dispatch, currentChannelId],
+  );
   const renderItem = useCallback(
     ({item}: {item: MessageData}) => {
-      return <MessageItem item={item} onLongPress={openMenuMessage} />;
+      return (
+        <MessageItem
+          item={item}
+          onLongPress={openMenuMessage}
+          onPressMessageReply={onPressMessageReply}
+        />
+      );
     },
-    [openMenuMessage],
+    [onPressMessageReply, openMenuMessage],
   );
   const renderFooter = useCallback(
     ({section: {title}}) => (
@@ -151,6 +256,68 @@ const ConversationScreen = () => {
     ),
     [colors.secondary, colors.separator],
   );
+  const onMoreAfterMessage = useCallback(
+    async (message: MessageData) => {
+      if (!message.createdAt) return;
+      await dispatch(
+        getMessages(currentChannelId, 'Public', undefined, message.createdAt),
+      );
+    },
+    [currentChannelId, dispatch],
+  );
+  const onListScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const {y} = e.nativeEvent.contentOffset;
+      if (y >= AppConfig.showScrollMoreOffset && !scrollData?.showScrollDown) {
+        dispatch(
+          setScrollData(currentChannelId, {
+            showScrollDown: true,
+          }),
+        );
+      } else if (
+        y < AppConfig.showScrollMoreOffset &&
+        scrollData?.showScrollDown
+      ) {
+        dispatch(
+          setScrollData(currentChannelId, {
+            showScrollDown: false,
+          }),
+        );
+      }
+      if (y <= 0 && messageData?.canMoreAfter && !loadMoreAfterMessage) {
+        setLoadMoreAfterMessage(true);
+      }
+    },
+    [
+      currentChannelId,
+      dispatch,
+      loadMoreAfterMessage,
+      messageData?.canMoreAfter,
+      scrollData?.showScrollDown,
+    ],
+  );
+  const onScrollToIndexFailed = useCallback(
+    (e: {
+      index: number;
+      highestMeasuredFrameIndex: number;
+      averageItemLength: number;
+    }) => {
+      console.log(e);
+    },
+    [],
+  );
+  const onMomentumScrollEnd = useCallback(async () => {
+    if (loadMoreAfterMessage) {
+      await onMoreAfterMessage(messages?.[0]);
+      setLoadMoreAfterMessage(false);
+    }
+  }, [loadMoreAfterMessage, messages, onMoreAfterMessage]);
+  const onScrollDownPress = useCallback(async () => {
+    if (messageData?.canMoreAfter) {
+      await handleGetLatestMessage();
+    }
+    scrollDown();
+  }, [handleGetLatestMessage, messageData?.canMoreAfter, scrollDown]);
   const openMenuMessage = useCallback((message: MessageData) => {
     HapticUtils.trigger();
     setSelectedMessage(message);
@@ -368,19 +535,28 @@ const ConversationScreen = () => {
         </View>
         <SectionList
           style={{flex: 1}}
-          sections={normalizeMessages(uniqBy(messages, 'message_id')).map(
-            el => ({
-              data: normalizeMessage(el.data),
-              title: el.title,
-            }),
-          )}
+          ref={listRef}
+          sections={sections}
           inverted
           keyExtractor={item => item.message_id}
           renderItem={renderItem}
           initialNumToRender={20}
-          ListHeaderComponent={<View style={{height: 15}} />}
+          ListHeaderComponent={
+            loadMoreAfterMessage ? (
+              <View style={styles.footerMessage}>
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <View style={{height: 15}} />
+            )
+          }
           onEndReached={onEndReached}
+          keyboardDismissMode="on-drag"
           renderSectionFooter={renderFooter}
+          onScroll={onListScroll}
+          onScrollToIndexFailed={onScrollToIndexFailed}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          maintainVisibleContentPosition={{minIndexForVisible: 10}}
           ListFooterComponent={
             loadMoreMessage ? (
               <View style={styles.footerMessage}>
@@ -391,6 +567,21 @@ const ConversationScreen = () => {
             )
           }
         />
+        {((!isFocus && scrollData?.showScrollDown) ||
+          messageData?.canMoreAfter) && (
+          <View style={styles.scrollDownWrap}>
+            <View style={styles.scrollDownAbs}>
+              <Touchable
+                style={[
+                  styles.iconScrollDown,
+                  {backgroundColor: colors.activeBackgroundLight},
+                ]}
+                onPress={onScrollDownPress}>
+                <SVG.IconScrollDown fill={colors.text} />
+              </Touchable>
+            </View>
+          </View>
+        )}
         <View style={styles.bottomView}>
           <MessageInput
             openGallery={toggleGallery}
@@ -401,6 +592,7 @@ const ConversationScreen = () => {
             messageEdit={messageEdit}
             onClearReply={onClearReply}
             inputRef={inputRef}
+            onFocusChanged={setFocus}
           />
         </View>
         <Modal
@@ -531,12 +723,27 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
   },
+  scrollDownWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconScrollDown: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  scrollDownAbs: {
+    position: 'absolute',
+    bottom: 20,
+  },
   bottomView: {},
   footerMessage: {
-    height: 20,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 10,
   },
   modalGallery: {
     justifyContent: 'flex-end',

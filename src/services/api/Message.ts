@@ -57,3 +57,10 @@ export const editMessage = (
 ) => {
   return ApiCaller.put(`message/${id}`, {content, plain_text});
 };
+
+export const getAroundMessageById = async (messageId: string, limit = 10) => {
+  const deviceCode = await getDeviceCode();
+  return ApiCaller.get<Array<MessageData>>(
+    `messages/${messageId}/jump?device_code=${deviceCode}&limit=${limit}`,
+  );
+};

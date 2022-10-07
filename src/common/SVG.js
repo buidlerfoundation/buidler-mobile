@@ -54,6 +54,7 @@ import IconVerifyBadge from '../assets/images/ic_verify_badge.svg';
 import IconMenuLogout from '../assets/images/ic_menu_logout.svg';
 import IconTabHome from '../assets/images/ic_tab_home.svg';
 import IconArrowImport from '../assets/images/ic_arrow_import.svg';
+import IconScrollDown from '../assets/images/ic_scroll_down.svg';
 
 export default {
   IconExpand,
@@ -112,4 +113,5 @@ export default {
   IconMenuLogout,
   IconTabHome,
   IconArrowImport,
+  IconScrollDown,
 };

@@ -22,9 +22,14 @@ import PinPostItem from 'components/PinPostItem';
 type ReplyMessageProps = {
   replyMessage?: MessageData;
   replyMessageId?: string;
+  onPressMessageReply?: (replyMessage: MessageData) => void;
 };
 
-const ReplyMessage = ({replyMessage, replyMessageId}: ReplyMessageProps) => {
+const ReplyMessage = ({
+  replyMessage,
+  replyMessageId,
+  onPressMessageReply,
+}: ReplyMessageProps) => {
   const teamUserData = useTeamUserData();
   const {colors} = useThemeColor();
   const replier = useMemo(
@@ -39,6 +44,11 @@ const ReplyMessage = ({replyMessage, replyMessageId}: ReplyMessageProps) => {
     () => isReplyExisted || replyMessageId,
     [isReplyExisted, replyMessageId],
   );
+  const onPress = useCallback(() => {
+    if (replyMessage) {
+      onPressMessageReply?.(replyMessage);
+    }
+  }, [onPressMessageReply, replyMessage]);
   if (!showReply) return null;
   return (
     <View style={styles.replyWrap}>
@@ -58,7 +68,7 @@ const ReplyMessage = ({replyMessage, replyMessageId}: ReplyMessageProps) => {
               <SVG.IconReplyAttachment fill={colors.lightText} />
             </View>
           )}
-          <View style={{flex: 1}}>
+          <Touchable style={{flex: 1}} onPress={onPress}>
             <RenderHTML
               html={normalizeMessageTextPlain(
                 replyMessage.content || 'View attachment',
@@ -70,7 +80,7 @@ const ReplyMessage = ({replyMessage, replyMessageId}: ReplyMessageProps) => {
                 numberOfLines: 1,
               }}
             />
-          </View>
+          </Touchable>
         </>
       ) : (
         <View style={styles.deletedReplyWrap}>
@@ -137,13 +147,21 @@ const MessageSender = ({
 type MessageItemProps = {
   item: MessageData;
   onLongPress?: (message: MessageData) => void;
+  onPressMessageReply?: (replyMessage: MessageData) => void;
 };
 
-const MessageItem = ({item, onLongPress}: MessageItemProps) => {
+const MessageItem = ({
+  item,
+  onLongPress,
+  onPressMessageReply,
+}: MessageItemProps) => {
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
   const teamId = useAppSelector(state => state.user.currentTeamId);
   const reactData = useAppSelector(state => state.reactReducer.reactData);
+  const highlightMessageId = useAppSelector(
+    state => state.message.highlightMessageId,
+  );
   const showAvatar = useMemo(() => {
     return item.isHead || !!item.reply_message_id;
   }, [item.isHead, item.reply_message_id]);
@@ -151,11 +169,21 @@ const MessageItem = ({item, onLongPress}: MessageItemProps) => {
     () => onLongPress?.(item),
     [item, onLongPress],
   );
+  const isHighLight = useMemo(
+    () => highlightMessageId === item.message_id,
+    [highlightMessageId, item.message_id],
+  );
   return (
-    <View style={[styles.root, {marginTop: showAvatar ? 15 : 0}]}>
+    <View
+      style={[
+        styles.root,
+        {marginTop: showAvatar ? 15 : 0},
+        isHighLight && {backgroundColor: colors.activeBackgroundLight},
+      ]}>
       <ReplyMessage
         replyMessage={item.conversation_data}
         replyMessageId={item.reply_message_id}
+        onPressMessageReply={onPressMessageReply}
       />
       <Touchable style={[styles.container]} onLongPress={handleLongPress}>
         <MessageAvatar sender_id={item.sender_id} showAvatar={showAvatar} />

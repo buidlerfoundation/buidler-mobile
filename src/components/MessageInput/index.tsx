@@ -91,6 +91,7 @@ type MessageInputProps = {
   onSent?: () => void;
   inputRef?: React.MutableRefObject<TextInput>;
   autoFocus?: boolean;
+  onFocusChanged?: (isFocus: boolean) => void;
 };
 
 const MessageInput = ({
@@ -108,6 +109,7 @@ const MessageInput = ({
   onSent,
   inputRef,
   autoFocus,
+  onFocusChanged,
 }: MessageInputProps) => {
   const [val, setVal] = useState('');
   const [isFocus, setFocus] = useState(true);
@@ -190,9 +192,15 @@ const MessageInput = ({
     }
   }, [onClearAttachment, postId]);
 
-  const handleFocus = useCallback(() => setFocus(true), []);
+  const handleFocus = useCallback(() => {
+    onFocusChanged?.(true);
+    setFocus(true);
+  }, [onFocusChanged]);
 
-  const handleBlur = useCallback(() => setFocus(false), []);
+  const handleBlur = useCallback(() => {
+    onFocusChanged?.(false);
+    setFocus(false);
+  }, [onFocusChanged]);
 
   const handleChangeText = useCallback(text => {
     setVal(text);

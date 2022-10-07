@@ -35,7 +35,7 @@ export const getAroundMessage =
           payload: messageRes,
         });
       }
-      return messageRes.statusCode === 200;
+      return messageData;
     } catch (error) {
       dispatch({
         type: actionTypes.MESSAGE_FAIL,
@@ -171,7 +171,7 @@ export const getMessages: ActionCreator<any> =
     try {
       const messageRes = await api.getMessages(
         channelId,
-        undefined,
+        after ? 10 : undefined,
         before,
         after,
         controller,
@@ -207,7 +207,7 @@ export const getMessages: ActionCreator<any> =
           payload: messageRes,
         });
       }
-      return messageRes.data?.[messageRes.data.length - 1]?.message_id;
+      return messageData;
     } catch (error) {
       dispatch({
         type: actionTypes.MESSAGE_FAIL,

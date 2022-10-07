@@ -3,9 +3,9 @@ import thunk from 'redux-thunk';
 import {logger} from 'redux-logger';
 import reducers from 'reducers';
 const logs = [];
-// if (__DEV__) {
-//   logs.push(logger);
-// }
+if (__DEV__) {
+  logs.push(logger);
+}
 const store = createStore(reducers, applyMiddleware(...logs, thunk));
 
 export type AppRootState = ReturnType<typeof store.getState>;

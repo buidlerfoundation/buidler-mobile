@@ -95,6 +95,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
     case actionTypes.MESSAGE_PP_SUCCESS:
     case actionTypes.MESSAGE_SUCCESS: {
       const {channelId, data, before, reloadSocket, messageId, after} = payload;
+      const newMessageData = {...state.messageData};
       let msg = data || [];
       let scrollData = state.messageData?.[channelId]?.scrollData;
       const currentData = state.messageData[channelId]?.data || [];
@@ -124,23 +125,24 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
           showScrollDown: false,
         };
       }
+      newMessageData[channelId] = {
+        ...(newMessageData[channelId] || {}),
+        data: normalizeMessage(msg),
+        canMore: !after
+          ? data.length !== 0
+          : state.messageData?.[channelId]?.canMore,
+        canMoreAfter: messageId
+          ? true
+          : after
+          ? data.length !== 0
+          : before
+          ? state.messageData?.[channelId]?.canMoreAfter
+          : false,
+        scrollData,
+      };
       return {
         ...state,
-        messageData: {
-          ...state.messageData,
-          [channelId]: {
-            data: normalizeMessage(msg),
-            canMore: !after
-              ? data.length !== 0
-              : state.messageData?.[channelId]?.canMore,
-            canMoreAfter: messageId
-              ? true
-              : after
-              ? data.length !== 0
-              : state.messageData?.[channelId]?.canMoreAfter,
-            scrollData,
-          },
-        },
+        messageData: newMessageData,
         apiController: null,
         ppApiController: null,
         loadMoreAfterMessage: false,
@@ -169,7 +171,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
     }
     case actionTypes.SET_CHANNEL_SCROLL_DATA: {
       const {data, channelId} = payload;
-      const newMessageData = state.messageData;
+      const newMessageData = {...state.messageData};
       if (newMessageData[channelId]) {
         newMessageData[channelId] = {
           ...newMessageData[channelId],
