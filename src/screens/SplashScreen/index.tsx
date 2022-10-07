@@ -1,6 +1,6 @@
 import ScreenID, {StackID} from 'common/ScreenID';
-import React, {memo, useCallback, useEffect} from 'react';
-import {View, Platform} from 'react-native';
+import React, {memo, useCallback, useEffect, useState} from 'react';
+import {View, Platform, ActivityIndicator} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
@@ -22,6 +22,7 @@ import {setRealHeight} from 'actions/configActions';
 
 const SplashScreen = () => {
   const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(false);
   const privateKey = useAppSelector(state => state.configs.privateKey);
   const accessApp = useCallback(async () => {
     await dispatch(findTeamAndChannel?.());
@@ -52,6 +53,7 @@ const SplashScreen = () => {
     NavigationServices.replace(StackID.HomeStack, params);
   }, [dispatch]);
   const initApp = useCallback(async () => {
+    setLoading(true);
     await uniqChannelPrivateKey();
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     if (accessToken) {
@@ -63,13 +65,14 @@ const SplashScreen = () => {
       });
       await Promise.all([dispatch(getInitial()), dispatch(findUser())]);
       if (privateKey) {
-        accessApp();
+        await accessApp();
       } else {
         NavigationServices.replace(ScreenID.UnlockScreen);
       }
     } else {
       NavigationServices.replace(StackID.AuthStack);
     }
+    setLoading(false);
   }, [dispatch, privateKey, accessApp]);
   useEffect(() => {
     initApp();
@@ -81,8 +84,9 @@ const SplashScreen = () => {
   return (
     <View
       style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}
-      onLayout={onLayout}
-    />
+      onLayout={onLayout}>
+      {loading && <ActivityIndicator />}
+    </View>
   );
 };
 
