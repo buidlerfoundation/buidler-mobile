@@ -168,7 +168,6 @@ const ConversationScreen = () => {
     try {
       if (currentChannelId) {
         listRef.current?.scrollToLocation({
-          animated: false,
           sectionIndex: 0,
           itemIndex: 0,
           viewPosition: 1,
@@ -222,8 +221,7 @@ const ConversationScreen = () => {
         listRef.current.scrollToLocation({
           sectionIndex,
           itemIndex,
-          viewPosition: 1,
-          viewOffset: replyMessage.task ? -300 : 0,
+          viewPosition: 0,
         });
       }
       setTimeout(() => {
@@ -577,7 +575,9 @@ const ConversationScreen = () => {
           onScroll={onListScroll}
           onScrollToIndexFailed={onScrollToIndexFailed}
           onMomentumScrollEnd={onMomentumScrollEnd}
-          maintainVisibleContentPosition={{minIndexForVisible}}
+          maintainVisibleContentPosition={
+            messageData?.canMoreAfter ? {minIndexForVisible} : undefined
+          }
           ListFooterComponent={
             loadMoreMessage ? (
               <View style={styles.footerMessage}>
