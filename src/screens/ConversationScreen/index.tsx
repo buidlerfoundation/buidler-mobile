@@ -190,6 +190,10 @@ const ConversationScreen = () => {
       })),
     [messages],
   );
+  const minIndexForVisible = useMemo(
+    () => Math.min(10, messages?.length || 0),
+    [messages?.length],
+  );
   const onRemoveAttachment = useCallback(
     id =>
       setAttachments(current =>
@@ -218,7 +222,8 @@ const ConversationScreen = () => {
         listRef.current.scrollToLocation({
           sectionIndex,
           itemIndex,
-          viewPosition: 0,
+          viewPosition: 1,
+          viewOffset: replyMessage.task ? -300 : 0,
         });
       }
       setTimeout(() => {
@@ -572,7 +577,7 @@ const ConversationScreen = () => {
           onScroll={onListScroll}
           onScrollToIndexFailed={onScrollToIndexFailed}
           onMomentumScrollEnd={onMomentumScrollEnd}
-          maintainVisibleContentPosition={{minIndexForVisible: 10}}
+          maintainVisibleContentPosition={{minIndexForVisible}}
           ListFooterComponent={
             loadMoreMessage ? (
               <View style={styles.footerMessage}>

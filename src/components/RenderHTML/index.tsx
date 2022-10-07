@@ -1,4 +1,12 @@
+import {useNavigation} from '@react-navigation/native';
+import {setCurrentChannel, setCurrentTeam} from 'actions/UserActions';
 import Fonts from 'common/Fonts';
+import ScreenID from 'common/ScreenID';
+import {extractBuidlerUrl} from 'helpers/LinkHelper';
+import useAppDispatch from 'hook/useAppDispatch';
+import useAppSelector from 'hook/useAppSelector';
+import useChannelId from 'hook/useChannelId';
+import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo, useCallback, useMemo} from 'react';
 import {useWindowDimensions, Linking, TextProps} from 'react-native';
@@ -11,22 +19,57 @@ type RenderHTMLProps = {
 };
 
 const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
+  const dispatch = useAppDispatch();
+  const navigation = useNavigation();
+  const team = useAppSelector(state => state.user.team);
+  const currentCommunityId = useCommunityId();
+  const currentChannelId = useChannelId();
   const {width} = useWindowDimensions();
   const {colors} = useThemeColor();
   const handleLinkPress = useCallback(
     (e, href) => {
       e.stopPropagation();
       onLinkPress?.();
-      if (href.includes('channels/user/')) {
-        const userId = href.split('channels/user/')?.[1];
-        if (userId) {
-          // Direct Message
+      if (href.includes('https://community.buidler.app')) {
+        if (href.includes('channels/user/')) {
+          const userId = href.split('channels/user/')?.[1];
+          if (userId) {
+            // Direct Message
+          }
+          return;
+        }
+        const {channelId, communityId, postId, messageId} =
+          extractBuidlerUrl(href);
+        const community = team.find(el => el.team_id === communityId);
+        if (!community) {
+          // user not in community
+          return;
+        }
+        if (messageId) {
+          if (communityId !== currentCommunityId) {
+            dispatch(setCurrentTeam(community));
+          }
+          if (channelId !== currentChannelId) {
+            dispatch(setCurrentChannel({channel_id: channelId}));
+          }
+          navigation.navigate(ScreenID.ConversationScreen, {
+            jumpMessageId: `${messageId}:${Math.random()}`,
+          });
+        } else if (postId) {
+          navigation.navigate(ScreenID.PinPostDetailScreen, {postId});
         }
         return;
       }
       Linking.openURL(href);
     },
-    [onLinkPress],
+    [
+      currentChannelId,
+      currentCommunityId,
+      dispatch,
+      navigation,
+      onLinkPress,
+      team,
+    ],
   );
   const renderersProps = useMemo(
     () => ({

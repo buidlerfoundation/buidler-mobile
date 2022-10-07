@@ -138,7 +138,8 @@ const PinPostItem = ({
       style={[styles.container, style]}
       onPress={onPinPostPress}
       disabled={detail}
-      onLongPress={handleLongPress}>
+      onLongPress={handleLongPress}
+      useWithoutFeedBack>
       <View style={[styles.header, embeds && {alignItems: 'flex-start'}]}>
         <AvatarView
           user={creator}

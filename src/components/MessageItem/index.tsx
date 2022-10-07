@@ -185,7 +185,10 @@ const MessageItem = ({
         replyMessageId={item.reply_message_id}
         onPressMessageReply={onPressMessageReply}
       />
-      <Touchable style={[styles.container]} onLongPress={handleLongPress}>
+      <Touchable
+        style={[styles.container]}
+        onLongPress={handleLongPress}
+        useWithoutFeedBack>
         <MessageAvatar sender_id={item.sender_id} showAvatar={showAvatar} />
         <View style={styles.bodyMessage}>
           <MessageSender

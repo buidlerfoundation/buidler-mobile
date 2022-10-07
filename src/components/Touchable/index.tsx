@@ -1,11 +1,12 @@
 import React, {useMemo} from 'react';
-import {TouchableOpacity} from 'react-native';
+import {TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
 import {TouchableOpacity as TouchableOpacity2} from 'react-native-gesture-handler';
-import {TouchableOpacityProps} from 'react-native';
+import {TouchableOpacityProps, View} from 'react-native';
 
 interface TouchableProps extends TouchableOpacityProps {
   children: any;
   useReactNative?: boolean;
+  useWithoutFeedBack?: boolean;
 }
 
 const Touchable = (props: TouchableProps) => {
@@ -13,6 +14,16 @@ const Touchable = (props: TouchableProps) => {
     () => (props.useReactNative ? TouchableOpacity : TouchableOpacity2),
     [props.useReactNative],
   );
+  if (props.useWithoutFeedBack) {
+    return (
+      <TouchableWithoutFeedback
+        delayLongPress={150}
+        {...props}
+        style={undefined}>
+        <View style={props.style}>{props.children}</View>
+      </TouchableWithoutFeedback>
+    );
+  }
   return (
     <TouchComponent activeOpacity={0.7} delayLongPress={150} {...props}>
       {props.children}
