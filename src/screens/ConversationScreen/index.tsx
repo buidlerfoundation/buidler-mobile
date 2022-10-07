@@ -35,7 +35,6 @@ import {resizeImage} from 'helpers/ImageHelpers';
 import SocketUtils from 'utils/SocketUtils';
 import {titleMessageFromNow} from 'utils/DateUtils';
 import useThemeColor from 'hook/useThemeColor';
-import useCurrentChannel from 'hook/useCurrentChannel';
 import useAppSelector from 'hook/useAppSelector';
 import useAppDispatch from 'hook/useAppDispatch';
 import {
@@ -46,7 +45,6 @@ import {
 } from 'actions/MessageActions';
 import useMessageData from 'hook/useMessageData';
 import {createTask, updateTask, uploadToIPFS} from 'actions/TaskActions';
-import ChannelIcon from 'components/ChannelIcon';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useUserRole from 'hook/useUserRole';
@@ -63,23 +61,8 @@ import useChannelId from 'hook/useChannelId';
 import {useDrawerStatus} from '@react-navigation/drawer';
 import moment from 'moment';
 import AppConfig from 'common/AppConfig';
+import ChannelTitle from 'components/ChannelTitle';
 // import {useGlobalModalContext} from 'components/ModalContainer';
-
-const ChannelTitle = () => {
-  const {colors} = useThemeColor();
-  const currentChannel = useCurrentChannel();
-  return (
-    <View style={styles.titleWrap}>
-      <ChannelIcon channel={currentChannel} color={colors.text} />
-      <Text
-        style={[styles.title, {color: colors.text}]}
-        ellipsizeMode="tail"
-        numberOfLines={1}>
-        {currentChannel.channel_name}
-      </Text>
-    </View>
-  );
-};
 
 const ConversationScreen = () => {
   // TODO: modal confirm delete message
@@ -140,9 +123,47 @@ const ConversationScreen = () => {
       );
     }
   }, [currentChannelId, dispatch]);
+  const findMessageById = useCallback((messageId: string) => {
+    return listRef.current.props.sections
+      ?.reduce((res, val) => {
+        return [...res, ...val.data];
+      }, [])
+      ?.find(el => el.message_id === messageId);
+  }, []);
+  const scrollToMessageId = useCallback(
+    (jumpMessageId: string) => {
+      const message = findMessageById(jumpMessageId);
+      if (message) {
+        setTimeout(() => {
+          onScrollToMessage(message);
+        }, 200);
+      }
+    },
+    [findMessageById, onScrollToMessage],
+  );
+  const handleAroundMessage = useCallback(
+    async (jumpMessageId: string) => {
+      const messageId = jumpMessageId.split(':')[0];
+      if (findMessageById(messageId)) {
+        scrollToMessageId(messageId);
+      } else {
+        await dispatch(getAroundMessage(messageId, currentChannelId));
+        scrollToMessageId(messageId);
+      }
+    },
+    [currentChannelId, dispatch, findMessageById, scrollToMessageId],
+  );
   useEffect(() => {
-    handleGetLatestMessage();
-  }, [handleGetLatestMessage]);
+    if (route.params?.jumpMessageId) {
+      handleAroundMessage(route.params?.jumpMessageId);
+    } else {
+      handleGetLatestMessage();
+    }
+  }, [
+    handleAroundMessage,
+    handleGetLatestMessage,
+    route.params?.jumpMessageId,
+  ]);
   const scrollDown = useCallback(() => {
     try {
       if (currentChannelId) {
@@ -179,7 +200,8 @@ const ConversationScreen = () => {
   const onClearAttachment = useCallback(() => setAttachments([]), []);
   const onMoveShouldSetResponderCapture = useCallback(() => false, []);
   const onScrollToMessage = useCallback(
-    (replyMessage: MessageData, messageSections?: Array<any> = sections) => {
+    (replyMessage: MessageData) => {
+      const messageSections = listRef.current?.props?.sections;
       const sectionIndex = messageSections.findIndex(
         el =>
           el.title ===
@@ -196,7 +218,7 @@ const ConversationScreen = () => {
         listRef.current.scrollToLocation({
           sectionIndex,
           itemIndex,
-          viewPosition: 0.5,
+          viewPosition: 0,
         });
       }
       setTimeout(() => {
@@ -206,7 +228,7 @@ const ConversationScreen = () => {
         });
       }, 1500);
     },
-    [dispatch, sections],
+    [dispatch],
   );
   const onPressMessageReply = useCallback(
     async (replyMessage: MessageData) => {
@@ -220,13 +242,7 @@ const ConversationScreen = () => {
           getAroundMessage(replyMessage.message_id, currentChannelId),
         );
         if (res.length > 0) {
-          const newSections = normalizeMessages(uniqBy(res, 'message_id')).map(
-            el => ({
-              data: normalizeMessage(el.data),
-              title: el.title,
-            }),
-          );
-          onScrollToMessage(replyMessage, newSections);
+          onScrollToMessage(replyMessage);
         }
       }
     },
@@ -706,19 +722,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     height: AppDimension.headerHeight,
-  },
-  titleWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 15,
-  },
-  title: {
-    fontFamily: Fonts.Bold,
-    fontSize: 17,
-    lineHeight: 26,
-    marginHorizontal: 5,
-    flex: 1,
   },
   body: {
     flex: 1,

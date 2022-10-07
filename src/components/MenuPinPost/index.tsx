@@ -8,6 +8,7 @@ import {View, Text, StyleSheet} from 'react-native';
 
 type MenuPinPostProps = {
   onReply: () => void;
+  onJumpToMessage?: () => void;
   canUploadToIPFS?: boolean;
   onUploadToIPFS: () => void;
   onCopyMessage: () => void;
@@ -18,6 +19,7 @@ type MenuPinPostProps = {
   onUnarchive: () => void;
   canDelete?: boolean;
   onDelete: () => void;
+  canJumpMessage?: boolean;
 };
 
 const MenuPinPost = ({
@@ -28,10 +30,12 @@ const MenuPinPost = ({
   onArchive,
   onUnarchive,
   onDelete,
+  onJumpToMessage,
   canUploadToIPFS,
   canArchive,
   canDelete,
   canUnarchive,
+  canJumpMessage,
 }: MenuPinPostProps) => {
   const {colors} = useThemeColor();
   return (
@@ -40,6 +44,14 @@ const MenuPinPost = ({
         <SVG.IconMenuReply />
         <Text style={[styles.menuLabel, {color: colors.text}]}>Reply</Text>
       </Touchable>
+      {canJumpMessage && (
+        <Touchable style={styles.menuItem} onPress={onJumpToMessage}>
+          <SVG.IconMenuJumpMessage />
+          <Text style={[styles.menuLabel, {color: colors.text}]}>
+            Jump to message
+          </Text>
+        </Touchable>
+      )}
       {canUploadToIPFS && (
         <Touchable style={styles.menuItem} onPress={onUploadToIPFS}>
           <SVG.IconMenuUploadIPFS />

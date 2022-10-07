@@ -7,20 +7,17 @@ import {
   uploadToIPFS,
 } from 'actions/TaskActions';
 import AppDimension from 'common/AppDimension';
-import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
-import ChannelIcon from 'components/ChannelIcon';
 import PinPostItem from 'components/PinPostItem';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
-import useCurrentChannel from 'hook/useCurrentChannel';
 import usePinPostData from 'hook/usePinPostData';
 import usePinPosts from 'hook/usePinPosts';
 import useThemeColor from 'hook/useThemeColor';
 import {TaskData} from 'models';
 import React, {memo, useCallback, useEffect, useState} from 'react';
-import {FlatList, StyleSheet, Text, View} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
 import Modal from 'react-native-modal';
 import MenuPinPost from 'components/MenuPinPost';
@@ -28,9 +25,12 @@ import useUserRole from 'hook/useUserRole';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {buidlerURL} from 'helpers/LinkHelper';
 import Toast from 'react-native-toast-message';
-import useCurrentCommunity from 'hook/useCurrentCommunity';
 import ScreenID from 'common/ScreenID';
 import HapticUtils from 'utils/HapticUtils';
+import ChannelTitle from 'components/ChannelTitle';
+import useChannelId from 'hook/useChannelId';
+import useCommunityId from 'hook/useCommunityId';
+import {setCurrentChannel} from 'actions/UserActions';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
@@ -38,8 +38,8 @@ const PinPostScreen = () => {
   const dispatch = useAppDispatch();
   const pinPosts = usePinPosts();
   const navigation = useNavigation();
-  const currentChannel = useCurrentChannel();
-  const community = useCurrentCommunity();
+  const currentChannelId = useChannelId();
+  const communityId = useCommunityId();
   const {colors} = useThemeColor();
   const loadMoreTask = useAppSelector(state => taskMoreSelector(state));
   const {canMoreTask} = usePinPostData();
@@ -57,10 +57,10 @@ const PinPostScreen = () => {
   }, []);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
   useEffect(() => {
-    if (currentChannel.channel_id) {
-      dispatch(getTasks(currentChannel.channel_id));
+    if (currentChannelId) {
+      dispatch(getTasks(currentChannelId));
     }
-  }, [currentChannel.channel_id, dispatch]);
+  }, [currentChannelId, dispatch]);
   const renderPinPost = useCallback(
     ({item}: {item: TaskData}) => {
       return <PinPostItem pinPost={item} onLongPress={openMenuPinPost} />;
@@ -76,33 +76,25 @@ const PinPostScreen = () => {
   const onEndReached = useCallback(() => {
     if (loadMoreTask || !canMoreTask) return;
     const last = pinPosts[pinPosts.length - 1];
-    dispatch(getTasks(currentChannel.channel_id, last.message_created_at));
-  }, [
-    canMoreTask,
-    currentChannel.channel_id,
-    dispatch,
-    loadMoreTask,
-    pinPosts,
-  ]);
+    dispatch(getTasks(currentChannelId, last.message_created_at));
+  }, [canMoreTask, currentChannelId, dispatch, loadMoreTask, pinPosts]);
   const onMoveShouldSetResponderCapture = useCallback(() => false, []);
   const onDeletePost = useCallback(async () => {
-    await dispatch(
-      deleteTask(selectedPinPost?.task_id, currentChannel?.channel_id),
-    );
-  }, [currentChannel?.channel_id, dispatch, selectedPinPost?.task_id]);
+    await dispatch(deleteTask(selectedPinPost?.task_id, currentChannelId));
+  }, [currentChannelId, dispatch, selectedPinPost?.task_id]);
   const onMenuDelete = useCallback(() => {
     onCloseMenuPinPost();
     onDeletePost();
   }, [onCloseMenuPinPost, onDeletePost]);
   const onMenuCopyPinPost = useCallback(async () => {
     await Clipboard.setString(
-      `${buidlerURL}/channels/${community.team_id}/${currentChannel.channel_id}/post/${selectedPinPost?.task_id}`,
+      `${buidlerURL}/channels/${communityId}/${currentChannelId}/post/${selectedPinPost?.task_id}`,
     );
     onCloseMenuPinPost();
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
   }, [
-    community.team_id,
-    currentChannel.channel_id,
+    communityId,
+    currentChannelId,
     onCloseMenuPinPost,
     selectedPinPost?.task_id,
   ]);
@@ -113,50 +105,68 @@ const PinPostScreen = () => {
     });
     onCloseMenuPinPost();
   }, [navigation, onCloseMenuPinPost, selectedPinPost?.task_id]);
+  const onJumpToMessage = useCallback(async () => {
+    navigation.navigate(ScreenID.ConversationScreen, {
+      jumpMessageId: `${selectedPinPost?.task_id}:${Math.random()}`,
+    });
+    if (currentChannelId !== selectedPinPost?.root_message_channel_id) {
+      dispatch(
+        setCurrentChannel({
+          channel_id: selectedPinPost?.root_message_channel_id,
+        }),
+      );
+    }
+  }, [
+    currentChannelId,
+    dispatch,
+    navigation,
+    selectedPinPost?.root_message_channel_id,
+    selectedPinPost?.task_id,
+  ]);
   const onArchive = useCallback(() => {
     dispatch(
-      updateTask(selectedPinPost?.task_id, currentChannel.channel_id, {
+      updateTask(selectedPinPost?.task_id, currentChannelId, {
         status: 'archived',
       }),
     );
     onCloseMenuPinPost();
   }, [
-    currentChannel.channel_id,
+    currentChannelId,
     dispatch,
     onCloseMenuPinPost,
     selectedPinPost?.task_id,
   ]);
   const onUnarchive = useCallback(() => {
     dispatch(
-      updateTask(selectedPinPost?.task_id, currentChannel.channel_id, {
+      updateTask(selectedPinPost?.task_id, currentChannelId, {
         status: 'pinned',
       }),
     );
     onCloseMenuPinPost();
   }, [
-    currentChannel.channel_id,
+    currentChannelId,
     dispatch,
     onCloseMenuPinPost,
     selectedPinPost?.task_id,
   ]);
   const onUploadToIPFS = useCallback(() => {
-    dispatch(uploadToIPFS(selectedPinPost?.task_id, currentChannel.channel_id));
+    dispatch(uploadToIPFS(selectedPinPost?.task_id, currentChannelId));
     onCloseMenuPinPost();
   }, [
-    currentChannel.channel_id,
+    currentChannelId,
     dispatch,
     onCloseMenuPinPost,
     selectedPinPost?.task_id,
   ]);
   const onMenuCopyMessage = useCallback(async () => {
     await Clipboard.setString(
-      `${buidlerURL}/channels/${community.team_id}/${currentChannel.channel_id}/message/${selectedPinPost?.task_id}`,
+      `${buidlerURL}/channels/${communityId}/${currentChannelId}/message/${selectedPinPost?.task_id}`,
     );
     onCloseMenuPinPost();
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
   }, [
-    community.team_id,
-    currentChannel.channel_id,
+    communityId,
+    currentChannelId,
     onCloseMenuPinPost,
     selectedPinPost?.task_id,
   ]);
@@ -166,15 +176,7 @@ const PinPostScreen = () => {
         <Touchable onPress={onBack}>
           <SVG.IconArrowBack fill={colors.text} />
         </Touchable>
-        <View style={styles.titleWrap}>
-          <ChannelIcon channel={currentChannel} color={colors.text} />
-          <Text
-            style={[styles.title, {color: colors.text}]}
-            ellipsizeMode="tail"
-            numberOfLines={1}>
-            {currentChannel.channel_name}
-          </Text>
-        </View>
+        <ChannelTitle />
       </View>
       <View style={styles.body}>
         <FlatList
@@ -204,6 +206,7 @@ const PinPostScreen = () => {
         hideModalContentWhileAnimating>
         <MenuPinPost
           onReply={onReplyPinPost}
+          onJumpToMessage={onJumpToMessage}
           onCopyMessage={onMenuCopyMessage}
           onCopyPostLink={onMenuCopyPinPost}
           onDelete={onMenuDelete}
@@ -227,6 +230,7 @@ const PinPostScreen = () => {
               selectedPinPost?.message_sender_id === userData.user_id) &&
             selectedPinPost?.status !== 'archived'
           }
+          canJumpMessage
         />
       </Modal>
     </View>
@@ -244,18 +248,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     height: AppDimension.headerHeight,
-  },
-  titleWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 15,
-  },
-  title: {
-    fontFamily: Fonts.Bold,
-    fontSize: 17,
-    lineHeight: 26,
-    marginLeft: 10,
   },
   body: {
     flex: 1,
