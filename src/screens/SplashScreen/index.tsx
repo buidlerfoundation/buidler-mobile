@@ -1,6 +1,6 @@
 import ScreenID, {StackID} from 'common/ScreenID';
 import React, {memo, useCallback, useEffect, useState} from 'react';
-import {View, Platform, ActivityIndicator} from 'react-native';
+import {View, Platform, ActivityIndicator, Alert} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
@@ -54,23 +54,31 @@ const SplashScreen = () => {
   }, [dispatch]);
   const initApp = useCallback(async () => {
     setLoading(true);
-    await uniqChannelPrivateKey();
-    const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
-    if (accessToken) {
-      await PushNotificationHelper.init();
-      const deviceToken = await messaging().getToken();
-      await api.addDeviceToken({
-        device_token: deviceToken,
-        platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
-      });
-      await Promise.all([dispatch(getInitial()), dispatch(findUser())]);
-      if (privateKey) {
-        await accessApp();
+    try {
+      await uniqChannelPrivateKey();
+      const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
+      if (accessToken) {
+        await PushNotificationHelper.init();
+        const deviceToken = await messaging().getToken();
+        await api.addDeviceToken({
+          device_token: deviceToken,
+          platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
+        });
+        await Promise.all([dispatch(getInitial()), dispatch(findUser())]);
+        if (privateKey) {
+          await accessApp();
+        } else {
+          NavigationServices.replace(ScreenID.UnlockScreen);
+        }
       } else {
-        NavigationServices.replace(ScreenID.UnlockScreen);
+        NavigationServices.replace(StackID.AuthStack);
       }
-    } else {
-      NavigationServices.replace(StackID.AuthStack);
+    } catch (error) {
+      Alert.alert(
+        'Alert',
+        'Something went wrong, check your network then try again!',
+        [{text: 'Retry', onPress: initApp}],
+      );
     }
     setLoading(false);
   }, [dispatch, privateKey, accessApp]);
