@@ -168,3 +168,6 @@ export const refreshToken = (token: string) => {
     'Refresh-Token': token,
   });
 };
+
+export const invitation = (teamId: string) =>
+  ApiCaller.post<{invitation_url: string}>(`team/invitation/${teamId}/members`);

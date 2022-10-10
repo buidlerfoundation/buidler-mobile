@@ -90,21 +90,15 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
   );
   const classesStyles = useMemo(
     () => ({
-      'task-text': {
-        fontFamily: Fonts.Medium,
-        fontSize: 16,
-        lineHeight: 26,
-        color: colors.text,
-      },
       'edited-string': {
         fontFamily: Fonts.Medium,
-        fontSize: 12,
+        fontSize: 11,
         lineHeight: 20,
         color: colors.subtext,
       },
       'message-text': {
         fontFamily: Fonts.Medium,
-        fontSize: 16,
+        fontSize: 15,
         lineHeight: 26,
         marginTop: 5,
         color: colors.text,
@@ -112,7 +106,7 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
       },
       'message-text-sending': {
         fontFamily: Fonts.Medium,
-        fontSize: 16,
+        fontSize: 15,
         lineHeight: 26,
         marginTop: 5,
         color: colors.subtext,
@@ -120,7 +114,7 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
       },
       'message-text-archived': {
         fontFamily: Fonts.Medium,
-        fontSize: 16,
+        fontSize: 15,
         lineHeight: 26,
         marginTop: 5,
         color: colors.subtext,
@@ -129,16 +123,9 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
       'message-text-reply': {
         marginLeft: 8,
         fontFamily: Fonts.Medium,
-        fontSize: 14,
+        fontSize: 13,
         lineHeight: 22,
         color: colors.lightText,
-      },
-      'message-reply-text': {
-        marginHorizontal: 10,
-        fontSize: 16,
-        fontFamily: Fonts.Medium,
-        lineHeight: 26,
-        color: colors.text,
       },
       'mention-string': {
         color: colors.mention,

@@ -28,6 +28,7 @@ const light: ExtendedTheme = {
     done: '#00D33F',
     backdrop: 'rgb(17, 17, 17)',
     backdropWithOpacity: 'rgba(17, 17, 17, 0.9)',
+    black: '#000000',
   },
 };
 
@@ -59,6 +60,7 @@ const dark: ExtendedTheme = {
     done: '#00D33F',
     backdrop: 'rgb(17, 17, 17)',
     backdropWithOpacity: 'rgba(17, 17, 17, 0.9)',
+    black: '#000000',
   },
 };
 

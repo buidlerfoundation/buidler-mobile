@@ -1,5 +1,5 @@
 import {setCurrentChannel} from 'actions/UserActions';
-import Fonts from 'common/Fonts';
+import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
 import ChannelIcon from 'components/ChannelIcon';
 import Touchable from 'components/Touchable';
@@ -59,6 +59,7 @@ const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
         <Text
           style={[
             styles.channelName,
+            AppStyles.TextSemi15,
             {
               color: titleColor,
             },
@@ -84,9 +85,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   channelName: {
-    fontFamily: Fonts.SemiBold,
-    fontSize: 16,
-    lineHeight: 20,
     marginHorizontal: 10,
   },
 });

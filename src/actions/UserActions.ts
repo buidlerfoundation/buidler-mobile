@@ -11,14 +11,21 @@ import {encryptString, getIV} from 'utils/DataCrypto';
 import {utils} from 'ethers';
 import RNGoldenKeystore from 'react-native-golden-keystore';
 import NavigationServices from 'services/NavigationServices';
-import ScreenID from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import {isValidPrivateKey} from 'helpers/SeedHelper';
+import {AppGetState} from 'store';
+import PushNotificationHelper from 'helpers/PushNotificationHelper';
+import Toast from 'react-native-toast-message';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
     const res = await api.getInitial();
-    ImageHelper.initial(res.data.img_domain, res.data.img_config);
-    dispatch({type: actionTypes.GET_INITIAL, payload: {data: res.data}});
+    if (res.statusCode === 200) {
+      ImageHelper.initial(res.data.img_domain, res.data.img_config);
+      dispatch({type: actionTypes.GET_INITIAL, payload: {data: res.data}});
+    } else {
+      throw res.message;
+    }
   };
 
 export const logout: ActionCreator<any> = () => (dispatch: Dispatch) => {
@@ -348,3 +355,65 @@ export const actionFetchWalletBalance = async (dispatch: Dispatch) => {
 
 export const fetchWalletBalance = () => async (dispatch: Dispatch) =>
   actionFetchWalletBalance(dispatch);
+
+export const acceptInvitation = (url: string) => async (dispatch: Dispatch) => {
+  const lastIndex = url.lastIndexOf('/');
+  const invitationId = url.substring(lastIndex + 1);
+  const inviteRes = await api.acceptInvitation(invitationId);
+  if (inviteRes.success) {
+    Toast.show({
+      type: 'customSuccess',
+      props: {message: 'You have successfully joined new community.'},
+    });
+    dispatch({type: actionTypes.ACCEPT_TEAM_SUCCESS, payload: inviteRes.data});
+    await dispatch(setCurrentTeam(inviteRes.data));
+    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+  }
+};
+
+export const accessToHome =
+  () => async (dispatch: Dispatch, getState: AppGetState) => {
+    const dataFromUrl = getState()?.configs?.dataFromUrl;
+    let invitationCommunity = null;
+    if (dataFromUrl) {
+      dispatch({type: actionTypes.SET_DATA_FROM_URL, payload: ''});
+      const lastIndex = dataFromUrl.lastIndexOf('/');
+      const invitationId = dataFromUrl.substring(lastIndex + 1);
+      const inviteRes = await api.acceptInvitation(invitationId);
+      if (inviteRes.success) {
+        invitationCommunity = inviteRes.data;
+      }
+    }
+    await dispatch(findTeamAndChannel());
+    const {team, currentTeamId, channelMap} = getState()?.user;
+    let params = {};
+    if (invitationCommunity) {
+      Toast.show({
+        type: 'customSuccess',
+        props: {message: 'You have successfully joined new community.'},
+      });
+      await dispatch(setCurrentTeam(invitationCommunity));
+    } else if (
+      PushNotificationHelper.initialNotification &&
+      PushNotificationHelper.initNotificationData
+    ) {
+      const channels = channelMap?.[currentTeamId];
+      const {data, type} = PushNotificationHelper.initNotificationData;
+      const {team_id} = data.notification_data;
+      const {entity_id, entity_type} = data.message_data;
+      params = {type, entity_id, entity_type};
+      const teamNotification = team?.find?.(t => t.team_id === team_id);
+      const channelNotification = channels.find(
+        el => el.channel_id === entity_id,
+      );
+      if (currentTeamId === team_id) {
+        if (channelNotification) {
+          await dispatch(setCurrentChannel(channelNotification));
+        }
+      } else if (teamNotification) {
+        await dispatch(setCurrentTeam(teamNotification, entity_id));
+      }
+      PushNotificationHelper.reset();
+    }
+    NavigationServices.replace(StackID.HomeStack, params);
+  };

@@ -24,6 +24,7 @@ const ChannelDrawer = () => {
       },
       swipeEdgeWidth: width,
       swipeMinDistance: 0.1,
+      overlayColor: '#19191980',
     }),
     [colors.backgroundHeader, header, width],
   );

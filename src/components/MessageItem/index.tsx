@@ -1,7 +1,6 @@
 import {MessageData} from 'models';
 import React, {useCallback, memo, useMemo} from 'react';
 import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
-import Fonts from 'common/Fonts';
 import MessagePhoto from '../MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
 import {
@@ -18,6 +17,7 @@ import useAppSelector from 'hook/useAppSelector';
 import useTeamUserData from 'hook/useTeamUserData';
 import SVG from 'common/SVG';
 import PinPostItem from 'components/PinPostItem';
+import AppStyles from 'common/AppStyles';
 
 type ReplyMessageProps = {
   replyMessage?: MessageData;
@@ -58,7 +58,11 @@ const ReplyMessage = ({
         <>
           <AvatarView user={replier} size={20} />
           <Text
-            style={[styles.replierName, {color: colors.lightText}]}
+            style={[
+              styles.replierName,
+              AppStyles.TextSemi13,
+              {color: colors.lightText},
+            ]}
             numberOfLines={1}
             ellipsizeMode="middle">
             {replier.user_name}
@@ -85,7 +89,12 @@ const ReplyMessage = ({
       ) : (
         <View style={styles.deletedReplyWrap}>
           <SVG.IconBan fill={colors.lightText} />
-          <Text style={[styles.deletedText, {color: colors.lightText}]}>
+          <Text
+            style={[
+              styles.deletedText,
+              AppStyles.TextSemi13,
+              {color: colors.lightText},
+            ]}>
             Original message was deleted.
           </Text>
         </View>
@@ -134,10 +143,15 @@ const MessageSender = ({
   if (!showAvatar || !sender) return null;
   return (
     <View style={styles.nameWrapper}>
-      <Text style={[styles.senderName, {color: colors.text}]}>
+      <Text style={[AppStyles.TextSemi15, {color: colors.text}]}>
         {normalizeUserName(sender.user_name)}
       </Text>
-      <Text style={[styles.messageDate, {color: colors.secondary}]}>
+      <Text
+        style={[
+          styles.messageDate,
+          AppStyles.TextMed11,
+          {color: colors.secondary},
+        ]}>
         {messageFromNow(createdAt)}
       </Text>
     </View>
@@ -251,21 +265,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   messageDate: {
-    fontSize: 12,
-    fontFamily: Fonts.Medium,
     marginLeft: 5,
-    lineHeight: 22,
-  },
-  senderName: {
-    fontSize: 16,
-    lineHeight: 26,
-    fontFamily: Fonts.SemiBold,
-  },
-  message: {
-    fontFamily: Fonts.Medium,
-    fontSize: 16,
-    lineHeight: 26,
-    marginTop: 8,
   },
   replyWrap: {
     flexDirection: 'row',
@@ -276,9 +276,6 @@ const styles = StyleSheet.create({
   },
   replierName: {
     marginLeft: 10,
-    fontFamily: Fonts.SemiBold,
-    fontSize: 14,
-    lineHeight: 22,
     maxWidth: 200,
   },
   deletedReplyWrap: {
@@ -288,9 +285,6 @@ const styles = StyleSheet.create({
   },
   deletedText: {
     marginLeft: 5,
-    fontFamily: Fonts.SemiBold,
-    fontSize: 14,
-    lineHeight: 22,
   },
   pinPostContainer: {
     padding: 15,

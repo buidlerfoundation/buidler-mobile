@@ -1,7 +1,7 @@
 import {useNavigation} from '@react-navigation/native';
 import {setCurrentTeam} from 'actions/UserActions';
 import AppDimension from 'common/AppDimension';
-import Fonts from 'common/Fonts';
+import AppStyles from 'common/AppStyles';
 import {StackID} from 'common/ScreenID';
 import CommunityItem from 'components/CommunityItem';
 import useAppDispatch from 'hook/useAppDispatch';
@@ -32,7 +32,9 @@ const SideBarCommunity = () => {
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
-      <Text style={[styles.title, {color: colors.text}]}>Community</Text>
+      <Text style={[styles.title, AppStyles.TextBold20, {color: colors.text}]}>
+        Community
+      </Text>
       <FlatList
         style={{flex: 1}}
         data={team}
@@ -53,11 +55,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontFamily: Fonts.Bold,
     paddingHorizontal: 20,
     paddingVertical: 18,
-    fontSize: 20,
-    lineHeight: 24,
   },
 });
 

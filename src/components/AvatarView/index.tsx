@@ -3,7 +3,6 @@ import {UserData} from 'models';
 import React, {memo, useCallback} from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import Blockies from 'components/Blockies';
 import useThemeColor from 'hook/useThemeColor';
 import SvgUri from 'components/SvgUri';
 
@@ -22,55 +21,35 @@ const AvatarView = ({
 }: AvatarViewProps) => {
   const {colors} = useThemeColor();
   const renderBody = useCallback(() => {
-    if (user?.avatar_url) {
-      const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
-      if (data.includes('.svg')) {
-        return (
-          <View
-            style={{
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              overflow: 'hidden',
-              backgroundColor: colors.border,
-            }}>
-            <SvgUri uri={data} width={size} height={size} />
-          </View>
-        );
-      }
+    const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
+    if (data.includes('.svg')) {
       return (
-        <FastImage
+        <View
           style={{
             width: size,
             height: size,
             borderRadius: size / 2,
+            overflow: 'hidden',
             backgroundColor: colors.border,
-          }}
-          source={{
-            uri: data,
-          }}
-        />
+          }}>
+          <SvgUri uri={data} width={size} height={size} />
+        </View>
       );
     }
     return (
-      <Blockies
-        blockies={user?.addressAvatar}
-        size={8}
+      <FastImage
         style={{
           width: size,
           height: size,
           borderRadius: size / 2,
           backgroundColor: colors.border,
         }}
+        source={{
+          uri: data,
+        }}
       />
     );
-  }, [
-    colors.border,
-    size,
-    user?.addressAvatar,
-    user?.avatar_url,
-    user?.user_id,
-  ]);
+  }, [colors.border, size, user?.avatar_url, user?.user_id]);
 
   return (
     <View style={[style, {width: size, height: size}]}>

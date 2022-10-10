@@ -28,6 +28,7 @@ async function requestAPI<T = any>(
     return {
       success: false,
       statusCode: 403,
+      message: 'Refresh token failed',
     };
   }
   if (!whiteListRefreshTokenApis.includes(`${method}-${uri}`)) {
@@ -48,6 +49,7 @@ async function requestAPI<T = any>(
         return {
           success: false,
           statusCode: 403,
+          message: 'Refresh token failed',
         };
       } else {
         SocketUtils.init();

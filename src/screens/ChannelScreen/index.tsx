@@ -3,21 +3,22 @@ import Touchable from 'components/Touchable';
 import {Space} from 'models';
 import React, {memo, useCallback, useState} from 'react';
 import {View, StyleSheet, Text, FlatList} from 'react-native';
-import Collapsible from 'react-native-collapsible';
-import Fonts from 'common/Fonts';
-import MemberItem from './MemberItem';
 import SpaceItem from './SpaceItem';
-import SVG from 'common/SVG';
 import useThemeColor from 'hook/useThemeColor';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useSpaceChannel from 'hook/useSpaceChannel';
-import useAppSelector from 'hook/useAppSelector';
 import useTeamUserData from 'hook/useTeamUserData';
-import {useMemo} from 'react';
 import CommunityLogo from 'components/CommunityLogo';
 import ScreenID from 'common/ScreenID';
 import {useNavigation} from '@react-navigation/native';
 import useCommunityId from 'hook/useCommunityId';
+import AppStyles from 'common/AppStyles';
+import numeral from 'numeral';
+import SVG from 'common/SVG';
+import api from 'services/api';
+import Modal from 'react-native-modal';
+import Clipboard from '@react-native-clipboard/clipboard';
+import Toast from 'react-native-toast-message';
 
 const CommunityHeader = () => {
   const {colors} = useThemeColor();
@@ -30,7 +31,11 @@ const CommunityHeader = () => {
     <Touchable style={styles.communityContainer} onPress={openDrawer}>
       <CommunityLogo community={currentTeam} size={40} />
       <Text
-        style={[styles.communityTitle, {color: colors.text}]}
+        style={[
+          styles.communityTitle,
+          AppStyles.TextBold20,
+          {color: colors.text},
+        ]}
         ellipsizeMode="tail"
         numberOfLines={1}>
         {currentTeam.team_display_name}
@@ -40,56 +45,70 @@ const CommunityHeader = () => {
 };
 
 const ChannelScreen = () => {
-  const userData = useAppSelector(state => state.user.userData);
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
   const communityId = useCommunityId();
-  const [isCollapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = useCallback(
-    () => setCollapsed(current => !current),
-    [],
-  );
+  const [inviteLink, setInviteLink] = useState('');
+  const [isOpenInviteModal, setOpenInviteModal] = useState(false);
   const {colors} = useThemeColor();
-  const user = useMemo(
-    () => teamUserData?.find?.(u => u.user_id === userData.user_id),
-    [teamUserData, userData.user_id],
-  );
-  const renderFooter = useCallback(() => {
+  const onInvitePress = useCallback(async () => {
+    if (!inviteLink) {
+      const res = await api.invitation(communityId);
+      setInviteLink(res?.data?.invitation_url);
+    }
+    setOpenInviteModal(true);
+  }, [communityId, inviteLink]);
+  const onCloseModal = useCallback(() => setOpenInviteModal(false), []);
+  const renderHeader = useCallback(() => {
     return (
       <View
-        style={[
-          styles.space,
-          {
-            backgroundColor: colors.background,
-            marginTop: 10,
-            marginBottom: 10 + AppDimension.extraBottom,
-          },
-        ]}>
-        <Touchable style={styles.groupHead} onPress={toggleCollapsed}>
-          <View style={styles.logoSpaceWrapper}>
-            <SVG.LogoLightSquare width={30} height={30} />
+        style={[styles.communityInfo, {backgroundColor: colors.background}]}>
+        <View
+          style={[styles.communityCoverWrap, {backgroundColor: colors.border}]}>
+          <View style={styles.badgeCommunity}>
+            <Text
+              style={[
+                AppStyles.TextBold17,
+                {color: colors.text, marginRight: 8},
+              ]}>
+              Not verified
+            </Text>
+            <SVG.IconInfo />
           </View>
-          <Text style={[styles.groupName, {color: colors.text}]}>MEMBER</Text>
+        </View>
+        <View style={[styles.rowMemberWrap, {marginTop: 15}]}>
+          <View style={[styles.dot, {backgroundColor: colors.lightText}]} />
+          <Text style={[AppStyles.TextSemi15, {color: colors.lightText}]}>
+            All members: {numeral(teamUserData.length).format('0[.][0]a')}
+          </Text>
+        </View>
+        <View style={[styles.rowMemberWrap, {marginTop: 8}]}>
+          <View style={[styles.dot, {backgroundColor: colors.success}]} />
+          <Text style={[AppStyles.TextSemi15, {color: colors.lightText}]}>
+            Online: {teamUserData.filter(el => el.status === 'online').length}
+          </Text>
+        </View>
+        <Touchable
+          style={[styles.btnInvite, {backgroundColor: colors.border}]}
+          onPress={onInvitePress}>
+          <Text style={[AppStyles.TextSemi17, {color: colors.text}]}>
+            Invite member
+          </Text>
         </Touchable>
-        <Collapsible collapsed={isCollapsed} duration={400} easing="linear">
-          {user && <MemberItem item={user} />}
-          {teamUserData
-            ?.filter?.(u => u.user_id !== userData.user_id)
-            ?.map(u => (
-              <MemberItem item={u} key={u.user_id} />
-            ))}
-        </Collapsible>
       </View>
     );
   }, [
     colors.background,
+    colors.border,
+    colors.lightText,
+    colors.success,
     colors.text,
-    isCollapsed,
+    onInvitePress,
     teamUserData,
-    toggleCollapsed,
-    user,
-    userData.user_id,
   ]);
+  const renderFooter = useCallback(() => {
+    return <View style={{height: 10}} />;
+  }, []);
   const renderSpace = useCallback(
     ({item}: {item: Space}) => {
       return <SpaceItem item={item} teamId={communityId} />;
@@ -100,6 +119,11 @@ const ChannelScreen = () => {
   const renderItemSeparate = useCallback(() => {
     return <View style={{height: 10}} />;
   }, []);
+  const onCopyInviteLink = useCallback(async () => {
+    await Clipboard.setString(inviteLink);
+    onCloseModal();
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [inviteLink, onCloseModal]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -111,13 +135,44 @@ const ChannelScreen = () => {
             keyExtractor={item => item.space_id}
             renderItem={renderSpace}
             ListFooterComponent={renderFooter}
-            ListHeaderComponent={<View style={{height: 10}} />}
+            ListHeaderComponent={renderHeader}
             ItemSeparatorComponent={renderItemSeparate}
             windowSize={2}
             initialNumToRender={10}
           />
         </View>
       </View>
+      <Modal
+        isVisible={isOpenInviteModal}
+        backdropColor={colors.black}
+        backdropOpacity={0.75}
+        onBackdropPress={onCloseModal}
+        backdropTransitionOutTiming={0}
+        hideModalContentWhileAnimating>
+        <View
+          style={[styles.modalInvite, {backgroundColor: colors.background}]}>
+          <Text
+            style={[
+              AppStyles.TextBold17,
+              {color: colors.text, marginTop: 22, alignSelf: 'center'},
+            ]}>
+            Invite Member
+          </Text>
+          <Text
+            style={[
+              AppStyles.TextMed15,
+              {color: colors.text, marginTop: 12, alignSelf: 'center'},
+            ]}>
+            {inviteLink}
+          </Text>
+          <View style={[styles.separate, {backgroundColor: colors.border}]} />
+          <Touchable style={styles.btnCopy} onPress={onCopyInviteLink}>
+            <Text style={[AppStyles.TextSemi17, {color: colors.mention}]}>
+              Copy link
+            </Text>
+          </Touchable>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -134,46 +189,61 @@ const styles = StyleSheet.create({
   },
   communityTitle: {
     marginHorizontal: 10,
-    fontFamily: Fonts.Bold,
-    fontSize: 20,
-    lineHeight: 24,
   },
   channelContainer: {
     flex: 1,
   },
-  space: {
-    marginHorizontal: 10,
-    padding: 10,
+  communityInfo: {
+    margin: 10,
     borderRadius: 5,
   },
-  groupHead: {
+  communityCoverWrap: {
+    height: 80,
+    borderRadius: 5,
+  },
+  rowMemberWrap: {
+    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
   },
-  groupName: {
-    fontFamily: Fonts.Bold,
-    fontSize: 16,
-    lineHeight: 19,
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
   },
-  channelItem: {
-    paddingHorizontal: 10,
-    flexDirection: 'row',
+  btnInvite: {
     height: 40,
-    alignItems: 'center',
+    marginHorizontal: 10,
+    marginTop: 15,
+    marginBottom: 10,
     borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  channelName: {
-    fontFamily: Fonts.SemiBold,
-    fontSize: 16,
-    lineHeight: 19,
+  badgeCommunity: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#191919B2',
+    borderRadius: 5,
+    paddingLeft: 10,
+    paddingRight: 8,
+    height: 32,
   },
-  logoSpaceWrapper: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginRight: 15,
+  modalInvite: {
+    borderRadius: 15,
+  },
+  separate: {
+    height: 1,
+    marginTop: 15,
+  },
+  btnCopy: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 46,
   },
 });
 

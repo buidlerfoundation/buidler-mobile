@@ -1,4 +1,4 @@
-import Fonts from 'common/Fonts';
+import AppStyles from 'common/AppStyles';
 import CommunityLogo from 'components/CommunityLogo';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
@@ -23,7 +23,11 @@ const CommunityItem = ({community, onPress}: CommunityItemProps) => {
       onPress={handlePress}>
       <CommunityLogo community={community} />
       <Text
-        style={[styles.communityName, {color: colors.text}]}
+        style={[
+          styles.communityName,
+          AppStyles.TextSemi15,
+          {color: colors.text},
+        ]}
         ellipsizeMode="tail"
         numberOfLines={1}>
         {community.team_display_name}
@@ -43,9 +47,6 @@ const styles = StyleSheet.create({
   },
   communityName: {
     marginHorizontal: 15,
-    fontFamily: Fonts.SemiBold,
-    fontSize: 16,
-    lineHeight: 26,
   },
 });
 

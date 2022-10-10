@@ -1,6 +1,5 @@
 import React, {memo, useCallback, useMemo} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import Fonts from 'common/Fonts';
 import {Space} from 'models';
 import useThemeColor from 'hook/useThemeColor';
 import SpaceIcon from 'components/SpaceIcon';
@@ -11,6 +10,7 @@ import {actionTypes} from 'actions/actionTypes';
 import ChannelItem from './ChannelItem';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useChannel from 'hook/useChannel';
+import AppStyles from 'common/AppStyles';
 
 type SpaceItemProps = {
   item: Space;
@@ -44,16 +44,15 @@ const SpaceItem = ({item}: SpaceItemProps) => {
       });
   }, [channel, currentChannel.channel_id, isCollapsed, item.channel_ids]);
   return (
-    <Touchable
+    <View
       style={[
         styles.space,
         {
           backgroundColor: colors.background,
           borderColor: isCollapsed ? colors.background : colors.border,
         },
-      ]}
-      onPress={toggleSpace}>
-      <View style={styles.groupHead}>
+      ]}>
+      <Touchable style={styles.groupHead} onPress={toggleSpace}>
         <View
           style={[styles.logoSpaceWrapper, {backgroundColor: colors.border}]}>
           <SpaceIcon space={item} />
@@ -61,6 +60,7 @@ const SpaceItem = ({item}: SpaceItemProps) => {
         <Text
           style={[
             styles.groupName,
+            AppStyles.TextSemi15,
             {color: isCollapsed ? colors.subtext : colors.text},
           ]}
           ellipsizeMode="tail"
@@ -72,7 +72,7 @@ const SpaceItem = ({item}: SpaceItemProps) => {
             <SVG.IconStar fill={item.icon_color} />
           </View>
         )}
-      </View>
+      </Touchable>
       {channelData.map((el, idx) => (
         <ChannelItem
           c={el}
@@ -82,7 +82,7 @@ const SpaceItem = ({item}: SpaceItemProps) => {
         />
       ))}
       <View style={{height: 10}} />
-    </Touchable>
+    </View>
   );
 };
 
@@ -100,9 +100,6 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   groupName: {
-    fontFamily: Fonts.Bold,
-    fontSize: 16,
-    lineHeight: 20,
     marginHorizontal: 15,
     flex: 1,
   },

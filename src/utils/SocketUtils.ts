@@ -34,6 +34,8 @@ import NavigationServices from 'services/NavigationServices';
 import ScreenID, {StackID} from 'common/ScreenID';
 import {getPinPostMessages} from 'actions/MessageActions';
 import {Socket} from 'socket.io-client';
+import messaging from '@react-native-firebase/messaging';
+import {Platform} from 'react-native';
 
 const getTasks = async (channelId: string, dispatch: Dispatch) => {
   dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
@@ -192,8 +194,14 @@ class SocketUtil {
     this.connecting = true;
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     const deviceCode = await getDeviceCode();
+    const deviceToken = await messaging().getToken();
     this.socket = io(`${AppConfig.baseUrl}`, {
-      query: {token: accessToken, device_code: deviceCode},
+      query: {
+        token: accessToken,
+        device_code: deviceCode,
+        device_token: deviceToken,
+        platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
+      },
       transports: ['websocket'],
       upgrade: false,
       reconnectionAttempts: 5,

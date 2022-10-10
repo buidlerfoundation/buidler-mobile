@@ -1,5 +1,5 @@
 import React, {memo, useCallback, useEffect} from 'react';
-import {View} from 'react-native';
+import {View, Linking} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import ScreenID, {StackID} from 'common/ScreenID';
 import NavigationServices, {getCurrentRoute} from 'services/NavigationServices';
@@ -13,16 +13,32 @@ import AvatarView from 'components/AvatarView';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import ConversationStack from './ConversationStack';
 import SideBarCommunity from 'components/SideBarCommunity';
+import useAppDispatch from 'hook/useAppDispatch';
+import {acceptInvitation} from 'actions/UserActions';
 
 const Tab = createBottomTabNavigator();
 
 const HomeStack = () => {
+  const dispatch = useAppDispatch();
   const route = useRoute();
   const navigation = useNavigation();
   const userData = useAppSelector(state => state.user.userData);
   const {colors} = useThemeColor();
   const openOTP = useAppSelector(state => state.configs.openOTP);
   const requestOtpCode = useAppSelector(state => state.configs.requestOtpCode);
+  const handleOpenURL = useCallback(
+    async (e: {url: string}) => {
+      const {url} = e;
+      if (url.includes('invite.buidler.app')) {
+        dispatch(acceptInvitation(url));
+      }
+    },
+    [dispatch],
+  );
+  useEffect(() => {
+    Linking.removeAllListeners('url');
+    Linking.addEventListener('url', handleOpenURL);
+  }, [handleOpenURL]);
   useEffect(() => {
     if (route.params?.entity_type === 'post' && route.params?.entity_id) {
       navigation.navigate(ScreenID.PinPostDetailScreen, {
@@ -121,11 +137,11 @@ const HomeStack = () => {
           component={ConversationStack}
           initialParams={route.params}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           options={{tabBarIcon: tabBarIconWallet}}
           name={ScreenID.WalletScreen}
           component={WalletScreen}
-        />
+        /> */}
         <Tab.Screen
           options={{tabBarIcon: tabBarIconProfile}}
           name={ScreenID.ProfileScreen}

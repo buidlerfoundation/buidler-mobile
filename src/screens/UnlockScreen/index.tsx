@@ -7,9 +7,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useDispatch} from 'react-redux';
-import PushNotificationHelper from 'helpers/PushNotificationHelper';
-import NavigationServices from 'services/NavigationServices';
-import {StackID} from 'common/ScreenID';
 import Fonts from 'common/Fonts';
 import {decryptString, getIV} from 'utils/DataCrypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,13 +15,8 @@ import {actionTypes} from 'actions/actionTypes';
 import {getPrivateChannel} from 'helpers/ChannelHelper';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
-import store from '../../store';
 import useAppSelector from 'hook/useAppSelector';
-import {
-  findTeamAndChannel,
-  setCurrentChannel,
-  setCurrentTeam,
-} from 'actions/UserActions';
+import {accessToHome} from 'actions/UserActions';
 import {useCallback} from 'react';
 import useThemeColor from 'hook/useThemeColor';
 import AvatarView from 'components/AvatarView';
@@ -35,34 +27,6 @@ const UnlockScreen = () => {
   const dispatch = useDispatch();
   const user = useAppSelector(state => state.user.userData);
   const [loading, setLoading] = useState(false);
-  const accessApp = useCallback(async () => {
-    await dispatch(findTeamAndChannel?.());
-    let params = {};
-    if (
-      PushNotificationHelper.initialNotification &&
-      PushNotificationHelper.initNotificationData
-    ) {
-      const {team, currentTeamId, channelMap} = store.getState()?.user;
-      const channels = channelMap?.[currentTeamId];
-      const {data, type} = PushNotificationHelper.initNotificationData;
-      const {team_id} = data.notification_data;
-      const {entity_id, entity_type} = data.message_data;
-      params = {type, entity_id, entity_type};
-      const teamNotification = team?.find?.(t => t.team_id === team_id);
-      const channelNotification = channels.find(
-        el => el.channel_id === entity_id,
-      );
-      if (currentTeamId === team_id) {
-        if (channelNotification) {
-          await dispatch(setCurrentChannel(channelNotification));
-        }
-      } else if (teamNotification) {
-        await dispatch(setCurrentTeam(teamNotification, entity_id));
-      }
-      PushNotificationHelper.reset();
-    }
-    NavigationServices.replace(StackID.HomeStack, params);
-  }, [dispatch]);
   const checkPassword = useCallback(async () => {
     if (loading) return;
     setLoading(true);
@@ -86,13 +50,13 @@ const UnlockScreen = () => {
           type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
           payload: privateKeyChannel,
         });
-        await accessApp();
+        await dispatch(accessToHome());
       }
     } catch (error) {
       alert('Invalid Password');
     }
     setLoading(false);
-  }, [accessApp, dispatch, pass, user.user_id, loading]);
+  }, [dispatch, pass, user.user_id, loading]);
   if (!user) return <View style={styles.container} />;
 
   return (

@@ -34,7 +34,7 @@ const StoreSeedPhraseScreen = ({route}: Props) => {
   }, [initialSeed]);
   const {colors} = useThemeColor();
   const space = useMemo(() => (AppDevice.isIphoneX ? 12 : 6), []);
-  const seedWidth = useMemo(() => (width - 40 - space * 2) / 3, [space, width]);
+  const seedWidth = useMemo(() => (width - 41 - space * 2) / 3, [space, width]);
   const onNextPress = useCallback(() => {
     NavigationServices.pushToScreen(ScreenID.BackupScreen, {seed, password});
   }, [password, seed]);

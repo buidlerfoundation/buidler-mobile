@@ -30,6 +30,16 @@
 				<string>com.googleusercontent.apps.5581270904-1rjh70d21pjssrkkrgofh2126u8j8049</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>buidler</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>buidler</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -49,7 +59,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to camera to upload photo to message or task</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string></string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need to access to your photo to save photo</string>
 	<key>NSPhotoLibraryUsageDescription</key>

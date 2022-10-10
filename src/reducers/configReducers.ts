@@ -10,6 +10,7 @@ interface ConfigReducerState {
   channelPrivateKey: {[key: string]: Array<{key: string; timestamp: number}>};
   openOTP: boolean;
   requestOtpCode: string;
+  dataFromUrl: string | null;
 }
 
 const initialState: ConfigReducerState = {
@@ -20,6 +21,7 @@ const initialState: ConfigReducerState = {
   channelPrivateKey: {},
   openOTP: false,
   requestOtpCode: '',
+  dataFromUrl: '',
 };
 
 const configReducer: Reducer<ConfigReducerState, AnyAction> = (
@@ -62,6 +64,19 @@ const configReducer: Reducer<ConfigReducerState, AnyAction> = (
       return {
         ...state,
         privateKey: '',
+      };
+    }
+    case actionTypes.SET_DATA_FROM_URL: {
+      return {
+        ...state,
+        dataFromUrl: payload,
+      };
+    }
+    case actionTypes.LOGOUT: {
+      return {
+        ...initialState,
+        realHeight: state.realHeight,
+        dataFromUrl: state.dataFromUrl,
       };
     }
     default:

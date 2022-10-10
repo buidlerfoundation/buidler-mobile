@@ -30,6 +30,7 @@ declare module '@react-navigation/native' {
       done: string;
       backdrop: string;
       backdropWithOpacity: string;
+      black: string;
     };
   };
   export function useTheme(): ExtendedTheme;

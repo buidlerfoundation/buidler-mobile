@@ -1,4 +1,3 @@
-import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import {MessageData, UserData} from 'models';
@@ -29,6 +28,7 @@ import ImageHelper from 'helpers/ImageHelper';
 import MentionItem from 'components/MentionItem';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useCommunityId from 'hook/useCommunityId';
+import AppStyles from 'common/AppStyles';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -311,7 +311,12 @@ const MessageInput = ({
           <View style={{marginLeft: 20}}>
             <AvatarView user={sender} size={20} />
           </View>
-          <Text style={[styles.replyName, {color: colors.lightText}]}>
+          <Text
+            style={[
+              styles.replyName,
+              AppStyles.TextSemi13,
+              {color: colors.lightText},
+            ]}>
             {sender.user_name}
           </Text>
           {messageReply.message_attachments.length > 0 && (
@@ -320,7 +325,11 @@ const MessageInput = ({
             </View>
           )}
           <Text
-            style={[styles.replyContent, {color: colors.lightText}]}
+            style={[
+              styles.replyContent,
+              AppStyles.TextMed13,
+              {color: colors.lightText},
+            ]}
             ellipsizeMode="tail"
             numberOfLines={1}>
             {normalizeMessageTextPlain(
@@ -464,7 +473,7 @@ const MessageInput = ({
               <SVG.IconPlusCircle />
             </Touchable>
             <TextInput
-              style={[styles.input, {color: colors.text}]}
+              style={[styles.input, AppStyles.TextSemi15, {color: colors.text}]}
               placeholder={
                 placeholder ||
                 `message to ${
@@ -512,15 +521,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   replyName: {
-    fontFamily: Fonts.SemiBold,
-    fontSize: 14,
-    lineHeight: 22,
     marginLeft: 10,
   },
   replyContent: {
-    fontFamily: Fonts.Medium,
-    fontSize: 14,
-    lineHeight: 22,
     flex: 1,
     marginLeft: 8,
   },
@@ -528,9 +531,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   input: {
-    fontFamily: Fonts.Medium,
-    fontSize: 16,
-    lineHeight: 20,
     maxHeight: 100,
     flex: 1,
     marginHorizontal: 10,

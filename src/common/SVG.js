@@ -55,6 +55,7 @@ import IconMenuLogout from '../assets/images/ic_menu_logout.svg';
 import IconTabHome from '../assets/images/ic_tab_home.svg';
 import IconArrowImport from '../assets/images/ic_arrow_import.svg';
 import IconScrollDown from '../assets/images/ic_scroll_down.svg';
+import IconInfo from '../assets/images/ic_info.svg';
 
 export default {
   IconExpand,
@@ -114,4 +115,5 @@ export default {
   IconTabHome,
   IconArrowImport,
   IconScrollDown,
+  IconInfo,
 };

@@ -1,7 +1,6 @@
 import {actionTypes} from 'actions/actionTypes';
 import {uniqBy} from 'lodash';
 import AppDimension from 'common/AppDimension';
-import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
@@ -62,11 +61,9 @@ import {useDrawerStatus} from '@react-navigation/drawer';
 import moment from 'moment';
 import AppConfig from 'common/AppConfig';
 import ChannelTitle from 'components/ChannelTitle';
-// import {useGlobalModalContext} from 'components/ModalContainer';
+import AppStyles from 'common/AppStyles';
 
 const ConversationScreen = () => {
-  // TODO: modal confirm delete message
-  // const {showModal} = useGlobalModalContext();
   const listRef = useRef<SectionList>();
   const navigation = useNavigation();
   const route = useRoute();
@@ -267,7 +264,7 @@ const ConversationScreen = () => {
     ({section: {title}}) => (
       <View style={styles.dateHeader}>
         <View style={[styles.line, {backgroundColor: colors.separator}]} />
-        <Text style={[styles.dateText, {color: colors.secondary}]}>
+        <Text style={[AppStyles.TextMed11, {color: colors.secondary}]}>
           {titleMessageFromNow(title)}
         </Text>
         <View style={[styles.line, {backgroundColor: colors.separator}]} />
@@ -710,11 +707,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
     paddingHorizontal: 10,
-  },
-  dateText: {
-    fontSize: 12,
-    lineHeight: 14,
-    fontFamily: Fonts.Medium,
   },
   line: {
     flex: 1,

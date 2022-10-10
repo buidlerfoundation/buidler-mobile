@@ -1,4 +1,4 @@
-import Fonts from 'common/Fonts';
+import AppStyles from 'common/AppStyles';
 import ChannelIcon from 'components/ChannelIcon';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useThemeColor from 'hook/useThemeColor';
@@ -12,7 +12,7 @@ const ChannelTitle = () => {
     <View style={styles.titleWrap}>
       <ChannelIcon channel={currentChannel} color={colors.text} />
       <Text
-        style={[styles.title, {color: colors.text}]}
+        style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}
         ellipsizeMode="tail"
         numberOfLines={1}>
         {currentChannel.channel_name}
@@ -29,9 +29,6 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   title: {
-    fontFamily: Fonts.Bold,
-    fontSize: 17,
-    lineHeight: 26,
     marginHorizontal: 5,
     flex: 1,
   },

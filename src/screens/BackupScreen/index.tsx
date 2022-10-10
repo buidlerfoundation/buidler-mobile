@@ -117,7 +117,7 @@ const BackupScreen = ({route}: Props) => {
   const [confirmSeed, setConfirmSeed] = useState(createConfirmSeedState());
   const shuffleSeedData = useMemo(() => shuffle(seed.split(' ')), [seed]);
   const space = useMemo(() => (AppDevice.isIphoneX ? 12 : 6), []);
-  const seedWidth = useMemo(() => (width - 40 - space * 2) / 3, [space, width]);
+  const seedWidth = useMemo(() => (width - 41 - space * 2) / 3, [space, width]);
   const onNextPress = useCallback(() => {
     if (
       seed ===

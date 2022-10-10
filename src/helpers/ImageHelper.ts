@@ -14,6 +14,9 @@ class ImageHelper {
   }
 
   normalizeAvatar = (name: string, id: string) => {
+    if (!name && id?.substring(0, 2) === '0x') {
+      return `${this.imgDomain}${id}/ethereum_blockies.png`;
+    }
     if (name?.includes?.('http')) return name;
     return `${this.imgDomain}${id}/${name}`;
   };
@@ -24,6 +27,9 @@ class ImageHelper {
     options: imageOptions = {},
     noParams = false,
   ) => {
+    if (!name && id?.substring(0, 2) === '0x') {
+      return `${this.imgDomain}${id}/ethereum_blockies.png`;
+    }
     if (this.imgDomain === '' || this.imgConfig == null || name == null)
       return '';
     if (name.includes('.gif') || noParams) {
