@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     flex: 1,
     marginHorizontal: 10,
-    paddingTop: 10,
+    paddingTop: 7,
   },
   mentionView: {
     maxHeight: 150,

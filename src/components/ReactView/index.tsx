@@ -2,8 +2,8 @@ import {ReactReducerData} from 'models';
 import React, {memo} from 'react';
 import {View, StyleSheet, ViewStyle, Text} from 'react-native';
 import Emoji from 'react-native-emoji';
-import Fonts from 'common/Fonts';
 import useThemeColor from 'hook/useThemeColor';
+import AppStyles from 'common/AppStyles';
 
 type ReactViewProps = {
   style?: ViewStyle;
@@ -30,6 +30,7 @@ const ReactView = ({style, reacts}: ReactViewProps) => {
           <Text
             style={[
               styles.reactCount,
+              AppStyles.TextSemi13,
               {color: react.isReacted ? colors.text : colors.lightText},
             ]}>
             {react.count}
@@ -56,13 +57,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   reactCount: {
-    fontSize: 14,
-    fontFamily: Fonts.SemiBold,
-    lineHeight: 22,
     marginLeft: 5,
   },
   emoji: {
-    fontSize: 14,
+    fontSize: 13,
     lineHeight: 22,
   },
 });

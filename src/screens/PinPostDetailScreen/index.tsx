@@ -1,7 +1,6 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {deleteMessage, getPinPostMessages} from 'actions/MessageActions';
 import AppDimension from 'common/AppDimension';
-import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import PinPostItem from 'components/PinPostItem';
 import Touchable from 'components/Touchable';
@@ -34,6 +33,7 @@ import Toast from 'react-native-toast-message';
 import MenuMessage from 'components/MenuMessage';
 import MessageInput from 'components/MessageInput';
 import MessageItem from 'components/MessageItem';
+import AppStyles from 'common/AppStyles';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -206,7 +206,10 @@ const PinPostDetailScreen = () => {
           <Touchable onPress={onBack}>
             <SVG.IconArrowBack fill={colors.text} />
           </Touchable>
-          <Text style={[styles.title, {color: colors.text}]}>Pin Post</Text>
+          <Text
+            style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}>
+            Pin Post
+          </Text>
         </View>
         <FlatList
           style={{flex: 1}}
@@ -217,13 +220,20 @@ const PinPostDetailScreen = () => {
           ListFooterComponent={
             <View>
               <PinPostItem pinPost={pinPost.data} detail />
-              <View
-                style={[styles.separate, {backgroundColor: colors.border}]}
-              />
+              {messages.length > 0 && (
+                <View
+                  style={[styles.separate, {backgroundColor: colors.border}]}
+                />
+              )}
               {(messages?.length || 0) <
                 parseInt(pinPost.data?.total_messages || '0') && (
                 <Touchable onPress={onMorePPMessage}>
-                  <Text style={[styles.textMore, {color: colors.mention}]}>
+                  <Text
+                    style={[
+                      styles.textMore,
+                      AppStyles.TextSemi15,
+                      {color: colors.mention},
+                    ]}>
                     View previous replies
                   </Text>
                 </Touchable>
@@ -305,9 +315,6 @@ const styles = StyleSheet.create({
     height: AppDimension.headerHeight,
   },
   title: {
-    fontFamily: Fonts.Bold,
-    fontSize: 17,
-    lineHeight: 26,
     marginLeft: 20,
     flex: 1,
   },
@@ -318,9 +325,6 @@ const styles = StyleSheet.create({
     height: 1,
   },
   textMore: {
-    fontFamily: Fonts.SemiBold,
-    fontSize: 16,
-    lineHeight: 26,
     marginHorizontal: 20,
   },
   messageInputContainer: {

@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import Fonts from 'common/Fonts';
+import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
@@ -69,7 +69,7 @@ const UserReply = ({data, totalSender}: UserReplyProps) => {
               borderColor: colors.backgroundLight,
             },
           ]}>
-          <Text style={[styles.moreText, {color: colors.lightText}]}>
+          <Text style={[AppStyles.TextSemi13, {color: colors.lightText}]}>
             +{numeral(moreCount).format('0,0')}
           </Text>
         </View>
@@ -152,25 +152,33 @@ const PinPostItem = ({
             (detail || embeds) && styles.userNameDetailWrap,
           ]}>
           <Text
-            style={[styles.userName, {color: colors.text}]}
+            style={[
+              styles.userName,
+              AppStyles.TextSemi15,
+              {color: colors.text},
+            ]}
             ellipsizeMode="tail"
             numberOfLines={1}>
             {creator.user_name}
           </Text>
           {embeds && (
-            <Text style={[styles.createdAt, {color: colors.subtext}]}>
+            <Text style={[AppStyles.TextMed11, {color: colors.subtext}]}>
               {messageFromNow(pinPost.message_created_at)}
             </Text>
           )}
           {!embeds && (
             <View style={styles.createdAtWrap}>
-              <Text style={[styles.createdAt, {color: colors.subtext}]}>
+              <Text
+                style={[
+                  AppStyles.TextMed11,
+                  {color: colors.subtext, lineHeight: 18},
+                ]}>
                 {messageFromNow(pinPost.message_created_at)}
               </Text>
               {isIPFS && detail && (
                 <View style={styles.ipfsWrap}>
                   <SVG.IconIPFSLock fill={colors.mention} />
-                  <Text style={[styles.cidText, {color: colors.mention}]}>
+                  <Text style={[AppStyles.TextMed15, {color: colors.mention}]}>
                     {normalizeUserName(pinPost.cid, 4)}
                   </Text>
                 </View>
@@ -225,7 +233,7 @@ const PinPostItem = ({
             }
           />
           {isMore && !detail && (
-            <Text style={[styles.viewMore, {color: colors.subtext}]}>
+            <Text style={[AppStyles.TextMed15, {color: colors.subtext}]}>
               View more
             </Text>
           )}
@@ -249,7 +257,12 @@ const PinPostItem = ({
         <View style={styles.replyWrap}>
           <View style={styles.rowReply}>
             <SVG.IconPinReply fill={colors.lightText} />
-            <Text style={[styles.totalMessage, {color: colors.lightText}]}>
+            <Text
+              style={[
+                styles.totalMessage,
+                AppStyles.TextSemi13,
+                {color: colors.lightText},
+              ]}>
               {numeral(pinPost.total_messages).format('0,0')}
             </Text>
           </View>
@@ -260,7 +273,7 @@ const PinPostItem = ({
             totalSender={pinPost.total_reply_sender}
           />
           <View style={styles.rowReply}>
-            <Text style={[styles.lastReply, {color: colors.subtext}]}>
+            <Text style={[AppStyles.TextSemi13, {color: colors.subtext}]}>
               Last reply{' '}
               {lastReplyFromNow(pinPost.latest_reply_message_at).toLowerCase()}
             </Text>
@@ -268,7 +281,12 @@ const PinPostItem = ({
         </View>
       )}
       {embeds && (
-        <Text style={[styles.viewPost, {color: colors.mention}]}>
+        <Text
+          style={[
+            styles.viewPost,
+            AppStyles.TextSemi15,
+            {color: colors.mention},
+          ]}>
           View post
         </Text>
       )}
@@ -294,25 +312,12 @@ const styles = StyleSheet.create({
   },
   userName: {
     marginRight: 8,
-    fontFamily: Fonts.Bold,
-    fontSize: 16,
-    lineHeight: 26,
-  },
-  createdAt: {
-    fontSize: 12,
-    lineHeight: 22,
-    fontFamily: Fonts.Medium,
   },
   content: {
     marginTop: 8,
   },
   attachmentWrap: {
     marginTop: 5,
-  },
-  viewMore: {
-    fontSize: 16,
-    lineHeight: 26,
-    fontFamily: Fonts.SemiBold,
   },
   replyWrap: {
     flexDirection: 'row',
@@ -326,14 +331,6 @@ const styles = StyleSheet.create({
   },
   totalMessage: {
     marginLeft: 2,
-    fontFamily: Fonts.SemiBold,
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  lastReply: {
-    fontFamily: Fonts.Medium,
-    fontSize: 14,
-    lineHeight: 22,
   },
   moreCountWrap: {
     paddingHorizontal: 5,
@@ -344,10 +341,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginLeft: -8,
   },
-  moreText: {
-    fontFamily: Fonts.Medium,
-    fontSize: 14,
-  },
   avatarWrap: {
     width: 22,
     height: 22,
@@ -355,9 +348,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   viewPost: {
-    fontFamily: Fonts.SemiBold,
-    fontSize: 16,
-    lineHeight: 26,
     marginTop: 15,
   },
   createdAtWrap: {
@@ -372,9 +362,6 @@ const styles = StyleSheet.create({
   cidText: {
     textDecorationLine: 'underline',
     marginLeft: 5,
-    fontFamily: Fonts.Medium,
-    fontSize: 14,
-    lineHeight: 22,
   },
 });
 

@@ -148,8 +148,8 @@ const MessageSender = ({
       </Text>
       <Text
         style={[
-          styles.messageDate,
           AppStyles.TextMed11,
+          styles.messageDate,
           {color: colors.secondary},
         ]}>
         {messageFromNow(createdAt)}
@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
   },
   messageDate: {
     marginLeft: 5,
+    lineHeight: 18,
   },
   replyWrap: {
     flexDirection: 'row',
@@ -288,7 +289,7 @@ const styles = StyleSheet.create({
   },
   pinPostContainer: {
     padding: 15,
-    marginTop: 20,
+    marginTop: 10,
     borderRadius: 5,
     borderWidth: 1,
     paddingHorizontal: 15,

@@ -1,4 +1,4 @@
-import Fonts from 'common/Fonts';
+import AppStyles from 'common/AppStyles';
 import ChannelIcon from 'components/ChannelIcon';
 import useThemeColor from 'hook/useThemeColor';
 import {Channel} from 'models';
@@ -25,7 +25,12 @@ const PinChannelView = ({channels, style}: PinChannelViewProps) => {
             channel={el}
             color={colors.lightText}
           />
-          <Text style={[styles.channelName, {color: colors.lightText}]}>
+          <Text
+            style={[
+              styles.channelName,
+              AppStyles.TextMed15,
+              {color: colors.lightText},
+            ]}>
             {el.channel_name}
           </Text>
         </View>
@@ -51,9 +56,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   channelName: {
-    fontSize: 14,
-    fontFamily: Fonts.SemiBold,
-    lineHeight: 22,
     marginLeft: 8,
   },
 });
