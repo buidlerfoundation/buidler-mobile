@@ -220,7 +220,7 @@ const PinPostDetailScreen = () => {
           ListFooterComponent={
             <View>
               <PinPostItem pinPost={pinPost.data} detail />
-              {messages.length > 0 && (
+              {messages?.length > 0 && (
                 <View
                   style={[styles.separate, {backgroundColor: colors.border}]}
                 />
