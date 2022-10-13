@@ -18,6 +18,9 @@ import useTeamUserData from 'hook/useTeamUserData';
 import SVG from 'common/SVG';
 import PinPostItem from 'components/PinPostItem';
 import AppStyles from 'common/AppStyles';
+import useAppDispatch from 'hook/useAppDispatch';
+import useUserData from 'hook/useUserData';
+import {addReact, removeReact} from 'actions/ReactActions';
 
 type ReplyMessageProps = {
   replyMessage?: MessageData;
@@ -72,7 +75,7 @@ const ReplyMessage = ({
               <SVG.IconReplyAttachment fill={colors.lightText} />
             </View>
           )}
-          <Touchable style={{flex: 1}} onPress={onPress}>
+          <Touchable style={{flex: 1}} onPress={onPress} useWithoutFeedBack>
             <RenderHTML
               html={normalizeMessageTextPlain(
                 replyMessage.content || 'View attachment',
@@ -169,10 +172,12 @@ const MessageItem = ({
   onLongPress,
   onPressMessageReply,
 }: MessageItemProps) => {
+  const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
   const teamId = useAppSelector(state => state.user.currentTeamId);
   const reactData = useAppSelector(state => state.reactReducer.reactData);
+  const userData = useUserData();
   const highlightMessageId = useAppSelector(
     state => state.message.highlightMessageId,
   );
@@ -186,6 +191,20 @@ const MessageItem = ({
   const isHighLight = useMemo(
     () => highlightMessageId === item.message_id,
     [highlightMessageId, item.message_id],
+  );
+  const handleReactPress = useCallback(
+    (reactName: string) => {
+      const reacts = reactData[item.message_id];
+      const isExisted = !!reacts?.find(
+        (react: any) => react.reactName === reactName && react?.isReacted,
+      );
+      if (isExisted) {
+        dispatch(removeReact(item?.message_id, reactName, userData?.user_id));
+      } else {
+        dispatch(addReact(item?.message_id, reactName, userData?.user_id));
+      }
+    },
+    [dispatch, item.message_id, reactData, userData?.user_id],
   );
   return (
     <View
@@ -240,7 +259,10 @@ const MessageItem = ({
                   !item.content
                 }
               />
-              <ReactView reacts={reactData[item.message_id]} />
+              <ReactView
+                reacts={reactData[item.message_id]}
+                onReactPress={handleReactPress}
+              />
             </>
           )}
         </View>

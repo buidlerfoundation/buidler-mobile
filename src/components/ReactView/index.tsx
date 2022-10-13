@@ -1,41 +1,62 @@
 import {ReactReducerData} from 'models';
-import React, {memo} from 'react';
+import React, {memo, useCallback} from 'react';
 import {View, StyleSheet, ViewStyle, Text} from 'react-native';
-import Emoji from 'react-native-emoji';
 import useThemeColor from 'hook/useThemeColor';
 import AppStyles from 'common/AppStyles';
+import Emoji from 'components/Emoji';
+import Touchable from 'components/Touchable';
+
+type ReactItemProps = {
+  react: any;
+  onReactPress?: (name: string) => void;
+};
+
+const ReactItem = ({react, onReactPress}: ReactItemProps) => {
+  const {colors} = useThemeColor();
+  const onPress = useCallback(() => {
+    onReactPress?.(react.reactName);
+  }, [onReactPress, react.reactName]);
+  return (
+    <Touchable
+      style={[
+        styles.reactItem,
+        {
+          backgroundColor: react.isReacted
+            ? colors.activeBackground
+            : colors.activeBackgroundLight,
+        },
+      ]}
+      useWithoutFeedBack
+      onPress={onPress}>
+      <Emoji name={react.reactName} style={styles.emoji} />
+      <Text
+        style={[
+          styles.reactCount,
+          AppStyles.TextSemi13,
+          {color: react.isReacted ? colors.text : colors.lightText},
+        ]}>
+        {react.count}
+      </Text>
+    </Touchable>
+  );
+};
 
 type ReactViewProps = {
   style?: ViewStyle;
   reacts: Array<ReactReducerData>;
+  onReactPress?: (name: string) => void;
 };
 
-const ReactView = ({style, reacts}: ReactViewProps) => {
-  const {colors} = useThemeColor();
+const ReactView = ({style, reacts, onReactPress}: ReactViewProps) => {
   if (!reacts || reacts.length === 0) return null;
   return (
     <View style={[styles.container, style]}>
       {reacts.map(react => (
-        <View
+        <ReactItem
           key={react.reactName}
-          style={[
-            styles.reactItem,
-            {
-              backgroundColor: react.isReacted
-                ? colors.activeBackground
-                : colors.activeBackgroundLight,
-            },
-          ]}>
-          <Emoji name={react.reactName} style={styles.emoji} />
-          <Text
-            style={[
-              styles.reactCount,
-              AppStyles.TextSemi13,
-              {color: react.isReacted ? colors.text : colors.lightText},
-            ]}>
-            {react.count}
-          </Text>
-        </View>
+          react={react}
+          onReactPress={onReactPress}
+        />
       ))}
     </View>
   );

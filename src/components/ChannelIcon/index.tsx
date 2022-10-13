@@ -1,10 +1,10 @@
 import SVG from 'common/SVG';
+import Emoji from 'components/Emoji';
 import ImageHelper from 'helpers/ImageHelper';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import {Channel} from 'models';
 import React, {memo} from 'react';
 import {StyleSheet, View} from 'react-native';
-import Emoji from 'react-native-emoji';
 import FastImage from 'react-native-fast-image';
 
 type ChannelIconProps = {

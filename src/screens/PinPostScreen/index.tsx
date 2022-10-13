@@ -197,8 +197,8 @@ const PinPostScreen = () => {
         style={styles.modalMenuMessage}
         avoidKeyboard
         onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-        backdropColor={colors.backdrop}
-        backdropOpacity={0.9}
+        backdropColor={colors.black}
+        backdropOpacity={0.75}
         swipeDirection={['down']}
         onSwipeComplete={onCloseMenuPinPost}
         onBackdropPress={onCloseMenuPinPost}

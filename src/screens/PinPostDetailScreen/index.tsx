@@ -34,12 +34,15 @@ import MenuMessage from 'components/MenuMessage';
 import MessageInput from 'components/MessageInput';
 import MessageItem from 'components/MessageItem';
 import AppStyles from 'common/AppStyles';
+import EmojiPicker from 'components/EmojiPicker';
+import {addReact, removeReact} from 'actions/ReactActions';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
   const listRef = useRef<FlatList>();
   const inputRef = useRef<TextInput>();
   const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
+  const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
   const [isOpenGallery, setOpenGallery] = useState(false);
   const [messageReply, setMessageReply] = useState<MessageData>(null);
@@ -50,6 +53,7 @@ const PinPostDetailScreen = () => {
     [],
   );
   const {colors} = useThemeColor();
+  const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userData = useAppSelector(state => state.user.userData);
   const community = useCurrentCommunity();
   const currentChannel = useCurrentChannel();
@@ -196,6 +200,41 @@ const PinPostDetailScreen = () => {
     onCloseMenuMessage,
     selectedMessage?.message_id,
   ]);
+  const onReactPress = useCallback(
+    (name: string) => {
+      const reacts = reactData[selectedMessage?.message_id];
+      const isExisted = !!reacts?.find(
+        (react: any) => react.reactName === name && react?.isReacted,
+      );
+      if (isExisted) {
+        dispatch(
+          removeReact(selectedMessage?.message_id, name, userData?.user_id),
+        );
+      } else {
+        dispatch(
+          addReact(selectedMessage?.message_id, name, userData?.user_id),
+        );
+      }
+    },
+    [dispatch, reactData, selectedMessage?.message_id, userData?.user_id],
+  );
+  const openModalEmoji = useCallback(() => {
+    onCloseMenuMessage();
+    setTimeout(() => {
+      setOpenModalEmoji(true);
+    }, 400);
+  }, [onCloseMenuMessage]);
+  const closeModalEmoji = useCallback(() => {
+    setOpenModalEmoji(false);
+  }, []);
+  const onEmojiSelected = useCallback(
+    emoji => {
+      onReactPress(emoji.short_name);
+      closeModalEmoji();
+      onCloseMenuMessage();
+    },
+    [closeModalEmoji, onCloseMenuMessage, onReactPress],
+  );
   if (!pinPost.data) return null;
   return (
     <KeyboardLayout
@@ -265,8 +304,8 @@ const PinPostDetailScreen = () => {
           style={styles.modalMenuMessage}
           avoidKeyboard
           onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.backdrop}
-          backdropOpacity={0.9}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
           swipeDirection={['down']}
           onSwipeComplete={onCloseMenuMessage}
           onBackdropPress={onCloseMenuMessage}
@@ -280,6 +319,8 @@ const PinPostDetailScreen = () => {
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={selectedMessage?.sender_id === userData.user_id}
             canPin={false}
+            openModalEmoji={openModalEmoji}
+            onEmojiSelected={onEmojiSelected}
           />
         </Modal>
         <Modal
@@ -287,14 +328,34 @@ const PinPostDetailScreen = () => {
           style={styles.modalGallery}
           avoidKeyboard
           onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.backdrop}
-          backdropOpacity={0.9}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
           onSwipeComplete={toggleGallery}
           swipeDirection={['down']}>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle title="Photos" onClosePress={toggleGallery} />
             <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
+          </View>
+        </Modal>
+        <Modal
+          isVisible={isOpenModalEmoji}
+          style={styles.modalGallery}
+          avoidKeyboard
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
+          onSwipeComplete={closeModalEmoji}
+          swipeDirection={['down']}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
+          <View
+            style={[styles.galleryView, {backgroundColor: colors.background}]}>
+            <BottomSheetHandle
+              title="Reaction"
+              onClosePress={closeModalEmoji}
+            />
+            <EmojiPicker onEmojiSelected={onEmojiSelected} />
           </View>
         </Modal>
       </View>

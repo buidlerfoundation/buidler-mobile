@@ -21,8 +21,8 @@ const ModalOtp = ({isOpen, otp}: ModalOtpProps) => {
       style={styles.container}
       avoidKeyboard
       onMoveShouldSetResponderCapture={() => false}
-      backdropColor={colors.backdrop}
-      backdropOpacity={0.9}>
+      backdropColor={colors.black}
+      backdropOpacity={0.75}>
       <View
         style={[
           styles.bodyContainer,

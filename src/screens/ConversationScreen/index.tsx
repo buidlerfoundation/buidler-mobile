@@ -62,6 +62,8 @@ import moment from 'moment';
 import AppConfig from 'common/AppConfig';
 import ChannelTitle from 'components/ChannelTitle';
 import AppStyles from 'common/AppStyles';
+import EmojiPicker from 'components/EmojiPicker';
+import {addReact, removeReact} from 'actions/ReactActions';
 
 const ConversationScreen = () => {
   const listRef = useRef<SectionList>();
@@ -72,6 +74,7 @@ const ConversationScreen = () => {
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
   );
+  const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const inputRef = useRef<TextInput>();
   const messages = useMemo(() => messageData?.data, [messageData?.data]);
   const scrollData = useMemo(
@@ -82,6 +85,7 @@ const ConversationScreen = () => {
     () => messageData?.canMore,
     [messageData?.canMore],
   );
+  const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userData = useAppSelector(state => state.user.userData);
   const userRole = useUserRole();
   const currentTeamId = useCommunityId();
@@ -537,6 +541,41 @@ const ConversationScreen = () => {
   const onPinPress = useCallback(() => {
     navigation.navigate(ScreenID.PinPostScreen);
   }, [navigation]);
+  const openModalEmoji = useCallback(() => {
+    onCloseMenuMessage();
+    setTimeout(() => {
+      setOpenModalEmoji(true);
+    }, 400);
+  }, [onCloseMenuMessage]);
+  const closeModalEmoji = useCallback(() => {
+    setOpenModalEmoji(false);
+  }, []);
+  const onReactPress = useCallback(
+    (name: string) => {
+      const reacts = reactData[selectedMessage?.message_id];
+      const isExisted = !!reacts?.find(
+        (react: any) => react.reactName === name && react?.isReacted,
+      );
+      if (isExisted) {
+        dispatch(
+          removeReact(selectedMessage?.message_id, name, userData?.user_id),
+        );
+      } else {
+        dispatch(
+          addReact(selectedMessage?.message_id, name, userData?.user_id),
+        );
+      }
+    },
+    [dispatch, reactData, selectedMessage?.message_id, userData?.user_id],
+  );
+  const onEmojiSelected = useCallback(
+    emoji => {
+      onReactPress(emoji.short_name);
+      closeModalEmoji();
+      onCloseMenuMessage();
+    },
+    [closeModalEmoji, onCloseMenuMessage, onReactPress],
+  );
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
       <View style={styles.container}>
@@ -618,8 +657,8 @@ const ConversationScreen = () => {
           style={styles.modalMenuMessage}
           avoidKeyboard
           onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.backdrop}
-          backdropOpacity={0.9}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
           swipeDirection={['down']}
           onSwipeComplete={onCloseMenuMessage}
           onBackdropPress={onCloseMenuMessage}
@@ -634,6 +673,8 @@ const ConversationScreen = () => {
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={selectedMessage?.sender_id === userData.user_id}
             canPin={userRole === 'Admin' || userRole === 'Owner'}
+            openModalEmoji={openModalEmoji}
+            onEmojiSelected={onEmojiSelected}
           />
         </Modal>
         <Modal
@@ -641,8 +682,8 @@ const ConversationScreen = () => {
           style={styles.modalMenuMessage}
           avoidKeyboard
           onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.backdrop}
-          backdropOpacity={0.9}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
           swipeDirection={['down']}
           onSwipeComplete={onCloseMenuPinPost}
           onBackdropPress={onCloseMenuPinPost}
@@ -680,8 +721,8 @@ const ConversationScreen = () => {
           style={styles.modalGallery}
           avoidKeyboard
           onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.backdrop}
-          backdropOpacity={0.9}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
           onSwipeComplete={toggleGallery}
           swipeDirection={['down']}
           backdropTransitionOutTiming={0}
@@ -690,6 +731,26 @@ const ConversationScreen = () => {
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle title="Photos" onClosePress={toggleGallery} />
             <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
+          </View>
+        </Modal>
+        <Modal
+          isVisible={isOpenModalEmoji}
+          style={styles.modalGallery}
+          avoidKeyboard
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
+          onSwipeComplete={closeModalEmoji}
+          swipeDirection={['down']}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
+          <View
+            style={[styles.galleryView, {backgroundColor: colors.background}]}>
+            <BottomSheetHandle
+              title="Reaction"
+              onClosePress={closeModalEmoji}
+            />
+            <EmojiPicker onEmojiSelected={onEmojiSelected} />
           </View>
         </Modal>
       </View>
@@ -724,7 +785,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollDownWrap: {
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
   iconScrollDown: {
@@ -737,6 +798,7 @@ const styles = StyleSheet.create({
   scrollDownAbs: {
     position: 'absolute',
     bottom: 20,
+    right: 20,
   },
   bottomView: {},
   footerMessage: {

@@ -13,4 +13,5 @@ export const AsyncKey = {
   channelPrivateKey: `${PrefixKey}_channel_private_key`,
   tokenExpire: `${PrefixKey}_token_expire_key`,
   refreshTokenExpire: `${PrefixKey}_refresh_token_expire_key`,
+  emojiKey: `${PrefixKey}_emoji_key`,
 };

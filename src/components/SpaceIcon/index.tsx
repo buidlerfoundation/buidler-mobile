@@ -1,11 +1,11 @@
 import Fonts from 'common/Fonts';
+import Emoji from 'components/Emoji';
 import {spaceNameToAvatar} from 'helpers/ChannelHelper';
 import ImageHelper from 'helpers/ImageHelper';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import {Space} from 'models';
 import React, {memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
-import Emoji from 'react-native-emoji';
 import FastImage from 'react-native-fast-image';
 
 type SpaceIconProps = {
