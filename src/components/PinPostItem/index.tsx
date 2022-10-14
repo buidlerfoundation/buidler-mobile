@@ -1,4 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
+import {addReact, removeReact} from 'actions/ReactActions';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
@@ -13,10 +14,12 @@ import {
   normalizeMessageTextPlain,
   normalizeUserName,
 } from 'helpers/MessageHelper';
+import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useTeamUserData from 'hook/useTeamUserData';
 import useThemeColor from 'hook/useThemeColor';
+import useUserData from 'hook/useUserData';
 import {TaskData, UserData} from 'models';
 import numeral from 'numeral';
 import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
@@ -93,6 +96,7 @@ const PinPostItem = ({
   style,
   onLongPress,
 }: PinPostItemProps) => {
+  const dispatch = useAppDispatch();
   const contentRef = useRef();
   const navigation = useNavigation();
   const {width} = useWindowDimensions();
@@ -109,6 +113,7 @@ const PinPostItem = ({
     () => pinPost.status === 'archived',
     [pinPost.status],
   );
+  const userData = useUserData();
   const creator = useMemo(
     () => teamUserData.find(el => el.user_id === pinPost.message_sender_id),
     [pinPost.message_sender_id, teamUserData],
@@ -131,6 +136,19 @@ const PinPostItem = ({
   const handleLongPress = useCallback(
     () => onLongPress?.(pinPost),
     [onLongPress, pinPost],
+  );
+  const handleReactPress = useCallback(
+    (reactName: string) => {
+      const isExisted = !!reacts?.find(
+        (react: any) => react.reactName === reactName && react?.isReacted,
+      );
+      if (isExisted) {
+        dispatch(removeReact(pinPost.task_id, reactName, userData?.user_id));
+      } else {
+        dispatch(addReact(pinPost.task_id, reactName, userData?.user_id));
+      }
+    },
+    [dispatch, pinPost.task_id, reacts, userData?.user_id],
   );
   if (!creator) return null;
   return (
@@ -252,7 +270,11 @@ const PinPostItem = ({
           style={styles.attachmentWrap}
         />
       )}
-      <ReactView style={styles.attachmentWrap} reacts={reacts} />
+      <ReactView
+        style={styles.attachmentWrap}
+        reacts={reacts}
+        onReactPress={handleReactPress}
+      />
       {pinPost.total_messages > 0 && (
         <View style={styles.replyWrap}>
           <View style={styles.rowReply}>

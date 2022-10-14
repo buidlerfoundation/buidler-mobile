@@ -543,10 +543,11 @@ const ConversationScreen = () => {
   }, [navigation]);
   const openModalEmoji = useCallback(() => {
     onCloseMenuMessage();
+    onCloseMenuPinPost();
     setTimeout(() => {
       setOpenModalEmoji(true);
     }, 400);
-  }, [onCloseMenuMessage]);
+  }, [onCloseMenuMessage, onCloseMenuPinPost]);
   const closeModalEmoji = useCallback(() => {
     setOpenModalEmoji(false);
   }, []);
@@ -573,8 +574,9 @@ const ConversationScreen = () => {
       onReactPress(emoji.short_name);
       closeModalEmoji();
       onCloseMenuMessage();
+      onCloseMenuPinPost();
     },
-    [closeModalEmoji, onCloseMenuMessage, onReactPress],
+    [closeModalEmoji, onCloseMenuMessage, onCloseMenuPinPost, onReactPress],
   );
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
@@ -714,6 +716,8 @@ const ConversationScreen = () => {
                 selectedMessage?.sender_id === userData.user_id) &&
               selectedMessage?.task?.status !== 'archived'
             }
+            openModalEmoji={openModalEmoji}
+            onEmojiSelected={onEmojiSelected}
           />
         </Modal>
         <Modal

@@ -1,4 +1,4 @@
-import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
+import React, {memo, useEffect, useMemo, useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
@@ -7,28 +7,7 @@ import useThemeColor from 'hook/useThemeColor';
 import AppDimension from 'common/AppDimension';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
-import Emoji from 'components/Emoji';
-
-type EmojiItemProps = {
-  item: any;
-  onEmojiSelected?: (item: any) => void;
-};
-
-const EmojiItem = ({item, onEmojiSelected}: EmojiItemProps) => {
-  const {colors} = useThemeColor();
-  const onPress = useCallback(() => {
-    onEmojiSelected?.(item.emoji);
-  }, [item, onEmojiSelected]);
-  return (
-    <Touchable
-      useReactNative
-      style={[styles.emojiWrap, {backgroundColor: colors.border}]}
-      disabled={!item.emoji}
-      onPress={onPress}>
-      {item.emoji && <Emoji name={item?.emoji?.short_name} />}
-    </Touchable>
-  );
-};
+import MenuEmojiItem from 'components/MenuEmojiItem';
 
 type MenuMessageProps = {
   onReply: () => void;
@@ -75,7 +54,11 @@ const MenuMessage = ({
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
       <View style={styles.menuEmoji}>
         {emojiData.map(el => (
-          <EmojiItem key={el.key} item={el} onEmojiSelected={onEmojiSelected} />
+          <MenuEmojiItem
+            key={el.key}
+            item={el}
+            onEmojiSelected={onEmojiSelected}
+          />
         ))}
         <Touchable
           useReactNative

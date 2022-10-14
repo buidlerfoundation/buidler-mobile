@@ -31,6 +31,9 @@ import ChannelTitle from 'components/ChannelTitle';
 import useChannelId from 'hook/useChannelId';
 import useCommunityId from 'hook/useCommunityId';
 import {setCurrentChannel} from 'actions/UserActions';
+import BottomSheetHandle from 'components/BottomSheetHandle';
+import EmojiPicker from 'components/EmojiPicker';
+import {addReact, removeReact} from 'actions/ReactActions';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
@@ -44,7 +47,9 @@ const PinPostScreen = () => {
   const loadMoreTask = useAppSelector(state => taskMoreSelector(state));
   const {canMoreTask} = usePinPostData();
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
+  const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const userData = useAppSelector(state => state.user.userData);
+  const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userRole = useUserRole();
   const [selectedPinPost, setSelectedPinPost] = useState<TaskData>(null);
   const openMenuPinPost = useCallback((pinPost: TaskData) => {
@@ -170,6 +175,39 @@ const PinPostScreen = () => {
     onCloseMenuPinPost,
     selectedPinPost?.task_id,
   ]);
+  const openModalEmoji = useCallback(() => {
+    onCloseMenuPinPost();
+    setTimeout(() => {
+      setOpenModalEmoji(true);
+    }, 400);
+  }, [onCloseMenuPinPost]);
+  const closeModalEmoji = useCallback(() => {
+    setOpenModalEmoji(false);
+  }, []);
+  const onReactPress = useCallback(
+    (name: string) => {
+      const reacts = reactData[selectedPinPost?.task_id];
+      const isExisted = !!reacts?.find(
+        (react: any) => react.reactName === name && react?.isReacted,
+      );
+      if (isExisted) {
+        dispatch(
+          removeReact(selectedPinPost?.task_id, name, userData?.user_id),
+        );
+      } else {
+        dispatch(addReact(selectedPinPost?.task_id, name, userData?.user_id));
+      }
+    },
+    [dispatch, reactData, selectedPinPost?.task_id, userData?.user_id],
+  );
+  const onEmojiSelected = useCallback(
+    emoji => {
+      onReactPress(emoji.short_name);
+      closeModalEmoji();
+      onCloseMenuPinPost();
+    },
+    [closeModalEmoji, onCloseMenuPinPost, onReactPress],
+  );
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -231,7 +269,25 @@ const PinPostScreen = () => {
             selectedPinPost?.status !== 'archived'
           }
           canJumpMessage
+          openModalEmoji={openModalEmoji}
+          onEmojiSelected={onEmojiSelected}
         />
+      </Modal>
+      <Modal
+        isVisible={isOpenModalEmoji}
+        style={styles.modalMenuMessage}
+        avoidKeyboard
+        onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+        backdropColor={colors.black}
+        backdropOpacity={0.75}
+        onSwipeComplete={closeModalEmoji}
+        swipeDirection={['down']}
+        backdropTransitionOutTiming={0}
+        hideModalContentWhileAnimating>
+        <View style={[styles.emojiView, {backgroundColor: colors.background}]}>
+          <BottomSheetHandle title="Reaction" onClosePress={closeModalEmoji} />
+          <EmojiPicker onEmojiSelected={onEmojiSelected} />
+        </View>
       </Modal>
     </View>
   );
@@ -259,6 +315,11 @@ const styles = StyleSheet.create({
   modalMenuMessage: {
     justifyContent: 'flex-end',
     margin: 0,
+  },
+  emojiView: {
+    height: '90%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
 });
 export default memo(PinPostScreen);
