@@ -1,7 +1,7 @@
 import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Space} from 'models';
-import React, {memo, useCallback, useState} from 'react';
+import React, {memo, useCallback, useMemo, useState} from 'react';
 import {View, StyleSheet, Text, FlatList} from 'react-native';
 import SpaceItem from './SpaceItem';
 import useThemeColor from 'hook/useThemeColor';
@@ -14,11 +14,11 @@ import {useNavigation} from '@react-navigation/native';
 import useCommunityId from 'hook/useCommunityId';
 import AppStyles from 'common/AppStyles';
 import numeral from 'numeral';
-import SVG from 'common/SVG';
 import api from 'services/api';
 import Modal from 'react-native-modal';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
+import SVG from 'common/SVG';
 
 const CommunityHeader = () => {
   const {colors} = useThemeColor();
@@ -48,6 +48,12 @@ const ChannelScreen = () => {
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
   const communityId = useCommunityId();
+  const community = useCurrentCommunity();
+  const communityVerified = useMemo(
+    () => community.is_verified,
+    [community.is_verified],
+  );
+  const isOwner = useMemo(() => community.role === 'Owner', [community.role]);
   const [inviteLink, setInviteLink] = useState('');
   const [isOpenInviteModal, setOpenInviteModal] = useState(false);
   const {colors} = useThemeColor();
@@ -65,16 +71,20 @@ const ChannelScreen = () => {
         style={[styles.communityInfo, {backgroundColor: colors.background}]}>
         <View
           style={[styles.communityCoverWrap, {backgroundColor: colors.border}]}>
-          <View style={styles.badgeCommunity}>
-            <Text
-              style={[
-                AppStyles.TextBold17,
-                {color: colors.text, marginRight: 8},
-              ]}>
-              Not verified
-            </Text>
-            <SVG.IconInfo />
-          </View>
+          {(communityVerified || isOwner) && (
+            <View style={styles.badgeCommunity}>
+              <Text
+                style={[
+                  AppStyles.TextSemi15,
+                  {color: colors.text, marginRight: communityVerified ? 8 : 0},
+                ]}>
+                {communityVerified
+                  ? community.team_display_name
+                  : 'Verify your community'}
+              </Text>
+              {communityVerified && <SVG.IconVerifyBadge fill={colors.text} />}
+            </View>
+          )}
         </View>
         <View style={[styles.rowMemberWrap, {marginTop: 15}]}>
           <View style={[styles.dot, {backgroundColor: colors.lightText}]} />
@@ -91,7 +101,7 @@ const ChannelScreen = () => {
         <Touchable
           style={[styles.btnInvite, {backgroundColor: colors.border}]}
           onPress={onInvitePress}>
-          <Text style={[AppStyles.TextSemi17, {color: colors.text}]}>
+          <Text style={[AppStyles.TextSemi15, {color: colors.text}]}>
             Invite member
           </Text>
         </Touchable>
@@ -103,6 +113,9 @@ const ChannelScreen = () => {
     colors.lightText,
     colors.success,
     colors.text,
+    community.team_display_name,
+    communityVerified,
+    isOwner,
     onInvitePress,
     teamUserData,
   ]);
@@ -229,9 +242,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#191919B2',
     borderRadius: 5,
-    paddingLeft: 10,
-    paddingRight: 8,
-    height: 32,
+    paddingHorizontal: 10,
+    height: 30,
   },
   modalInvite: {
     borderRadius: 15,
