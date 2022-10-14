@@ -104,11 +104,11 @@ const CreatePasswordScreen = ({route}: Props) => {
           </View>
         </View>
         <View style={styles.bottom}>
-          <Touchable style={styles.buttonSecureDes}>
+          {/* <Touchable style={styles.buttonSecureDes}>
             <Text style={[styles.secureDes, {color: colors.subtext}]}>
               How does Notable store your password?
             </Text>
-          </Touchable>
+          </Touchable> */}
           <Touchable
             style={[styles.buttonNext, {backgroundColor: colors.primary}]}
             onPress={onNextPress}>
