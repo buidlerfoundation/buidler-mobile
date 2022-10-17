@@ -7842,7 +7842,7 @@ prompts@^2.0.1, prompts@^2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@*, prop-types@^15.5.10, prop-types@^15.5.7, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
+prop-types@*, prop-types@15.8.1, prop-types@^15.5.10, prop-types@^15.5.7, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -8361,6 +8361,11 @@ recast@^0.20.4:
     source-map "~0.6.1"
     tslib "^2.0.1"
 
+recyclerlistview-gridlayoutprovider@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/recyclerlistview-gridlayoutprovider/-/recyclerlistview-gridlayoutprovider-1.0.1.tgz#c0a6e06aa9f791391241975e3cd8501a928c9fba"
+  integrity sha512-lwL3KrFlPRkEmSR1WgeQc78QHN/KJgBAnYhaMEBjQXTd4OSXURvvLyK6Fgz3su9ZTEaLgSFhrrnks+aGefAQ9Q==
+
 recyclerlistview@^3.0.5:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/recyclerlistview/-/recyclerlistview-3.0.5.tgz#50bf5bcaa401d56bb6bb264354083f4d424408eb"
@@ -8368,6 +8373,15 @@ recyclerlistview@^3.0.5:
   dependencies:
     lodash.debounce "4.0.8"
     prop-types "15.5.8"
+    ts-object-utils "0.0.5"
+
+recyclerlistview@^4.1.0-beta.1:
+  version "4.1.0-beta.1"
+  resolved "https://registry.yarnpkg.com/recyclerlistview/-/recyclerlistview-4.1.0-beta.1.tgz#40fcbd9c47d923e7bddf62cf7da4afb191e604a6"
+  integrity sha512-wwsdeySHfNODdHvo12l2d8OaGsA7D4m4ttxJJBsHSaqlb4MTQYrQ/srUQCHUWAMtJntWNFmRxBglrLV2ACk+nw==
+  dependencies:
+    lodash.debounce "4.0.8"
+    prop-types "15.8.1"
     ts-object-utils "0.0.5"
 
 redux-logger@^3.0.6:

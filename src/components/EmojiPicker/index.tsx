@@ -1,10 +1,16 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
-  FlatList,
   useWindowDimensions,
 } from 'react-native';
 import emoji from 'emoji-datasource';
@@ -13,16 +19,11 @@ import {AsyncKey} from 'common/AppStorage';
 import useThemeColor from 'hook/useThemeColor';
 import AppStyles from 'common/AppStyles';
 import Touchable from 'components/Touchable';
+import {RecyclerListView, DataProvider} from 'recyclerlistview';
+import StickyContainer from 'recyclerlistview/sticky';
+import AppGridLayoutProvider from 'components/AppGridLayoutProvider';
 
 export const Categories = {
-  all: {
-    symbol: null,
-    name: 'All',
-  },
-  history: {
-    symbol: '🕘',
-    name: 'Recently used',
-  },
   emotion: {
     symbol: '😀',
     name: 'Smileys & Emotion',
@@ -103,7 +104,7 @@ const TabBar = ({activeCategory, onPress, width}) => {
   });
 };
 
-const EmojiCell = ({emoji, colSize, onEmojiPress}) => {
+const EmojiCell = memo(({emoji, colSize, onEmojiPress}) => {
   const onPress = useCallback(() => {
     onEmojiPress?.(emoji);
   }, [emoji, onEmojiPress]);
@@ -122,7 +123,7 @@ const EmojiCell = ({emoji, colSize, onEmojiPress}) => {
       </Text>
     </Touchable>
   );
-};
+});
 
 type EmojiPickerProps = {
   columns?: number;
@@ -130,71 +131,84 @@ type EmojiPickerProps = {
 };
 
 const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
-  const listRef = useRef<FlatList>();
+  const listRef = useRef<RecyclerListView>();
   const {width} = useWindowDimensions();
   const {colors} = useThemeColor();
   const colSize = useMemo(() => Math.floor(width / columns), [columns, width]);
-  const [emojiList, setEmojiList] = useState(null);
+  const [emojiList, setEmojiList] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(Categories.emotion);
-  const [history, setHistory] = useState([]);
   const [query, setQuery] = useState('');
   const initEmojiList = useCallback(() => {
-    const list = {};
+    const list = [{type: 'error', unified: 'error'}];
     categoryKeys.forEach(c => {
-      let name = Categories[c].name;
-      list[name] = sortEmoji(emojiByCategory(name));
+      const name = Categories[c].name;
+      list.push({type: 'category', unified: name, key: c});
+      list.push(
+        ...sortEmoji(emojiByCategory(name)).map(el => ({...el, type: 'emoji'})),
+      );
     });
     setEmojiList(list);
   }, []);
+  const categoryList = useMemo(
+    () =>
+      emojiList.reduce((res, val, idx) => {
+        if (val.type === 'category') {
+          res.push({idx, ...val});
+        }
+        return res;
+      }, []),
+    [emojiList],
+  );
   useEffect(() => {
     initEmojiList();
-    AsyncStorage.getItem(AsyncKey.emojiKey).then(res => {
-      if (res) {
-        setHistory(JSON.parse(res));
-      }
-    });
   }, [initEmojiList]);
-  const handleTabSelect = useCallback(category => {
-    setCurrentCategory(category);
-    setQuery('');
-    listRef.current?.scrollToOffset({x: 0, y: 0, animated: false});
-  }, []);
+  const handleTabSelect = useCallback(
+    category => {
+      setCurrentCategory(category);
+      setQuery('');
+      const index = categoryList.find(el => el.unified === category.name)?.idx;
+      listRef.current.scrollToIndex(index);
+    },
+    [categoryList],
+  );
   const onQueryChange = useCallback(text => setQuery(text), []);
-  const dataEmoji = useCallback(() => {
-    let list;
-    const name = currentCategory.name;
-    if (query) {
-      const filtered = emoji.filter(e => {
-        let display = false;
-        e.short_names.forEach(name => {
-          if (name.includes(query.toLowerCase())) display = true;
-        });
-        return display;
-      });
-      list = sortEmoji(filtered);
-    } else if (name === Categories.history.name) {
-      list = history;
-    } else {
-      list = emojiList?.[name];
-    }
-    return list;
-  }, [currentCategory.name, emojiList, history, query]);
   const addToHistoryAsync = useCallback(async emoji => {
     const previous = await AsyncStorage.getItem(AsyncKey.emojiKey);
-
     let value = [];
+    const time = new Date().getTime();
+    let existed = false;
+    const record = Object.assign({}, emoji, {
+      count: 1,
+      timestamp: time,
+    });
     if (!previous) {
-      let record = Object.assign({}, emoji, {count: 1});
       value.push(record);
     } else {
       let json = JSON.parse(previous);
-      json = json.filter(el => el.unified !== emoji.unified);
-      let record = Object.assign({}, emoji, {count: 1});
-      value = [record, ...json];
+      json = json.map(el => {
+        if (el.unified === emoji.unified) {
+          existed = true;
+          return {
+            ...el,
+            count: el.count + 1,
+            timestamp: time,
+          };
+        }
+        return el;
+      });
+      if (existed) {
+        value = json;
+      } else {
+        value = [record, ...json];
+      }
+      value.sort((v1, v2) => {
+        if (v1.count < v2.count) return 1;
+        if (v1.count > v2.count) return -1;
+        if (v1.timestamp < v2.timestamp) return 1;
+        return -1;
+      });
     }
-
     AsyncStorage.setItem(AsyncKey.emojiKey, JSON.stringify(value));
-    setHistory(value);
   }, []);
   const onEmojiPress = useCallback(
     item => {
@@ -203,11 +217,63 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
     },
     [addToHistoryAsync, onEmojiSelected],
   );
-  const renderEmojiCell = useCallback(
-    ({item}) => (
-      <EmojiCell emoji={item} onEmojiPress={onEmojiPress} colSize={colSize} />
-    ),
-    [colSize, onEmojiPress],
+  const renderRow = useCallback(
+    (type, data) => {
+      if (type === 'error') return <View />;
+      if (type === 'emoji') {
+        return (
+          <EmojiCell
+            emoji={data}
+            onEmojiPress={onEmojiPress}
+            colSize={colSize}
+          />
+        );
+      }
+      return (
+        <View
+          style={[styles.titleContainer, {backgroundColor: colors.background}]}>
+          <Text
+            style={[
+              AppStyles.TextMed15,
+              {
+                color: colors.text,
+              },
+            ]}>
+            {data.unified}
+          </Text>
+        </View>
+      );
+    },
+    [colSize, colors.background, colors.text, onEmojiPress],
+  );
+  const dataProvider = useMemo(
+    () =>
+      new DataProvider((r1, r2) => {
+        return r1.unified !== r2.unified;
+      }).cloneWithRows(emojiList),
+    [emojiList],
+  );
+  const layoutProvider = useMemo(
+    () => new AppGridLayoutProvider(dataProvider),
+    [dataProvider],
+  );
+  const onVisibleIndicesChanged = useCallback(
+    visibleList => {
+      const firstVisibleIndex = visibleList?.[0];
+      const list = [...categoryList];
+      const reverseList = list.sort((v1, v2) => {
+        if (v1.idx < v2.idx) return 1;
+        return -1;
+      });
+      const visibleCategory = reverseList.find(
+        el => el.idx <= firstVisibleIndex,
+      );
+      const cate = Categories?.[visibleCategory?.key || ''];
+      if (cate) {
+        setCurrentCategory(cate);
+      }
+    },
+    [categoryList],
   );
   return (
     <View style={styles.frame}>
@@ -220,43 +286,38 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
       </View>
       <View style={{flex: 1}}>
         <View
-          style={[
-            styles.searchBarContainer,
-            {
-              backgroundColor: colors.activeBackgroundLight,
-              borderColor: colors.border,
-            },
-          ]}>
-          <TextInput
-            style={[styles.search, AppStyles.TextMed15, {color: colors.text}]}
-            placeholder="Search"
-            autoCorrect={false}
-            value={query}
-            onChangeText={onQueryChange}
-            placeholderTextColor={colors.subtext}
-            keyboardAppearance="dark"
-            textAlignVertical="center"
-            returnKeyType="done"
-          />
-        </View>
-        <View style={{flex: 1}}>
-          <View style={styles.container}>
-            <FlatList
-              style={styles.listEmoji}
-              contentContainerStyle={{
-                paddingBottom: colSize,
-                alignItems: 'center',
-              }}
-              data={dataEmoji()}
-              renderItem={renderEmojiCell}
-              numColumns={columns}
-              keyboardDismissMode="on-drag"
-              ref={listRef}
-              keyExtractor={item => item.unified}
-              initialNumToRender={60}
-              windowSize={2}
+          style={[styles.searchBarWrap, {backgroundColor: colors.background}]}>
+          <View
+            style={[
+              styles.searchBarContainer,
+              {
+                backgroundColor: colors.activeBackgroundLight,
+                borderColor: colors.border,
+              },
+            ]}>
+            <TextInput
+              style={[styles.search, AppStyles.TextMed15, {color: colors.text}]}
+              placeholder="Search"
+              autoCorrect={false}
+              value={query}
+              onChangeText={onQueryChange}
+              placeholderTextColor={colors.subtext}
+              keyboardAppearance="dark"
+              textAlignVertical="center"
+              returnKeyType="done"
             />
           </View>
+        </View>
+        <View style={styles.container}>
+          <StickyContainer stickyHeaderIndices={categoryList.map(el => el.idx)}>
+            <RecyclerListView
+              ref={ref => (listRef.current = ref)}
+              rowRenderer={renderRow}
+              dataProvider={dataProvider}
+              layoutProvider={layoutProvider}
+              onVisibleIndicesChanged={onVisibleIndicesChanged}
+            />
+          </StickyContainer>
         </View>
       </View>
     </View>
@@ -278,8 +339,11 @@ const styles = StyleSheet.create({
   listEmoji: {
     flex: 1,
   },
+  searchBarWrap: {
+    padding: 8,
+    zIndex: 2,
+  },
   searchBarContainer: {
-    margin: 8,
     borderRadius: 5,
     borderWidth: 1,
     height: 40,
@@ -291,9 +355,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
   },
   sectionHeader: {
     margin: 8,
@@ -301,6 +362,7 @@ const styles = StyleSheet.create({
     width: '100%',
     color: '#8F8F8F',
   },
+  titleContainer: {justifyContent: 'center', height: 30, paddingHorizontal: 8},
 });
 
-export default EmojiPicker;
+export default memo(EmojiPicker);

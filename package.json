@@ -68,6 +68,8 @@
     "react-native-webview": "^11.18.1",
     "react-redux": "^8.0.2",
     "readable-stream": "^1.0.33",
+    "recyclerlistview": "^4.1.0-beta.1",
+    "recyclerlistview-gridlayoutprovider": "^1.0.1",
     "redux": "^4.2.0",
     "redux-thunk": "^2.3.0",
     "rn-nodeify": "^10.3.0",
