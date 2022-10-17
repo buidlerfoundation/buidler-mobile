@@ -243,7 +243,10 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
           <View style={styles.container}>
             <FlatList
               style={styles.listEmoji}
-              contentContainerStyle={{paddingBottom: colSize}}
+              contentContainerStyle={{
+                paddingBottom: colSize,
+                alignItems: 'center',
+              }}
               data={dataEmoji()}
               renderItem={renderEmojiCell}
               numColumns={columns}

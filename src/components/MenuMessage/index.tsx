@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: AppDimension.extraBottom + 12,
+    minHeight: 350,
   },
   groupMenu: {
     borderRadius: 5,

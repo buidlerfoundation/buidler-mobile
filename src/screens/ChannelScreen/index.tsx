@@ -54,6 +54,14 @@ const ChannelScreen = () => {
     [community.is_verified],
   );
   const isOwner = useMemo(() => community.role === 'Owner', [community.role]);
+  const showBadge = useMemo(
+    () => isOwner || communityVerified,
+    [communityVerified, isOwner],
+  );
+  const showCover = useMemo(
+    () => showBadge || community.team_cover,
+    [community.team_cover, showBadge],
+  );
   const [inviteLink, setInviteLink] = useState('');
   const [isOpenInviteModal, setOpenInviteModal] = useState(false);
   const {colors} = useThemeColor();
@@ -69,23 +77,33 @@ const ChannelScreen = () => {
     return (
       <View
         style={[styles.communityInfo, {backgroundColor: colors.background}]}>
-        <View
-          style={[styles.communityCoverWrap, {backgroundColor: colors.border}]}>
-          {(communityVerified || isOwner) && (
-            <View style={styles.badgeCommunity}>
-              <Text
-                style={[
-                  AppStyles.TextSemi15,
-                  {color: colors.text, marginRight: communityVerified ? 8 : 0},
-                ]}>
-                {communityVerified
-                  ? community.team_display_name
-                  : 'Verify your community'}
-              </Text>
-              {communityVerified && <SVG.IconVerifyBadge fill={colors.text} />}
-            </View>
-          )}
-        </View>
+        {showCover && (
+          <View
+            style={[
+              styles.communityCoverWrap,
+              {backgroundColor: colors.border},
+            ]}>
+            {showBadge && (
+              <View style={styles.badgeCommunity}>
+                <Text
+                  style={[
+                    AppStyles.TextSemi15,
+                    {
+                      color: colors.text,
+                      marginRight: communityVerified ? 8 : 0,
+                    },
+                  ]}>
+                  {communityVerified
+                    ? community.team_display_name
+                    : 'Verify your community'}
+                </Text>
+                {communityVerified && (
+                  <SVG.IconVerifyBadge fill={colors.text} />
+                )}
+              </View>
+            )}
+          </View>
+        )}
         <View style={[styles.rowMemberWrap, {marginTop: 15}]}>
           <View style={[styles.dot, {backgroundColor: colors.lightText}]} />
           <Text style={[AppStyles.TextSemi15, {color: colors.lightText}]}>
@@ -115,8 +133,9 @@ const ChannelScreen = () => {
     colors.text,
     community.team_display_name,
     communityVerified,
-    isOwner,
     onInvitePress,
+    showBadge,
+    showCover,
     teamUserData,
   ]);
   const renderFooter = useCallback(() => {

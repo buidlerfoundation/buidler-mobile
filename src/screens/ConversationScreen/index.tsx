@@ -609,6 +609,7 @@ const ConversationScreen = () => {
           }
           onEndReached={onEndReached}
           keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
           renderSectionFooter={renderFooter}
           onScroll={onListScroll}
           onScrollToIndexFailed={onScrollToIndexFailed}
