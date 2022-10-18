@@ -22,6 +22,7 @@ import Touchable from 'components/Touchable';
 import {RecyclerListView, DataProvider} from 'recyclerlistview';
 import StickyContainer from 'recyclerlistview/sticky';
 import AppGridLayoutProvider from 'components/AppGridLayoutProvider';
+import AppDimension from 'common/AppDimension';
 
 export const Categories = {
   emotion: {
@@ -246,12 +247,20 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
     },
     [colSize, colors.background, colors.text, onEmojiPress],
   );
+  const emojiListFiltered = useMemo(() => {
+    if (query) {
+      return emojiList.filter(
+        el => !!el.short_name?.includes?.(query.toLowerCase()),
+      );
+    }
+    return emojiList;
+  }, [emojiList, query]);
   const dataProvider = useMemo(
     () =>
       new DataProvider((r1, r2) => {
         return r1.unified !== r2.unified;
-      }).cloneWithRows(emojiList),
-    [emojiList],
+      }).cloneWithRows(emojiListFiltered),
+    [emojiListFiltered],
   );
   const layoutProvider = useMemo(
     () => new AppGridLayoutProvider(dataProvider),
@@ -274,6 +283,10 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
       }
     },
     [categoryList],
+  );
+  const renderFooter = useCallback(
+    () => <View style={{height: 8 + AppDimension.extraBottom}} />,
+    [],
   );
   return (
     <View style={styles.frame}>
@@ -316,6 +329,9 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
               dataProvider={dataProvider}
               layoutProvider={layoutProvider}
               onVisibleIndicesChanged={onVisibleIndicesChanged}
+              renderFooter={renderFooter}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
             />
           </StickyContainer>
         </View>
