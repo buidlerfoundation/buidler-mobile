@@ -157,12 +157,13 @@ const ConversationScreen = () => {
   useEffect(() => {
     if (route.params?.jumpMessageId) {
       handleAroundMessage(route.params?.jumpMessageId);
-    } else {
+    } else if (!route.params?.fromNotification) {
       handleGetLatestMessage();
     }
   }, [
     handleAroundMessage,
     handleGetLatestMessage,
+    route.params?.fromNotification,
     route.params?.jumpMessageId,
   ]);
   const scrollDown = useCallback(() => {

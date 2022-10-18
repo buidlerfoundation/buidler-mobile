@@ -8,6 +8,7 @@ import store from '../store';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import {setCurrentTeam} from 'actions/UserActions';
+import {getMessages} from 'actions/MessageActions';
 
 type NotificationPayload = {data: any; type: string};
 
@@ -59,6 +60,11 @@ class PushNotificationHelper {
 
       const teamNotification = team.find(t => t.team_id === team_id);
       const channelNotification = channel.find(c => c.channel_id === entity_id);
+      if (entity_type === 'channel') {
+        await store.dispatch(
+          getMessages(entity_id, 'Public', undefined, undefined, true),
+        );
+      }
       if (currentChannelId === entity_id) {
         // Do nothing
       } else if (currentTeamId === team_id) {

@@ -377,7 +377,7 @@ class SocketUtil {
       const {user_id, team_id} = data;
       const {userData, currentTeamId} = store.getState().user;
       if (team_id === currentTeamId && user_id === userData.user_id) {
-        window.location.reload();
+        // TODO handle when user has been removed from community
       } else {
         store.dispatch({
           type: actionTypes.REMOVE_MEMBER_SUCCESS,
