@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {memo, useEffect, useState} from 'react';
 import {Calendar} from 'react-native-calendars';
 import Fonts from 'common/Fonts';
 import moment from 'moment';
@@ -57,4 +57,4 @@ const CalendarPicker = ({onDateChange, currentDate}: CalendarPickerProps) => {
   );
 };
 
-export default CalendarPicker;
+export default memo(CalendarPicker);

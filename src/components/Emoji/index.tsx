@@ -1,5 +1,5 @@
 import {charFromEmojiObject} from 'components/EmojiPicker';
-import React, {useMemo} from 'react';
+import React, {memo, useMemo} from 'react';
 import {Text, TextStyle} from 'react-native';
 import emoji from 'emoji-datasource';
 
@@ -18,4 +18,4 @@ const Emoji = ({name, style}: EmojiProps) => {
   );
 };
 
-export default Emoji;
+export default memo(Emoji);

@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {memo, useCallback, useMemo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import Fonts from 'common/Fonts';
 import useThemeColor from 'hook/useThemeColor';
@@ -59,4 +59,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PasswordLevel;
+export default memo(PasswordLevel);

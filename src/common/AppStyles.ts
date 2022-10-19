@@ -16,6 +16,11 @@ const AppStyles = StyleSheet.create({
     fontSize: 17,
     fontFamily: Fonts.SemiBold,
   },
+  TextSemi16: {
+    fontSize: 16,
+    fontFamily: Fonts.SemiBold,
+    lineHeight: 22,
+  },
   TextSemi15: {
     fontSize: 15,
     fontFamily: Fonts.SemiBold,

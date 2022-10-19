@@ -1,7 +1,7 @@
 import Emoji from 'components/Emoji';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
-import React, {useCallback} from 'react';
+import React, {memo, useCallback} from 'react';
 import {StyleSheet} from 'react-native';
 
 type MenuEmojiItemProps = {
@@ -35,4 +35,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MenuEmojiItem;
+export default memo(MenuEmojiItem);

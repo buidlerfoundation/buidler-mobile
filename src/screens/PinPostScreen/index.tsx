@@ -34,6 +34,7 @@ import {setCurrentChannel} from 'actions/UserActions';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
+import MenuReport from 'components/MenuReport';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
@@ -46,6 +47,7 @@ const PinPostScreen = () => {
   const {colors} = useThemeColor();
   const loadMoreTask = useAppSelector(state => taskMoreSelector(state));
   const {canMoreTask} = usePinPostData();
+  const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const userData = useAppSelector(state => state.user.userData);
@@ -175,6 +177,15 @@ const PinPostScreen = () => {
     onCloseMenuPinPost,
     selectedPinPost?.task_id,
   ]);
+  const openMenuReport = useCallback(() => {
+    onCloseMenuPinPost();
+    setTimeout(() => {
+      setOpenMenuReport(true);
+    }, 400);
+  }, [onCloseMenuPinPost]);
+  const closeMenuReport = useCallback(() => {
+    setOpenMenuReport(false);
+  }, []);
   const openModalEmoji = useCallback(() => {
     onCloseMenuPinPost();
     setTimeout(() => {
@@ -271,6 +282,8 @@ const PinPostScreen = () => {
           canJumpMessage
           openModalEmoji={openModalEmoji}
           onEmojiSelected={onEmojiSelected}
+          onReport={openMenuReport}
+          canReport={selectedPinPost?.message_sender_id !== userData.user_id}
         />
       </Modal>
       <Modal
@@ -288,6 +301,23 @@ const PinPostScreen = () => {
           <BottomSheetHandle title="Reaction" onClosePress={closeModalEmoji} />
           <EmojiPicker onEmojiSelected={onEmojiSelected} />
         </View>
+      </Modal>
+      <Modal
+        isVisible={isOpenMenuReport}
+        style={styles.modalMenuMessage}
+        avoidKeyboard
+        onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+        backdropColor={colors.black}
+        backdropOpacity={0.75}
+        swipeDirection={['down']}
+        onSwipeComplete={closeMenuReport}
+        onBackdropPress={closeMenuReport}
+        backdropTransitionOutTiming={0}
+        hideModalContentWhileAnimating>
+        <MenuReport
+          onClose={closeMenuReport}
+          selectedPinPost={selectedPinPost}
+        />
       </Modal>
     </View>
   );

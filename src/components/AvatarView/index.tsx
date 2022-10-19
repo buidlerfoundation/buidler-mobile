@@ -59,15 +59,26 @@ const AvatarView = ({
           style={[
             styles.onlineStatus,
             {
-              backgroundColor: colors.success,
-              borderColor: colors.backgroundHeader,
+              backgroundColor: colors.backgroundHeader,
+              alignItems: 'center',
+              justifyContent: 'center',
               width: size > 25 ? 14 : 10,
               height: size > 25 ? 14 : 10,
               borderRadius: size > 25 ? 7 : 5,
-              borderWidth: 2,
+              overflow: 'hidden',
             },
-          ]}
-        />
+          ]}>
+          <View
+            style={[
+              {
+                backgroundColor: colors.success,
+                width: size > 25 ? 10 : 6,
+                height: size > 25 ? 10 : 6,
+                borderRadius: size > 25 ? 5 : 3,
+              },
+            ]}
+          />
+        </View>
       )}
     </View>
   );

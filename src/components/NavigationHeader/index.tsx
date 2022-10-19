@@ -1,6 +1,6 @@
 import AppDimension from 'common/AppDimension';
 import SVG from 'common/SVG';
-import React from 'react';
+import React, {memo} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {useTheme} from '@react-navigation/native';
 import Touchable from 'components/Touchable';
@@ -55,4 +55,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NavigationHeader;
+export default memo(NavigationHeader);

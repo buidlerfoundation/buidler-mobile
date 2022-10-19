@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {memo, useEffect, useState} from 'react';
 import {UriProps, SvgXml} from 'react-native-svg';
 
 const SvgUri = (props: UriProps) => {
@@ -22,4 +22,4 @@ const SvgUri = (props: UriProps) => {
   return <SvgXml xml={xml} override={props} />;
 };
 
-export default SvgUri;
+export default memo(SvgUri);

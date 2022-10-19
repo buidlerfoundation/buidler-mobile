@@ -2,7 +2,7 @@ import {useNavigation} from '@react-navigation/native';
 import {setCurrentChannel, setCurrentTeam} from 'actions/UserActions';
 import Fonts from 'common/Fonts';
 import ScreenID from 'common/ScreenID';
-import {extractBuidlerUrl} from 'helpers/LinkHelper';
+import {buidlerURL, extractBuidlerUrl} from 'helpers/LinkHelper';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useChannelId from 'hook/useChannelId';
@@ -16,9 +16,15 @@ type RenderHTMLProps = {
   html: string;
   onLinkPress?: () => void;
   defaultTextProps?: TextProps;
+  embeds?: boolean;
 };
 
-const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
+const RenderHTML = ({
+  html,
+  onLinkPress,
+  defaultTextProps,
+  embeds,
+}: RenderHTMLProps) => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
   const team = useAppSelector(state => state.user.team);
@@ -29,12 +35,13 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
   const handleLinkPress = useCallback(
     (e, href) => {
       e.stopPropagation();
+      if (embeds) return;
       onLinkPress?.();
-      if (href.includes('https://community.buidler.app')) {
+      if (href.includes(buidlerURL)) {
         if (href.includes('channels/user/')) {
           const userId = href.split('channels/user/')?.[1];
           if (userId) {
-            // Direct Message
+            navigation.navigate(ScreenID.UserScreen, {userId});
           }
           return;
         }
@@ -66,6 +73,7 @@ const RenderHTML = ({html, onLinkPress, defaultTextProps}: RenderHTMLProps) => {
       currentChannelId,
       currentCommunityId,
       dispatch,
+      embeds,
       navigation,
       onLinkPress,
       team,

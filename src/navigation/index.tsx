@@ -11,6 +11,7 @@ import EnterOTP from 'screens/EnterOTP';
 import useThemeColor from 'hook/useThemeColor';
 import PinPostDetailScreen from 'screens/PinPostDetailScreen';
 import HomeStack from './HomeStack';
+import UserScreen from 'screens/UserScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +45,7 @@ const RootNavigator = () => {
             animation: 'default',
           }}>
           <Stack.Screen name={ScreenID.EnterOTPScreen} component={EnterOTP} />
+          <Stack.Screen name={ScreenID.UserScreen} component={UserScreen} />
           <Stack.Screen
             name={ScreenID.PinPostDetailScreen}
             component={PinPostDetailScreen}

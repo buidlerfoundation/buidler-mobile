@@ -152,4 +152,15 @@ export const emojiDefault = [
   },
 ];
 
+export const reportData = [
+  'Spam',
+  'Violence',
+  'Pornography',
+  'Child Abuse',
+  'Copyright',
+  'Illegal Drugs',
+  'Personal Details',
+  'Other',
+];
+
 export default AppConfig;

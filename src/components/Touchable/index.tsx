@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {memo, useMemo} from 'react';
 import {TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
 import {TouchableOpacity as TouchableOpacity2} from 'react-native-gesture-handler';
 import {TouchableOpacityProps, View} from 'react-native';
@@ -31,4 +31,4 @@ const Touchable = (props: TouchableProps) => {
   );
 };
 
-export default Touchable;
+export default memo(Touchable);

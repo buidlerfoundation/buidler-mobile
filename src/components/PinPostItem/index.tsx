@@ -30,6 +30,7 @@ import {
   ViewStyle,
   useWindowDimensions,
   ActivityIndicator,
+  GestureResponderEvent,
 } from 'react-native';
 import {lastReplyFromNow, messageFromNow} from 'utils/DateUtils';
 
@@ -38,7 +39,7 @@ type UserReplyProps = {
   totalSender?: string;
 };
 
-const UserReply = ({data, totalSender}: UserReplyProps) => {
+const UserReply = memo(({data, totalSender}: UserReplyProps) => {
   const {colors} = useThemeColor();
   const moreCount = useMemo(
     () => (totalSender ? parseInt(totalSender || '') - (data?.length || 0) : 0),
@@ -79,7 +80,7 @@ const UserReply = ({data, totalSender}: UserReplyProps) => {
       )}
     </View>
   );
-};
+});
 
 type PinPostItemProps = {
   pinPost: TaskData;
@@ -87,6 +88,7 @@ type PinPostItemProps = {
   style?: ViewStyle;
   detail?: boolean;
   onLongPress?: () => void;
+  embedReport?: boolean;
 };
 
 const PinPostItem = ({
@@ -95,6 +97,7 @@ const PinPostItem = ({
   detail,
   style,
   onLongPress,
+  embedReport,
 }: PinPostItemProps) => {
   const dispatch = useAppDispatch();
   const contentRef = useRef();
@@ -150,35 +153,48 @@ const PinPostItem = ({
     },
     [dispatch, pinPost.task_id, reacts, userData?.user_id],
   );
+  const onUserPress = useCallback(
+    (e: GestureResponderEvent) => {
+      e.stopPropagation();
+      navigation.navigate(ScreenID.UserScreen, {
+        userId: pinPost.message_sender_id,
+      });
+    },
+    [navigation, pinPost.message_sender_id],
+  );
   if (!creator) return null;
   return (
     <Touchable
       style={[styles.container, style]}
       onPress={onPinPostPress}
-      disabled={detail}
+      disabled={detail || embedReport}
       onLongPress={handleLongPress}
       useWithoutFeedBack>
       <View style={[styles.header, embeds && {alignItems: 'flex-start'}]}>
-        <AvatarView
-          user={creator}
-          size={detail ? 35 : embeds ? 25 : 20}
+        <Touchable
+          onPress={onUserPress}
           style={{marginTop: embeds ? 4 : 0}}
-        />
+          useReactNative
+          disabled={embedReport}>
+          <AvatarView user={creator} size={detail ? 35 : embeds ? 25 : 20} />
+        </Touchable>
         <View
           style={[
             styles.userNameWrap,
             (detail || embeds) && styles.userNameDetailWrap,
           ]}>
-          <Text
-            style={[
-              styles.userName,
-              AppStyles.TextSemi15,
-              {color: colors.text},
-            ]}
-            ellipsizeMode="tail"
-            numberOfLines={1}>
-            {creator.user_name}
-          </Text>
+          <Touchable
+            style={styles.userName}
+            onPress={onUserPress}
+            useReactNative
+            disabled={embedReport}>
+            <Text
+              style={[AppStyles.TextSemi15, {color: colors.text}]}
+              ellipsizeMode="tail"
+              numberOfLines={1}>
+              {creator.user_name}
+            </Text>
+          </Touchable>
           {embeds && (
             <Text style={[AppStyles.TextMed11, {color: colors.subtext}]}>
               {messageFromNow(pinPost.message_created_at)}
@@ -249,8 +265,9 @@ const PinPostItem = ({
                     numberOfLines: 5,
                   }
             }
+            embeds={embedReport}
           />
-          {isMore && !detail && (
+          {isMore && !detail && !embedReport && (
             <Text style={[AppStyles.TextMed15, {color: colors.subtext}]}>
               View more
             </Text>
@@ -270,12 +287,14 @@ const PinPostItem = ({
           style={styles.attachmentWrap}
         />
       )}
-      <ReactView
-        style={styles.attachmentWrap}
-        reacts={reacts}
-        onReactPress={handleReactPress}
-      />
-      {pinPost.total_messages > 0 && (
+      {!embedReport && (
+        <ReactView
+          style={styles.attachmentWrap}
+          reacts={reacts}
+          onReactPress={handleReactPress}
+        />
+      )}
+      {!embedReport && pinPost.total_messages > 0 && (
         <View style={styles.replyWrap}>
           <View style={styles.rowReply}>
             <SVG.IconPinReply fill={colors.lightText} />
@@ -302,7 +321,7 @@ const PinPostItem = ({
           </View>
         </View>
       )}
-      {embeds && (
+      {!embedReport && embeds && (
         <Text
           style={[
             styles.viewPost,

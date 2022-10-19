@@ -2,7 +2,7 @@ import AppStyles from 'common/AppStyles';
 import ChannelIcon from 'components/ChannelIcon';
 import useThemeColor from 'hook/useThemeColor';
 import {Channel} from 'models';
-import React from 'react';
+import React, {memo} from 'react';
 import {View, StyleSheet, ViewStyle, Text} from 'react-native';
 
 type PinChannelViewProps = {
@@ -60,4 +60,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PinChannelView;
+export default memo(PinChannelView);

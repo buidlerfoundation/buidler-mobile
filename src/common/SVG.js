@@ -56,6 +56,9 @@ import IconTabHome from '../assets/images/ic_tab_home.svg';
 import IconArrowImport from '../assets/images/ic_arrow_import.svg';
 import IconScrollDown from '../assets/images/ic_scroll_down.svg';
 import IconInfo from '../assets/images/ic_info.svg';
+import IconCrow from '../assets/images/ic_crown.svg';
+import IconShieldStar from '../assets/images/ic_shield_star.svg';
+import IconMenuReport from '../assets/images/ic_menu_report.svg';
 
 export default {
   IconExpand,
@@ -116,4 +119,7 @@ export default {
   IconArrowImport,
   IconScrollDown,
   IconInfo,
+  IconCrow,
+  IconShieldStar,
+  IconMenuReport,
 };

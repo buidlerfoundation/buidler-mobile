@@ -25,6 +25,8 @@ type MenuPinPostProps = {
   canJumpMessage?: boolean;
   openModalEmoji?: () => void;
   onEmojiSelected?: (emoji: any) => void;
+  canReport?: boolean;
+  onReport?: () => void;
 };
 
 const MenuPinPost = ({
@@ -43,6 +45,8 @@ const MenuPinPost = ({
   canJumpMessage,
   openModalEmoji,
   onEmojiSelected,
+  canReport,
+  onReport,
 }: MenuPinPostProps) => {
   const [history, setHistory] = useState([]);
   useEffect(() => {
@@ -116,6 +120,12 @@ const MenuPinPost = ({
             <Text style={[styles.menuLabel, {color: colors.text}]}>
               Unarchive
             </Text>
+          </Touchable>
+        )}
+        {canReport && (
+          <Touchable style={styles.menuItem} onPress={onReport}>
+            <SVG.IconMenuReport />
+            <Text style={[styles.menuLabel, {color: colors.text}]}>Report</Text>
           </Touchable>
         )}
       </View>

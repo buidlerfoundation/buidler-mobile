@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import Modal from 'react-native-modal';
 import {useTheme} from '@react-navigation/native';
@@ -119,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModalOtp;
+export default memo(ModalOtp);

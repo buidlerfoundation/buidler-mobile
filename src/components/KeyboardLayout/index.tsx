@@ -1,4 +1,5 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import useAppSelector from 'hook/useAppSelector';
+import React, {memo, useCallback, useEffect, useState} from 'react';
 import {
   Animated,
   Keyboard,
@@ -6,7 +7,6 @@ import {
   TouchableWithoutFeedback,
   ViewStyle,
 } from 'react-native';
-import {connect} from 'react-redux';
 
 type KeyboardLayoutProps = {
   children: any;
@@ -17,7 +17,6 @@ type KeyboardLayoutProps = {
   containerStyle?: ViewStyle;
   tapOutSide?: boolean;
   activeAndroid?: boolean;
-  realHeight: number;
 };
 
 const KeyboardLayout = ({
@@ -29,8 +28,8 @@ const KeyboardLayout = ({
   containerStyle = {},
   tapOutSide = false,
   activeAndroid = false,
-  realHeight,
 }: KeyboardLayoutProps) => {
+  const realHeight = useAppSelector(state => state.configs.realHeight);
   const [padding] = useState(new Animated.Value(0));
   useEffect(() => {
     const show = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -101,8 +100,4 @@ const KeyboardLayout = ({
   );
 };
 
-const mapStateToProps = (state: any) => ({
-  realHeight: state.configs.realHeight,
-});
-
-export default connect(mapStateToProps)(KeyboardLayout);
+export default memo(KeyboardLayout);

@@ -36,11 +36,13 @@ import MessageItem from 'components/MessageItem';
 import AppStyles from 'common/AppStyles';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
+import MenuReport from 'components/MenuReport';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
   const listRef = useRef<FlatList>();
   const inputRef = useRef<TextInput>();
+  const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
   const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
@@ -218,6 +220,15 @@ const PinPostDetailScreen = () => {
     },
     [dispatch, reactData, selectedMessage?.message_id, userData?.user_id],
   );
+  const openMenuReport = useCallback(() => {
+    onCloseMenuMessage();
+    setTimeout(() => {
+      setOpenMenuReport(true);
+    }, 400);
+  }, [onCloseMenuMessage]);
+  const closeMenuReport = useCallback(() => {
+    setOpenMenuReport(false);
+  }, []);
   const openModalEmoji = useCallback(() => {
     onCloseMenuMessage();
     setTimeout(() => {
@@ -321,6 +332,8 @@ const PinPostDetailScreen = () => {
             canPin={false}
             openModalEmoji={openModalEmoji}
             onEmojiSelected={onEmojiSelected}
+            canReport={selectedMessage?.sender_id !== userData.user_id}
+            onReport={openMenuReport}
           />
         </Modal>
         <Modal
@@ -357,6 +370,23 @@ const PinPostDetailScreen = () => {
             />
             <EmojiPicker onEmojiSelected={onEmojiSelected} />
           </View>
+        </Modal>
+        <Modal
+          isVisible={isOpenMenuReport}
+          style={styles.modalMenuMessage}
+          avoidKeyboard
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
+          swipeDirection={['down']}
+          onSwipeComplete={closeMenuReport}
+          onBackdropPress={closeMenuReport}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
+          <MenuReport
+            onClose={closeMenuReport}
+            selectedMessage={selectedMessage}
+          />
         </Modal>
       </View>
     </KeyboardLayout>

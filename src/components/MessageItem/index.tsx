@@ -1,6 +1,12 @@
 import {MessageData} from 'models';
 import React, {useCallback, memo, useMemo} from 'react';
-import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  ViewStyle,
+} from 'react-native';
 import MessagePhoto from '../MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
 import {
@@ -21,157 +27,183 @@ import AppStyles from 'common/AppStyles';
 import useAppDispatch from 'hook/useAppDispatch';
 import useUserData from 'hook/useUserData';
 import {addReact, removeReact} from 'actions/ReactActions';
+import {useNavigation} from '@react-navigation/native';
+import ScreenID from 'common/ScreenID';
 
 type ReplyMessageProps = {
   replyMessage?: MessageData;
   replyMessageId?: string;
   onPressMessageReply?: (replyMessage: MessageData) => void;
+  embeds?: boolean;
 };
 
-const ReplyMessage = ({
-  replyMessage,
-  replyMessageId,
-  onPressMessageReply,
-}: ReplyMessageProps) => {
-  const teamUserData = useTeamUserData();
-  const {colors} = useThemeColor();
-  const replier = useMemo(
-    () => teamUserData.find(el => el.user_id === replyMessage?.sender_id),
-    [replyMessage?.sender_id, teamUserData],
-  );
-  const isReplyExisted = useMemo(
-    () => !!replyMessage && !!replier,
-    [replier, replyMessage],
-  );
-  const showReply = useMemo(
-    () => isReplyExisted || replyMessageId,
-    [isReplyExisted, replyMessageId],
-  );
-  const onPress = useCallback(() => {
-    if (replyMessage) {
-      onPressMessageReply?.(replyMessage);
-    }
-  }, [onPressMessageReply, replyMessage]);
-  if (!showReply) return null;
-  return (
-    <View style={styles.replyWrap}>
-      <SVG.IconMessageReply fill={colors.lightText} />
-      <View style={{width: 15}} />
-      {isReplyExisted ? (
-        <>
-          <AvatarView user={replier} size={20} />
-          <Text
-            style={[
-              styles.replierName,
-              AppStyles.TextSemi13,
-              {color: colors.lightText},
-            ]}
-            numberOfLines={1}
-            ellipsizeMode="middle">
-            {replier.user_name}
-          </Text>
-          {replyMessage.message_attachments.length > 0 && (
-            <View style={{marginLeft: 8}}>
-              <SVG.IconReplyAttachment fill={colors.lightText} />
-            </View>
-          )}
-          <Touchable style={{flex: 1}} onPress={onPress} useWithoutFeedBack>
-            <RenderHTML
-              html={normalizeMessageTextPlain(
-                replyMessage.content || 'View attachment',
-                true,
-                replyMessage.createdAt !== replyMessage.updatedAt,
-              )}
-              defaultTextProps={{
-                ellipsizeMode: 'tail',
-                numberOfLines: 1,
-              }}
-            />
-          </Touchable>
-        </>
-      ) : (
-        <View style={styles.deletedReplyWrap}>
-          <SVG.IconBan fill={colors.lightText} />
-          <Text
-            style={[
-              styles.deletedText,
-              AppStyles.TextSemi13,
-              {color: colors.lightText},
-            ]}>
-            Original message was deleted.
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-};
+const ReplyMessage = memo(
+  ({
+    replyMessage,
+    replyMessageId,
+    onPressMessageReply,
+    embeds,
+  }: ReplyMessageProps) => {
+    const teamUserData = useTeamUserData();
+    const {colors} = useThemeColor();
+    const replier = useMemo(
+      () => teamUserData.find(el => el.user_id === replyMessage?.sender_id),
+      [replyMessage?.sender_id, teamUserData],
+    );
+    const isReplyExisted = useMemo(
+      () => !!replyMessage && !!replier,
+      [replier, replyMessage],
+    );
+    const showReply = useMemo(
+      () => isReplyExisted || replyMessageId,
+      [isReplyExisted, replyMessageId],
+    );
+    const onPress = useCallback(() => {
+      if (replyMessage) {
+        onPressMessageReply?.(replyMessage);
+      }
+    }, [onPressMessageReply, replyMessage]);
+    if (!showReply || embeds) return null;
+    return (
+      <View style={styles.replyWrap}>
+        <SVG.IconMessageReply fill={colors.lightText} />
+        <View style={{width: 15}} />
+        {isReplyExisted ? (
+          <>
+            <AvatarView user={replier} size={20} />
+            <Text
+              style={[
+                styles.replierName,
+                AppStyles.TextSemi13,
+                {color: colors.lightText},
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="middle">
+              {replier.user_name}
+            </Text>
+            {replyMessage.message_attachments.length > 0 && (
+              <View style={{marginLeft: 8}}>
+                <SVG.IconReplyAttachment fill={colors.lightText} />
+              </View>
+            )}
+            <Touchable style={{flex: 1}} onPress={onPress} useWithoutFeedBack>
+              <RenderHTML
+                html={normalizeMessageTextPlain(
+                  replyMessage.content || 'View attachment',
+                  true,
+                  replyMessage.createdAt !== replyMessage.updatedAt,
+                )}
+                defaultTextProps={{
+                  ellipsizeMode: 'tail',
+                  numberOfLines: 1,
+                }}
+              />
+            </Touchable>
+          </>
+        ) : (
+          <View style={styles.deletedReplyWrap}>
+            <SVG.IconBan fill={colors.lightText} />
+            <Text
+              style={[
+                styles.deletedText,
+                AppStyles.TextSemi13,
+                {color: colors.lightText},
+              ]}>
+              Original message was deleted.
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  },
+);
 
 type MessageAvatarProps = {
   sender_id: string;
   showAvatar?: boolean;
+  onUserPress: () => void;
+  embeds?: boolean;
 };
 
-const MessageAvatar = ({sender_id, showAvatar}: MessageAvatarProps) => {
-  const teamUserData = useTeamUserData();
-  const sender = useMemo(
-    () => teamUserData.find(el => el.user_id === sender_id),
-    [sender_id, teamUserData],
-  );
-  if (showAvatar)
-    return (
-      <View style={{marginTop: 5}}>
-        <AvatarView user={sender} size={35} />
-      </View>
+const MessageAvatar = memo(
+  ({sender_id, showAvatar, onUserPress, embeds}: MessageAvatarProps) => {
+    const teamUserData = useTeamUserData();
+    const sender = useMemo(
+      () => teamUserData.find(el => el.user_id === sender_id),
+      [sender_id, teamUserData],
     );
-  return <View style={{width: 35}} />;
-};
+    if (showAvatar || embeds)
+      return (
+        <Touchable
+          style={{marginTop: 5}}
+          onPress={onUserPress}
+          disabled={embeds}>
+          <AvatarView user={sender} size={35} />
+        </Touchable>
+      );
+    return <View style={{width: 35}} />;
+  },
+);
 
 type MessageSenderProps = {
   showAvatar?: boolean;
   sender_id: string;
   createdAt: string;
+  onUserPress: () => void;
+  embeds?: boolean;
 };
 
-const MessageSender = ({
-  showAvatar,
-  sender_id,
-  createdAt,
-}: MessageSenderProps) => {
-  const teamUserData = useTeamUserData();
-  const {colors} = useThemeColor();
-  const sender = useMemo(
-    () => teamUserData.find(el => el.user_id === sender_id),
-    [sender_id, teamUserData],
-  );
-  if (!showAvatar || !sender) return null;
-  return (
-    <View style={styles.nameWrapper}>
-      <Text style={[AppStyles.TextSemi15, {color: colors.text}]}>
-        {normalizeUserName(sender.user_name)}
-      </Text>
-      <Text
-        style={[
-          AppStyles.TextMed11,
-          styles.messageDate,
-          {color: colors.secondary},
-        ]}>
-        {messageFromNow(createdAt)}
-      </Text>
-    </View>
-  );
-};
+const MessageSender = memo(
+  ({
+    showAvatar,
+    sender_id,
+    createdAt,
+    onUserPress,
+    embeds,
+  }: MessageSenderProps) => {
+    const teamUserData = useTeamUserData();
+    const {colors} = useThemeColor();
+    const sender = useMemo(
+      () => teamUserData.find(el => el.user_id === sender_id),
+      [sender_id, teamUserData],
+    );
+    if ((!showAvatar && !embeds) || !sender) return null;
+    return (
+      <View style={styles.nameWrapper}>
+        <Touchable onPress={onUserPress} disabled={embeds}>
+          <Text style={[AppStyles.TextSemi15, {color: colors.text}]}>
+            {normalizeUserName(sender.user_name)}
+          </Text>
+        </Touchable>
+        <Text
+          style={[
+            AppStyles.TextMed11,
+            styles.messageDate,
+            {color: colors.secondary},
+          ]}>
+          {messageFromNow(createdAt)}
+        </Text>
+      </View>
+    );
+  },
+);
 
 type MessageItemProps = {
   item: MessageData;
   onLongPress?: (message: MessageData) => void;
   onPressMessageReply?: (replyMessage: MessageData) => void;
+  style?: ViewStyle;
+  embeds?: boolean;
 };
 
 const MessageItem = ({
   item,
   onLongPress,
   onPressMessageReply,
+  style,
+  embeds,
 }: MessageItemProps) => {
+  const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
@@ -206,28 +238,41 @@ const MessageItem = ({
     },
     [dispatch, item.message_id, reactData, userData?.user_id],
   );
+  const onUserPress = useCallback(() => {
+    navigation.navigate(ScreenID.UserScreen, {userId: item.sender_id});
+  }, [item.sender_id, navigation]);
   return (
     <View
       style={[
         styles.root,
         {marginTop: showAvatar ? 15 : 0},
         isHighLight && {backgroundColor: colors.activeBackgroundLight},
+        style,
       ]}>
       <ReplyMessage
         replyMessage={item.conversation_data}
         replyMessageId={item.reply_message_id}
         onPressMessageReply={onPressMessageReply}
+        embeds={embeds}
       />
       <Touchable
         style={[styles.container]}
         onLongPress={handleLongPress}
-        useWithoutFeedBack>
-        <MessageAvatar sender_id={item.sender_id} showAvatar={showAvatar} />
+        useWithoutFeedBack
+        disabled={embeds}>
+        <MessageAvatar
+          sender_id={item.sender_id}
+          showAvatar={showAvatar}
+          onUserPress={onUserPress}
+          embeds={embeds}
+        />
         <View style={styles.bodyMessage}>
           <MessageSender
             createdAt={item.createdAt}
             sender_id={item.sender_id}
             showAvatar={showAvatar}
+            onUserPress={onUserPress}
+            embeds={embeds}
           />
           {item.task ? (
             <PinPostItem
@@ -247,6 +292,7 @@ const MessageItem = ({
                     !item.isSending && item.createdAt !== item.updatedAt,
                     item.isSending ? 'message-text-sending' : undefined,
                   )}
+                  embeds={embeds}
                 />
               )) || <View style={{height: 8}} />}
               <MessagePhoto
@@ -277,6 +323,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   bodyMessage: {
     marginLeft: 15,

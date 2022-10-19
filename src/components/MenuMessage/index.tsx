@@ -21,6 +21,8 @@ type MenuMessageProps = {
   onDelete: () => void;
   openModalEmoji?: () => void;
   onEmojiSelected?: (emoji: any) => void;
+  canReport?: boolean;
+  onReport?: () => void;
 };
 
 const MenuMessage = ({
@@ -34,6 +36,8 @@ const MenuMessage = ({
   canDelete,
   openModalEmoji,
   onEmojiSelected,
+  canReport,
+  onReport,
 }: MenuMessageProps) => {
   const [history, setHistory] = useState([]);
   useEffect(() => {
@@ -139,6 +143,12 @@ const MenuMessage = ({
             Copy message link
           </Text>
         </Touchable>
+        {canReport && (
+          <Touchable style={styles.menuItem} onPress={onReport}>
+            <SVG.IconMenuReport />
+            <Text style={[styles.menuLabel, {color: colors.text}]}>Report</Text>
+          </Touchable>
+        )}
       </View>
       {canDelete && (
         <Touchable

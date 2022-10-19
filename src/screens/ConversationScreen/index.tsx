@@ -64,6 +64,7 @@ import ChannelTitle from 'components/ChannelTitle';
 import AppStyles from 'common/AppStyles';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
+import MenuReport from 'components/MenuReport';
 
 const ConversationScreen = () => {
   const listRef = useRef<SectionList>();
@@ -94,6 +95,7 @@ const ConversationScreen = () => {
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
+  const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenGallery, setOpenGallery] = useState(false);
@@ -542,6 +544,16 @@ const ConversationScreen = () => {
   const onPinPress = useCallback(() => {
     navigation.navigate(ScreenID.PinPostScreen);
   }, [navigation]);
+  const openMenuReport = useCallback(() => {
+    onCloseMenuMessage();
+    onCloseMenuPinPost();
+    setTimeout(() => {
+      setOpenMenuReport(true);
+    }, 400);
+  }, [onCloseMenuMessage, onCloseMenuPinPost]);
+  const closeMenuReport = useCallback(() => {
+    setOpenMenuReport(false);
+  }, []);
   const openModalEmoji = useCallback(() => {
     onCloseMenuMessage();
     onCloseMenuPinPost();
@@ -676,9 +688,11 @@ const ConversationScreen = () => {
             onDelete={onMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={selectedMessage?.sender_id === userData.user_id}
+            canReport={selectedMessage?.sender_id !== userData.user_id}
             canPin={userRole === 'Admin' || userRole === 'Owner'}
             openModalEmoji={openModalEmoji}
             onEmojiSelected={onEmojiSelected}
+            onReport={openMenuReport}
           />
         </Modal>
         <Modal
@@ -720,6 +734,8 @@ const ConversationScreen = () => {
             }
             openModalEmoji={openModalEmoji}
             onEmojiSelected={onEmojiSelected}
+            canReport={selectedMessage?.sender_id !== userData.user_id}
+            onReport={openMenuReport}
           />
         </Modal>
         <Modal
@@ -758,6 +774,23 @@ const ConversationScreen = () => {
             />
             <EmojiPicker onEmojiSelected={onEmojiSelected} />
           </View>
+        </Modal>
+        <Modal
+          isVisible={isOpenMenuReport}
+          style={styles.modalMenuMessage}
+          avoidKeyboard
+          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
+          backdropColor={colors.black}
+          backdropOpacity={0.75}
+          swipeDirection={['down']}
+          onSwipeComplete={closeMenuReport}
+          onBackdropPress={closeMenuReport}
+          backdropTransitionOutTiming={0}
+          hideModalContentWhileAnimating>
+          <MenuReport
+            onClose={closeMenuReport}
+            selectedMessage={selectedMessage}
+          />
         </Modal>
       </View>
     </KeyboardLayout>

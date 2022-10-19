@@ -1,6 +1,12 @@
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
-import React, {createContext, useCallback, useContext, useState} from 'react';
+import React, {
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useState,
+} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 
 type GlobalModalContext = {
@@ -77,4 +83,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModalContainer;
+export default memo(ModalContainer);
