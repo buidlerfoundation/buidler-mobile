@@ -107,7 +107,7 @@ const RenderHTML = ({
       'message-text': {
         fontFamily: Fonts.Medium,
         fontSize: 15,
-        lineHeight: 26,
+        lineHeight: 24,
         marginTop: 5,
         color: colors.text,
         whiteSpace: 'pre',
@@ -115,7 +115,7 @@ const RenderHTML = ({
       'message-text-sending': {
         fontFamily: Fonts.Medium,
         fontSize: 15,
-        lineHeight: 26,
+        lineHeight: 24,
         marginTop: 5,
         color: colors.subtext,
         whiteSpace: 'pre',
@@ -123,7 +123,7 @@ const RenderHTML = ({
       'message-text-archived': {
         fontFamily: Fonts.Medium,
         fontSize: 15,
-        lineHeight: 26,
+        lineHeight: 24,
         marginTop: 5,
         color: colors.subtext,
         whiteSpace: 'pre',
