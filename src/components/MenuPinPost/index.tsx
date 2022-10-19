@@ -8,7 +8,7 @@ import MenuEmojiItem from 'components/MenuEmojiItem';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Image} from 'react-native';
 
 type MenuPinPostProps = {
   onReply: () => void;
@@ -127,7 +127,7 @@ const MenuPinPost = ({
           useReactNative
           style={[styles.emojiWrap]}
           onPress={openModalEmoji}>
-          <SVG.IconEmotion fill={colors.subtext} />
+          <Image source={SVG.IconEmotion} />
         </Touchable>
       </View>
       <View style={[styles.groupMenu, {backgroundColor: colors.background}]}>

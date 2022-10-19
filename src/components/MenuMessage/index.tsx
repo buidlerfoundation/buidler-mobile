@@ -1,5 +1,5 @@
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, Image} from 'react-native';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import Fonts from 'common/Fonts';
@@ -117,7 +117,7 @@ const MenuMessage = ({
           useReactNative
           style={[styles.emojiWrap]}
           onPress={openModalEmoji}>
-          <SVG.IconEmotion fill={colors.subtext} />
+          <Image source={SVG.IconEmotion} />
         </Touchable>
       </View>
       <View style={[styles.groupMenu, {backgroundColor: colors.background}]}>
