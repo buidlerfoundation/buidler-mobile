@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   textCopy: {
-    marginLeft: 12,
+    marginLeft: 8,
     fontSize: 14,
     fontFamily: Fonts.SemiBold,
     lineHeight: 24,

@@ -27,9 +27,9 @@ const MenuEmojiItem = ({item, onEmojiSelected}: EmojiItemProps) => {
 
 const styles = StyleSheet.create({
   emojiWrap: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

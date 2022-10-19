@@ -115,9 +115,9 @@ const MenuMessage = ({
         ))}
         <Touchable
           useReactNative
-          style={[styles.emojiWrap, {backgroundColor: colors.border}]}
+          style={[styles.emojiWrap]}
           onPress={openModalEmoji}>
-          <SVG.IconPlus fill={colors.text} />
+          <SVG.IconEmotion fill={colors.subtext} />
         </Touchable>
       </View>
       <View style={[styles.groupMenu, {backgroundColor: colors.background}]}>
@@ -199,9 +199,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   emojiWrap: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

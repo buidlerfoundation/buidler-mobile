@@ -64,13 +64,15 @@ const UserScreen = () => {
     }
   }, [onBack, route.params?.userId, error]);
   const onBlock = useCallback(() => {
-    setUserProfile(current => ({...current, is_block: true}));
-  }, []);
+    api.blockUser(userProfile?.user_id);
+    setUserProfile(current => ({...current, is_blocked: true}));
+  }, [userProfile?.user_id]);
   const onUnblock = useCallback(() => {
-    setUserProfile(current => ({...current, is_block: false}));
-  }, []);
+    api.unblockUser(userProfile?.user_id);
+    setUserProfile(current => ({...current, is_blocked: false}));
+  }, [userProfile?.user_id]);
   const onBlockUserPress = useCallback(() => {
-    if (userProfile?.is_block) {
+    if (userProfile?.is_blocked) {
       onUnblock();
     } else {
       Alert.alert('Alert', 'are you sure you want to block this user?', [
@@ -78,7 +80,7 @@ const UserScreen = () => {
         {text: 'Block', style: 'destructive', onPress: onBlock},
       ]);
     }
-  }, [onBlock, onUnblock, userProfile?.is_block]);
+  }, [onBlock, onUnblock, userProfile?.is_blocked]);
   const isVerifiedAccount = useMemo(
     () => userProfile?.is_verified_avatar || userProfile?.is_verified_username,
     [userProfile?.is_verified_avatar, userProfile?.is_verified_username],
@@ -151,7 +153,7 @@ const UserScreen = () => {
         style={[styles.bottomButton, {backgroundColor: colors.border}]}
         onPress={onBlockUserPress}>
         <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-          {userProfile?.is_block ? 'Unblock' : 'Block'}
+          {userProfile?.is_blocked ? 'Unblock' : 'Block'}
         </Text>
       </Touchable>
     </View>

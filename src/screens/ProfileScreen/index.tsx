@@ -29,6 +29,7 @@ const ProfileScreen = () => {
     NavigationServices.reset(StackID.AuthStack);
   }, [dispatch]);
   const onDeleteAccount = useCallback(() => {
+    api.deleteUser();
     onLogout();
   }, [onLogout]);
   const onDeleteAccountPress = useCallback(() => {

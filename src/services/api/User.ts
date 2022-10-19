@@ -171,3 +171,11 @@ export const refreshToken = (token: string) => {
 
 export const invitation = (teamId: string) =>
   ApiCaller.post<{invitation_url: string}>(`team/invitation/${teamId}/members`);
+
+export const blockUser = (userId: string) =>
+  ApiCaller.post(`user-relationship/block/${userId}`);
+
+export const unblockUser = (userId: string) =>
+  ApiCaller.delete(`user-relationship/block/${userId}`);
+
+export const deleteUser = () => ApiCaller.delete('user');

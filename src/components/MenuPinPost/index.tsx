@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {emojiDefault} from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import {AsyncKey} from 'common/AppStorage';
 import Fonts from 'common/Fonts';
@@ -6,7 +7,7 @@ import SVG from 'common/SVG';
 import MenuEmojiItem from 'components/MenuEmojiItem';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
-import React, {memo, useEffect, useMemo, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 type MenuPinPostProps = {
@@ -53,16 +54,64 @@ const MenuPinPost = ({
     AsyncStorage.getItem(AsyncKey.emojiKey).then(res => {
       if (res) {
         setHistory(JSON.parse(res));
+      } else {
+        setHistory(emojiDefault);
+        AsyncStorage.setItem(AsyncKey.emojiKey, JSON.stringify(emojiDefault));
       }
     });
   }, []);
   const {colors} = useThemeColor();
+  const addToHistoryAsync = useCallback(async emoji => {
+    const previous = await AsyncStorage.getItem(AsyncKey.emojiKey);
+    let value = [];
+    const time = new Date().getTime();
+    let existed = false;
+    const record = Object.assign({}, emoji, {
+      count: 1,
+      timestamp: time,
+    });
+    if (!previous) {
+      value.push(record);
+    } else {
+      let json = JSON.parse(previous);
+      json = json.map(el => {
+        if (el.unified === emoji.unified) {
+          existed = true;
+          return {
+            ...el,
+            count: el.count + 1,
+            timestamp: time,
+          };
+        }
+        return el;
+      });
+      if (existed) {
+        value = json;
+      } else {
+        value = [record, ...json];
+      }
+      value.sort((v1, v2) => {
+        if (v1.count < v2.count) return 1;
+        if (v1.count > v2.count) return -1;
+        if (v1.timestamp < v2.timestamp) return 1;
+        return -1;
+      });
+    }
+    AsyncStorage.setItem(AsyncKey.emojiKey, JSON.stringify(value));
+  }, []);
   const emojiData = useMemo(() => {
     return new Array(5).fill({}).map((el, idx) => ({
       emoji: history?.[idx],
       key: `${idx}`,
     }));
   }, [history]);
+  const handleEmojiSelected = useCallback(
+    (emoji: any) => {
+      onEmojiSelected(emoji);
+      addToHistoryAsync(emoji);
+    },
+    [addToHistoryAsync, onEmojiSelected],
+  );
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -71,14 +120,14 @@ const MenuPinPost = ({
           <MenuEmojiItem
             key={el.key}
             item={el}
-            onEmojiSelected={onEmojiSelected}
+            onEmojiSelected={handleEmojiSelected}
           />
         ))}
         <Touchable
           useReactNative
-          style={[styles.emojiWrap, {backgroundColor: colors.border}]}
+          style={[styles.emojiWrap]}
           onPress={openModalEmoji}>
-          <SVG.IconPlus fill={colors.text} />
+          <SVG.IconEmotion fill={colors.subtext} />
         </Touchable>
       </View>
       <View style={[styles.groupMenu, {backgroundColor: colors.background}]}>
@@ -193,9 +242,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   emojiWrap: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
