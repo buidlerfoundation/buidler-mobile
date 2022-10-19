@@ -36,17 +36,7 @@ export const logout: ActionCreator<any> = () => (dispatch: Dispatch) => {
 export const refreshToken = () => async (dispatch: Dispatch) => {
   dispatch({type: actionTypes.REFRESH_TOKEN_REQUEST});
   try {
-    const refreshTokenExpire = await AsyncStorage.getItem(
-      AsyncKey.refreshTokenExpire,
-    );
     const refreshToken = await AsyncStorage.getItem(AsyncKey.refreshTokenKey);
-    if (
-      !refreshTokenExpire ||
-      !refreshToken ||
-      new Date().getTime() / 1000 > refreshTokenExpire
-    ) {
-      return false;
-    }
     const refreshTokenRes = await api.refreshToken(refreshToken);
     if (refreshTokenRes.success) {
       await AsyncStorage.setItem(
