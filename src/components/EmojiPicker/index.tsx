@@ -23,6 +23,7 @@ import {RecyclerListView, DataProvider} from 'recyclerlistview';
 import StickyContainer from 'recyclerlistview/sticky';
 import AppGridLayoutProvider from 'components/AppGridLayoutProvider';
 import AppDimension from 'common/AppDimension';
+import Fonts from 'common/Fonts';
 
 export const Categories = {
   emotion: {
@@ -309,7 +310,7 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
               },
             ]}>
             <TextInput
-              style={[styles.search, AppStyles.TextMed15, {color: colors.text}]}
+              style={[styles.search, {color: colors.text}]}
               placeholder="Search"
               autoCorrect={false}
               value={query}
@@ -322,18 +323,21 @@ const EmojiPicker = ({columns = 8, onEmojiSelected}: EmojiPickerProps) => {
           </View>
         </View>
         <View style={styles.container}>
-          <StickyContainer stickyHeaderIndices={categoryList.map(el => el.idx)}>
-            <RecyclerListView
-              ref={ref => (listRef.current = ref)}
-              rowRenderer={renderRow}
-              dataProvider={dataProvider}
-              layoutProvider={layoutProvider}
-              onVisibleIndicesChanged={onVisibleIndicesChanged}
-              renderFooter={renderFooter}
-              keyboardDismissMode="on-drag"
-              keyboardShouldPersistTaps="handled"
-            />
-          </StickyContainer>
+          {emojiListFiltered?.length > 0 && (
+            <StickyContainer
+              stickyHeaderIndices={categoryList.map(el => el.idx)}>
+              <RecyclerListView
+                ref={ref => (listRef.current = ref)}
+                rowRenderer={renderRow}
+                dataProvider={dataProvider}
+                layoutProvider={layoutProvider}
+                onVisibleIndicesChanged={onVisibleIndicesChanged}
+                renderFooter={renderFooter}
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="handled"
+              />
+            </StickyContainer>
+          )}
         </View>
       </View>
     </View>
@@ -368,6 +372,8 @@ const styles = StyleSheet.create({
   },
   search: {
     paddingTop: 0,
+    fontSize: 15,
+    fontFamily: Fonts.Medium,
   },
   container: {
     flex: 1,
