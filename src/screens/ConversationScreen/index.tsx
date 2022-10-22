@@ -27,7 +27,6 @@ import {
 import {createLoadMoreSelector} from 'reducers/selectors';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
-import Modal from 'react-native-modal';
 import api from 'services/api';
 import {getUniqueId} from 'helpers/GenerateUUID';
 import {resizeImage} from 'helpers/ImageHelpers';
@@ -65,6 +64,7 @@ import AppStyles from 'common/AppStyles';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
 import MenuReport from 'components/MenuReport';
+import ModalBottom from 'components/ModalBottom';
 
 const ConversationScreen = () => {
   const listRef = useRef<SectionList>();
@@ -205,7 +205,6 @@ const ConversationScreen = () => {
     [],
   );
   const onClearAttachment = useCallback(() => setAttachments([]), []);
-  const onMoveShouldSetResponderCapture = useCallback(() => false, []);
   const onScrollToMessage = useCallback(
     (replyMessage: MessageData) => {
       const messageSections = listRef.current?.props?.sections;
@@ -668,18 +667,10 @@ const ConversationScreen = () => {
             onFocusChanged={setFocus}
           />
         </View>
-        <Modal
+        <ModalBottom
           isVisible={isOpenMenuMessage}
-          style={styles.modalMenuMessage}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          swipeDirection={['down']}
           onSwipeComplete={onCloseMenuMessage}
-          onBackdropPress={onCloseMenuMessage}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+          onBackdropPress={onCloseMenuMessage}>
           <MenuMessage
             onPin={onMenuPin}
             onReply={onReplyMessage}
@@ -694,19 +685,11 @@ const ConversationScreen = () => {
             onEmojiSelected={onEmojiSelected}
             onReport={openMenuReport}
           />
-        </Modal>
-        <Modal
+        </ModalBottom>
+        <ModalBottom
           isVisible={isOpenMenuPinPost}
-          style={styles.modalMenuMessage}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          swipeDirection={['down']}
           onSwipeComplete={onCloseMenuPinPost}
-          onBackdropPress={onCloseMenuPinPost}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+          onBackdropPress={onCloseMenuPinPost}>
           <MenuPinPost
             onReply={onReplyPinPost}
             onCopyMessage={onMenuCopyMessage}
@@ -737,35 +720,17 @@ const ConversationScreen = () => {
             canReport={selectedMessage?.sender_id !== userData.user_id}
             onReport={openMenuReport}
           />
-        </Modal>
-        <Modal
-          isVisible={isOpenGallery}
-          style={styles.modalGallery}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          onSwipeComplete={toggleGallery}
-          swipeDirection={['down']}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+        </ModalBottom>
+        <ModalBottom isVisible={isOpenGallery} onSwipeComplete={toggleGallery}>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle title="Photos" onClosePress={toggleGallery} />
             <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
           </View>
-        </Modal>
-        <Modal
+        </ModalBottom>
+        <ModalBottom
           isVisible={isOpenModalEmoji}
-          style={styles.modalGallery}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          onSwipeComplete={closeModalEmoji}
-          swipeDirection={['down']}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+          onSwipeComplete={closeModalEmoji}>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle
@@ -774,24 +739,16 @@ const ConversationScreen = () => {
             />
             <EmojiPicker onEmojiSelected={onEmojiSelected} />
           </View>
-        </Modal>
-        <Modal
+        </ModalBottom>
+        <ModalBottom
           isVisible={isOpenMenuReport}
-          style={styles.modalMenuMessage}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          swipeDirection={['down']}
           onSwipeComplete={closeMenuReport}
-          onBackdropPress={closeMenuReport}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+          onBackdropPress={closeMenuReport}>
           <MenuReport
             onClose={closeMenuReport}
             selectedMessage={selectedMessage}
           />
-        </Modal>
+        </ModalBottom>
       </View>
     </KeyboardLayout>
   );
@@ -846,18 +803,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
   },
-  modalGallery: {
-    justifyContent: 'flex-end',
-    margin: 0,
-  },
   galleryView: {
     height: '90%',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-  },
-  modalMenuMessage: {
-    justifyContent: 'flex-end',
-    margin: 0,
   },
 });
 

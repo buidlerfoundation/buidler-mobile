@@ -1,6 +1,5 @@
 import Fonts from 'common/Fonts';
-import SVG from 'common/SVG';
-import Touchable from 'components/Touchable';
+import ButtonClose from 'components/ButtonClose';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo} from 'react';
 import {View, Text} from 'react-native';
@@ -42,19 +41,7 @@ const BottomSheetHandle = ({
           {title}
         </Text>
       )}
-      <Touchable style={{padding: 10}} onPress={onClosePress}>
-        <View
-          style={{
-            width: 30,
-            height: 30,
-            borderRadius: 15,
-            backgroundColor: colors.border,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <SVG.IconClose fill={colors.text} />
-        </View>
-      </Touchable>
+      <ButtonClose onPress={onClosePress} />
     </View>
   );
 };

@@ -19,7 +19,6 @@ import React, {
   useState,
 } from 'react';
 import {StyleSheet, View, Text, FlatList, TextInput} from 'react-native';
-import Modal from 'react-native-modal';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import SocketUtils from 'utils/SocketUtils';
@@ -37,6 +36,7 @@ import AppStyles from 'common/AppStyles';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
 import MenuReport from 'components/MenuReport';
+import ModalBottom from 'components/ModalBottom';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -106,7 +106,6 @@ const PinPostDetailScreen = () => {
     [],
   );
   const onClearAttachment = useCallback(() => setAttachments([]), []);
-  const onMoveShouldSetResponderCapture = useCallback(() => false, []);
   const onSelectPhoto = useCallback(
     async (items: Array<any>) => {
       if (!SocketUtils.generateId) {
@@ -310,18 +309,10 @@ const PinPostDetailScreen = () => {
             inputStyle={styles.inputContainer}
           />
         </View>
-        <Modal
+        <ModalBottom
           isVisible={isOpenMenuMessage}
-          style={styles.modalMenuMessage}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          swipeDirection={['down']}
           onSwipeComplete={onCloseMenuMessage}
-          onBackdropPress={onCloseMenuMessage}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+          onBackdropPress={onCloseMenuMessage}>
           <MenuMessage
             onReply={onReplyMessage}
             onEdit={onEditMessage}
@@ -335,33 +326,17 @@ const PinPostDetailScreen = () => {
             canReport={selectedMessage?.sender_id !== userData.user_id}
             onReport={openMenuReport}
           />
-        </Modal>
-        <Modal
-          isVisible={isOpenGallery}
-          style={styles.modalGallery}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          onSwipeComplete={toggleGallery}
-          swipeDirection={['down']}>
+        </ModalBottom>
+        <ModalBottom isVisible={isOpenGallery} onSwipeComplete={toggleGallery}>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle title="Photos" onClosePress={toggleGallery} />
             <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
           </View>
-        </Modal>
-        <Modal
+        </ModalBottom>
+        <ModalBottom
           isVisible={isOpenModalEmoji}
-          style={styles.modalGallery}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          onSwipeComplete={closeModalEmoji}
-          swipeDirection={['down']}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+          onSwipeComplete={closeModalEmoji}>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle
@@ -370,24 +345,16 @@ const PinPostDetailScreen = () => {
             />
             <EmojiPicker onEmojiSelected={onEmojiSelected} />
           </View>
-        </Modal>
-        <Modal
+        </ModalBottom>
+        <ModalBottom
           isVisible={isOpenMenuReport}
-          style={styles.modalMenuMessage}
-          avoidKeyboard
-          onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-          backdropColor={colors.black}
-          backdropOpacity={0.75}
-          swipeDirection={['down']}
           onSwipeComplete={closeMenuReport}
-          onBackdropPress={closeMenuReport}
-          backdropTransitionOutTiming={0}
-          hideModalContentWhileAnimating>
+          onBackdropPress={closeMenuReport}>
           <MenuReport
             onClose={closeMenuReport}
             selectedMessage={selectedMessage}
           />
-        </Modal>
+        </ModalBottom>
       </View>
     </KeyboardLayout>
   );
@@ -429,18 +396,10 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     padding: 8,
   },
-  modalGallery: {
-    justifyContent: 'flex-end',
-    margin: 0,
-  },
   galleryView: {
     height: '90%',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-  },
-  modalMenuMessage: {
-    justifyContent: 'flex-end',
-    margin: 0,
   },
   inputContainer: {
     paddingBottom: AppDimension.extraBottom + 10,

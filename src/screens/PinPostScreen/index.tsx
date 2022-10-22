@@ -19,7 +19,6 @@ import {TaskData} from 'models';
 import React, {memo, useCallback, useEffect, useState} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
-import Modal from 'react-native-modal';
 import MenuPinPost from 'components/MenuPinPost';
 import useUserRole from 'hook/useUserRole';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -35,6 +34,7 @@ import BottomSheetHandle from 'components/BottomSheetHandle';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
 import MenuReport from 'components/MenuReport';
+import ModalBottom from 'components/ModalBottom';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
@@ -85,7 +85,6 @@ const PinPostScreen = () => {
     const last = pinPosts[pinPosts.length - 1];
     dispatch(getTasks(currentChannelId, last.message_created_at));
   }, [canMoreTask, currentChannelId, dispatch, loadMoreTask, pinPosts]);
-  const onMoveShouldSetResponderCapture = useCallback(() => false, []);
   const onDeletePost = useCallback(async () => {
     await dispatch(deleteTask(selectedPinPost?.task_id, currentChannelId));
   }, [currentChannelId, dispatch, selectedPinPost?.task_id]);
@@ -241,18 +240,10 @@ const PinPostScreen = () => {
           onEndReached={onEndReached}
         />
       </View>
-      <Modal
+      <ModalBottom
         isVisible={isOpenMenuPinPost}
-        style={styles.modalMenuMessage}
-        avoidKeyboard
-        onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-        backdropColor={colors.black}
-        backdropOpacity={0.75}
-        swipeDirection={['down']}
         onSwipeComplete={onCloseMenuPinPost}
-        onBackdropPress={onCloseMenuPinPost}
-        backdropTransitionOutTiming={0}
-        hideModalContentWhileAnimating>
+        onBackdropPress={onCloseMenuPinPost}>
         <MenuPinPost
           onReply={onReplyPinPost}
           onJumpToMessage={onJumpToMessage}
@@ -285,40 +276,24 @@ const PinPostScreen = () => {
           onReport={openMenuReport}
           canReport={selectedPinPost?.message_sender_id !== userData.user_id}
         />
-      </Modal>
-      <Modal
+      </ModalBottom>
+      <ModalBottom
         isVisible={isOpenModalEmoji}
-        style={styles.modalMenuMessage}
-        avoidKeyboard
-        onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-        backdropColor={colors.black}
-        backdropOpacity={0.75}
-        onSwipeComplete={closeModalEmoji}
-        swipeDirection={['down']}
-        backdropTransitionOutTiming={0}
-        hideModalContentWhileAnimating>
+        onSwipeComplete={closeModalEmoji}>
         <View style={[styles.emojiView, {backgroundColor: colors.background}]}>
           <BottomSheetHandle title="Reaction" onClosePress={closeModalEmoji} />
           <EmojiPicker onEmojiSelected={onEmojiSelected} />
         </View>
-      </Modal>
-      <Modal
+      </ModalBottom>
+      <ModalBottom
         isVisible={isOpenMenuReport}
-        style={styles.modalMenuMessage}
-        avoidKeyboard
-        onMoveShouldSetResponderCapture={onMoveShouldSetResponderCapture}
-        backdropColor={colors.black}
-        backdropOpacity={0.75}
-        swipeDirection={['down']}
         onSwipeComplete={closeMenuReport}
-        onBackdropPress={closeMenuReport}
-        backdropTransitionOutTiming={0}
-        hideModalContentWhileAnimating>
+        onBackdropPress={closeMenuReport}>
         <MenuReport
           onClose={closeMenuReport}
           selectedPinPost={selectedPinPost}
         />
-      </Modal>
+      </ModalBottom>
     </View>
   );
 };
@@ -341,10 +316,6 @@ const styles = StyleSheet.create({
   ppSeparate: {
     height: 1,
     marginVertical: 30,
-  },
-  modalMenuMessage: {
-    justifyContent: 'flex-end',
-    margin: 0,
   },
   emojiView: {
     height: '90%',

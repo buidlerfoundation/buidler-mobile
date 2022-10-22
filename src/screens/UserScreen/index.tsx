@@ -2,6 +2,8 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
+import MenuUser from 'components/MenuUser';
+import ModalBottom from 'components/ModalBottom';
 import Spinner from 'components/Spinner';
 import Touchable from 'components/Touchable';
 import UserInfo from 'components/UserInfo';
@@ -38,7 +40,14 @@ const UserScreen = () => {
   const communityId = useCommunityId();
   const route = useRoute();
   const {colors} = useThemeColor();
+  const [isOpenMenu, setOpenMenu] = useState(false);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
+  const onPressMenu = useCallback(() => {
+    setOpenMenu(true);
+  }, []);
+  const onDirectMessage = useCallback(() => {}, []);
+  const onSendCrypto = useCallback(() => {}, []);
+  const onCloseMenu = useCallback(() => setOpenMenu(false), []);
   const fetchUserProfileById = useCallback(async () => {
     const userId = route.params?.userId;
     setLoading(true);
@@ -146,16 +155,38 @@ const UserScreen = () => {
           style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}>
           Profile Detail
         </Text>
+        <Touchable onPress={onPressMenu}>
+          <SVG.IconMore fill={colors.text} />
+        </Touchable>
       </View>
       <Body />
-      <Touchable
-        useReactNative
-        style={[styles.bottomButton, {backgroundColor: colors.border}]}
-        onPress={onBlockUserPress}>
-        <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-          {userProfile?.is_blocked ? 'Unblock' : 'Block'}
-        </Text>
-      </Touchable>
+      <View style={styles.bottom}>
+        <Touchable
+          useReactNative
+          style={[styles.bottomButton, {backgroundColor: colors.primary}]}
+          onPress={onDirectMessage}>
+          <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
+            Direct Message
+          </Text>
+        </Touchable>
+        <Touchable
+          useReactNative
+          style={[
+            styles.bottomButton,
+            {backgroundColor: colors.border, marginTop: 10},
+          ]}
+          onPress={onSendCrypto}>
+          <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
+            Send Crypto
+          </Text>
+        </Touchable>
+      </View>
+      <ModalBottom
+        isVisible={isOpenMenu}
+        onSwipeComplete={onCloseMenu}
+        onBackdropPress={onCloseMenu}>
+        <MenuUser user={userProfile} onClose={onCloseMenu} />
+      </ModalBottom>
     </View>
   );
 };
@@ -184,11 +215,13 @@ const styles = StyleSheet.create({
   bottomButton: {
     height: 60,
     marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 20 + AppDimension.extraBottom,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
+  },
+  bottom: {
+    marginTop: 20,
+    marginBottom: 20 + AppDimension.extraBottom,
   },
   verifyContainer: {
     marginTop: 20,
