@@ -42,8 +42,7 @@ async function requestAPI<T = any>(
             type: 'customError',
             props: {message: 'Session expired'},
           });
-          await AsyncStorage.clear();
-          store.dispatch(logout());
+          await store.dispatch(logout());
           NavigationServices.reset(StackID.AuthStack);
         }
         return {

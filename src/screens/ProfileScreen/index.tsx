@@ -7,11 +7,9 @@ import useUserData from 'hook/useUserData';
 import React, {memo, useCallback} from 'react';
 import {View, StyleSheet, Text, Alert} from 'react-native';
 import useAppDispatch from 'hook/useAppDispatch';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
-import {getDeviceCode} from 'helpers/GenerateUUID';
 import api from 'services/api';
 import UserInfo from 'components/UserInfo';
 
@@ -20,12 +18,7 @@ const ProfileScreen = () => {
   const {colors} = useThemeColor();
   const userData = useUserData();
   const onLogout = useCallback(async () => {
-    const deviceCode = await getDeviceCode();
-    await api.removeDevice({
-      device_code: deviceCode,
-    });
-    await AsyncStorage.clear();
-    dispatch(logout());
+    await dispatch(logout());
     NavigationServices.reset(StackID.AuthStack);
   }, [dispatch]);
   const onDeleteAccount = useCallback(() => {
