@@ -3,11 +3,13 @@ import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import React, {memo, useCallback} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, Linking} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import useThemeColor from 'hook/useThemeColor';
 import GlobalVariable from 'services/GlobalVariable';
+import AppStyles from 'common/AppStyles';
+import {buidlerHomeURL} from 'helpers/LinkHelper';
 
 const LoginScreen = () => {
   const {colors} = useThemeColor();
@@ -18,6 +20,12 @@ const LoginScreen = () => {
   const onImportPress = useCallback(() => {
     GlobalVariable.sessionExpired = false;
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
+  }, []);
+  const onTermPress = useCallback(() => {
+    Linking.openURL(`${buidlerHomeURL}/terms`);
+  }, []);
+  const onPrivacyPress = useCallback(() => {
+    Linking.openURL(`${buidlerHomeURL}/privacy`);
   }, []);
   return (
     <View style={styles.container}>
@@ -48,6 +56,18 @@ const LoginScreen = () => {
         <Text style={[styles.text, {color: colors.text}]}>Import wallet</Text>
         <SVG.IconArrowImport fill={colors.text} />
       </Touchable>
+      <Text
+        style={[AppStyles.TextMed13, {color: colors.subtext, marginTop: 25}]}>
+        By connecting wallet, you agree to our{' '}
+        <Text style={styles.btnTerm} onPress={onTermPress}>
+          Terms
+        </Text>{' '}
+        and{' '}
+        <Text style={styles.btnTerm} onPress={onPrivacyPress}>
+          Privacy Policy
+        </Text>
+        .
+      </Text>
     </View>
   );
 };
@@ -113,6 +133,9 @@ const styles = StyleSheet.create({
     height: 30,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  btnTerm: {
+    textDecorationLine: 'underline',
   },
 });
 

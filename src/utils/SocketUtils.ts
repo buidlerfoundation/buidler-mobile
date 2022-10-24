@@ -215,8 +215,7 @@ class SocketUtil {
         if (res) {
           this.init(true);
         } else {
-          await AsyncStorage.clear();
-          store.dispatch(logout());
+          await store.dispatch(logout());
           NavigationServices.reset(StackID.AuthStack);
         }
       }

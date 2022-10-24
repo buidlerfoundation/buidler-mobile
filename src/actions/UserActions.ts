@@ -16,6 +16,7 @@ import {isValidPrivateKey} from 'helpers/SeedHelper';
 import {AppGetState} from 'store';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import Toast from 'react-native-toast-message';
+import {getDeviceCode} from 'helpers/GenerateUUID';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -28,7 +29,12 @@ export const getInitial: ActionCreator<any> =
     }
   };
 
-export const logout: ActionCreator<any> = () => (dispatch: Dispatch) => {
+export const logout: ActionCreator<any> = () => async (dispatch: Dispatch) => {
+  const deviceCode = await getDeviceCode();
+  await api.removeDevice({
+    device_code: deviceCode,
+  });
+  await AsyncStorage.clear();
   SocketUtils.disconnect();
   dispatch({type: actionTypes.LOGOUT});
 };

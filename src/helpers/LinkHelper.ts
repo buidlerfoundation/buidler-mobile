@@ -9,6 +9,8 @@ export const buildLinkUniSwap = (params: {
 
 export const buidlerURL = 'https://community.buidler.app';
 
+export const buidlerHomeURL = 'https://buidler.app';
+
 const getUrlWithoutPostOrMessage = (buidlerUrl: string) => {
   const idx = Math.max(
     buidlerUrl.indexOf('/post'),
