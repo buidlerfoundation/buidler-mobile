@@ -113,8 +113,7 @@ const MenuPinPost = ({
     [addToHistoryAsync, onEmojiSelected],
   );
   return (
-    <View
-      style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
+    <View style={[styles.container, {backgroundColor: colors.background}]}>
       <View style={styles.menuEmoji}>
         {emojiData.map(el => (
           <MenuEmojiItem
@@ -130,7 +129,7 @@ const MenuPinPost = ({
           <Image source={SVG.IconEmotion} />
         </Touchable>
       </View>
-      <View style={[styles.groupMenu, {backgroundColor: colors.background}]}>
+      <View style={[styles.groupMenu, {backgroundColor: colors.border}]}>
         <Touchable style={styles.menuItem} onPress={onReply}>
           <SVG.IconMenuReply />
           <Text style={[styles.menuLabel, {color: colors.text}]}>Reply</Text>
@@ -185,7 +184,7 @@ const MenuPinPost = ({
             {
               marginTop: 10,
               borderRadius: 5,
-              backgroundColor: colors.background,
+              backgroundColor: colors.border,
             },
           ]}
           onPress={onArchive}>
@@ -200,7 +199,7 @@ const MenuPinPost = ({
             {
               marginTop: 10,
               borderRadius: 5,
-              backgroundColor: colors.background,
+              backgroundColor: colors.border,
             },
           ]}
           onPress={onDelete}>

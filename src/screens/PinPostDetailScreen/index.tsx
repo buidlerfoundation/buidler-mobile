@@ -37,6 +37,7 @@ import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
 import MenuReport from 'components/MenuReport';
 import ModalBottom from 'components/ModalBottom';
+import AppConfig from 'common/AppConfig';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -223,7 +224,7 @@ const PinPostDetailScreen = () => {
     onCloseMenuMessage();
     setTimeout(() => {
       setOpenMenuReport(true);
-    }, 400);
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage]);
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
@@ -232,7 +233,7 @@ const PinPostDetailScreen = () => {
     onCloseMenuMessage();
     setTimeout(() => {
       setOpenModalEmoji(true);
-    }, 400);
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage]);
   const closeModalEmoji = useCallback(() => {
     setOpenModalEmoji(false);

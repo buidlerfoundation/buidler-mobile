@@ -60,6 +60,7 @@ import IconCrow from '../assets/images/ic_crown.svg';
 import IconShieldStar from '../assets/images/ic_shield_star.svg';
 import IconMenuReport from '../assets/images/ic_menu_report.svg';
 import IconEmotion from '../assets/images/ic_emotion.png';
+import IconMenuBlock from '../assets/images/ic_menu_block.svg';
 
 export default {
   IconExpand,
@@ -124,4 +125,5 @@ export default {
   IconShieldStar,
   IconMenuReport,
   IconEmotion,
+  IconMenuBlock,
 };

@@ -548,7 +548,7 @@ const ConversationScreen = () => {
     onCloseMenuPinPost();
     setTimeout(() => {
       setOpenMenuReport(true);
-    }, 400);
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, onCloseMenuPinPost]);
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
@@ -558,7 +558,7 @@ const ConversationScreen = () => {
     onCloseMenuPinPost();
     setTimeout(() => {
       setOpenModalEmoji(true);
-    }, 400);
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, onCloseMenuPinPost]);
   const closeModalEmoji = useCallback(() => {
     setOpenModalEmoji(false);

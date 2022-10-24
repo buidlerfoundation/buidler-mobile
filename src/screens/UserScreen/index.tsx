@@ -1,7 +1,9 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
+import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
+import ConfirmBlockUser from 'components/ConfirmBlockUser';
 import MenuUser from 'components/MenuUser';
 import ModalBottom from 'components/ModalBottom';
 import Spinner from 'components/Spinner';
@@ -11,7 +13,7 @@ import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
 import {NFTCollection, UserData} from 'models';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Toast from 'react-native-toast-message';
 import api from 'services/api';
@@ -41,6 +43,7 @@ const UserScreen = () => {
   const route = useRoute();
   const {colors} = useThemeColor();
   const [isOpenMenu, setOpenMenu] = useState(false);
+  const [isOpenConfirmBlock, setOpenConfirmBlock] = useState(false);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
   const onPressMenu = useCallback(() => {
     setOpenMenu(true);
@@ -48,6 +51,7 @@ const UserScreen = () => {
   const onDirectMessage = useCallback(() => {}, []);
   const onSendCrypto = useCallback(() => {}, []);
   const onCloseMenu = useCallback(() => setOpenMenu(false), []);
+  const onCloseConfirmBlock = useCallback(() => setOpenConfirmBlock(false), []);
   const fetchUserProfileById = useCallback(async () => {
     const userId = route.params?.userId;
     setLoading(true);
@@ -75,7 +79,8 @@ const UserScreen = () => {
   const onBlock = useCallback(() => {
     api.blockUser(userProfile?.user_id);
     setUserProfile(current => ({...current, is_blocked: true}));
-  }, [userProfile?.user_id]);
+    onCloseConfirmBlock();
+  }, [onCloseConfirmBlock, userProfile?.user_id]);
   const onUnblock = useCallback(() => {
     api.unblockUser(userProfile?.user_id);
     setUserProfile(current => ({...current, is_blocked: false}));
@@ -84,12 +89,13 @@ const UserScreen = () => {
     if (userProfile?.is_blocked) {
       onUnblock();
     } else {
-      Alert.alert('Alert', 'are you sure you want to block this user?', [
-        {text: 'Cancel'},
-        {text: 'Block', style: 'destructive', onPress: onBlock},
-      ]);
+      onCloseMenu();
+      setTimeout(() => {
+        setOpenConfirmBlock(true);
+      }, AppConfig.timeoutCloseBottomSheet);
     }
-  }, [onBlock, onUnblock, userProfile?.is_blocked]);
+  }, [onCloseMenu, onUnblock, userProfile?.is_blocked]);
+  const onEditPress = useCallback(() => {}, []);
   const isVerifiedAccount = useMemo(
     () => userProfile?.is_verified_avatar || userProfile?.is_verified_username,
     [userProfile?.is_verified_avatar, userProfile?.is_verified_username],
@@ -185,7 +191,22 @@ const UserScreen = () => {
         isVisible={isOpenMenu}
         onSwipeComplete={onCloseMenu}
         onBackdropPress={onCloseMenu}>
-        <MenuUser user={userProfile} onClose={onCloseMenu} />
+        <MenuUser
+          user={userProfile}
+          onClose={onCloseMenu}
+          onBlockPress={onBlockUserPress}
+          onEditPress={onEditPress}
+        />
+      </ModalBottom>
+      <ModalBottom
+        isVisible={isOpenConfirmBlock}
+        onSwipeComplete={onCloseConfirmBlock}
+        onBackdropPress={onCloseConfirmBlock}>
+        <ConfirmBlockUser
+          user={userProfile}
+          onClose={onCloseConfirmBlock}
+          onBlock={onBlock}
+        />
       </ModalBottom>
     </View>
   );

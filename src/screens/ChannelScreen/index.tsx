@@ -81,7 +81,7 @@ const ChannelScreen = () => {
           <View
             style={[
               styles.communityCoverWrap,
-              {backgroundColor: colors.border},
+              {backgroundColor: colors.activeBackgroundLight},
             ]}>
             {showBadge && (
               <View style={styles.badgeCommunity}>
@@ -117,7 +117,10 @@ const ChannelScreen = () => {
           </Text>
         </View>
         <Touchable
-          style={[styles.btnInvite, {backgroundColor: colors.border}]}
+          style={[
+            styles.btnInvite,
+            {backgroundColor: colors.activeBackgroundLight},
+          ]}
           onPress={onInvitePress}>
           <Text style={[AppStyles.TextSemi15, {color: colors.text}]}>
             Invite member
@@ -126,8 +129,8 @@ const ChannelScreen = () => {
       </View>
     );
   }, [
+    colors.activeBackgroundLight,
     colors.background,
-    colors.border,
     colors.lightText,
     colors.success,
     colors.text,

@@ -35,6 +35,7 @@ import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
 import MenuReport from 'components/MenuReport';
 import ModalBottom from 'components/ModalBottom';
+import AppConfig from 'common/AppConfig';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
@@ -180,7 +181,7 @@ const PinPostScreen = () => {
     onCloseMenuPinPost();
     setTimeout(() => {
       setOpenMenuReport(true);
-    }, 400);
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuPinPost]);
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
@@ -189,7 +190,7 @@ const PinPostScreen = () => {
     onCloseMenuPinPost();
     setTimeout(() => {
       setOpenModalEmoji(true);
-    }, 400);
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuPinPost]);
   const closeModalEmoji = useCallback(() => {
     setOpenModalEmoji(false);
