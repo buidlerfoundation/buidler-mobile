@@ -3,7 +3,7 @@ import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
-import ConfirmBlockUser from 'components/ConfirmBlockUser';
+import MenuConfirm from 'components/MenuConfirm';
 import MenuUser from 'components/MenuUser';
 import ModalBottom from 'components/ModalBottom';
 import Spinner from 'components/Spinner';
@@ -202,10 +202,12 @@ const UserScreen = () => {
         isVisible={isOpenConfirmBlock}
         onSwipeComplete={onCloseConfirmBlock}
         onBackdropPress={onCloseConfirmBlock}>
-        <ConfirmBlockUser
+        <MenuConfirm
           user={userProfile}
           onClose={onCloseConfirmBlock}
-          onBlock={onBlock}
+          onConfirm={onBlock}
+          confirmLabel="Block"
+          message="Are you sure you want to block this user?"
         />
       </ModalBottom>
     </View>

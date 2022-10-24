@@ -7,13 +7,21 @@ import {UserData} from 'models';
 import React, {memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 
-type ConfirmBlockUserProps = {
+type MenuConfirmProps = {
   user: UserData;
   onClose: () => void;
-  onBlock: () => void;
+  onConfirm: () => void;
+  message: string;
+  confirmLabel: string;
 };
 
-const ConfirmBlockUser = ({user, onClose, onBlock}: ConfirmBlockUserProps) => {
+const MenuConfirm = ({
+  user,
+  onClose,
+  message,
+  confirmLabel,
+  onConfirm,
+}: MenuConfirmProps) => {
   const {colors} = useThemeColor();
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
@@ -29,7 +37,7 @@ const ConfirmBlockUser = ({user, onClose, onBlock}: ConfirmBlockUserProps) => {
           AppStyles.TextMed15,
           {marginTop: 22.5, color: colors.subtext, alignSelf: 'center'},
         ]}>
-        Are you sure you want to block this user?
+        {message}
       </Text>
       <Touchable
         style={[
@@ -44,9 +52,9 @@ const ConfirmBlockUser = ({user, onClose, onBlock}: ConfirmBlockUserProps) => {
           styles.bottomButton,
           {backgroundColor: colors.border, marginTop: 10},
         ]}
-        onPress={onBlock}>
+        onPress={onConfirm}>
         <Text style={[AppStyles.TextSemi16, {color: colors.urgent}]}>
-          Block
+          {confirmLabel}
         </Text>
       </Touchable>
     </View>
@@ -73,4 +81,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default memo(ConfirmBlockUser);
+export default memo(MenuConfirm);
