@@ -14,6 +14,8 @@ import {AuthStackParamsList} from 'navigation/AuthStack';
 import useThemeColor from 'hook/useThemeColor';
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessApp} from 'actions/UserActions';
+import Clipboard from '@react-native-clipboard/clipboard';
+import Toast from 'react-native-toast-message';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
@@ -38,6 +40,10 @@ const StoreSeedPhraseScreen = ({route}: Props) => {
   const onNextPress = useCallback(() => {
     NavigationServices.pushToScreen(ScreenID.BackupScreen, {seed, password});
   }, [password, seed]);
+  const onCopy = useCallback(async () => {
+    await Clipboard.setString(seed);
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [seed]);
   const onLaterPress = useCallback(() => {
     dispatch(accessApp?.(seed, password));
   }, [dispatch, password, seed]);
@@ -71,7 +77,7 @@ const StoreSeedPhraseScreen = ({route}: Props) => {
             );
           })}
         </View>
-        <Touchable style={[styles.buttonCopy]}>
+        <Touchable style={[styles.buttonCopy]} onPress={onCopy}>
           <SVG.IconCopy fill={colors.subtext} />
           <Text style={[styles.textCopy, {color: colors.subtext}]}>
             Copy to clipboard

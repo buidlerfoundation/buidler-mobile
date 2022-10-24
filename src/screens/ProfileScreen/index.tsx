@@ -4,19 +4,32 @@ import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import useUserData from 'hook/useUserData';
-import React, {memo, useCallback} from 'react';
-import {View, StyleSheet, Text, Alert} from 'react-native';
+import React, {memo, useCallback, useState} from 'react';
+import {View, StyleSheet, Text} from 'react-native';
 import useAppDispatch from 'hook/useAppDispatch';
 import {logout} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
 import api from 'services/api';
 import UserInfo from 'components/UserInfo';
+import ModalBottom from 'components/ModalBottom';
+import MenuConfirm from 'components/MenuConfirm';
+import MenuConfirmDeleteAccount from 'components/MenuConfirmDeleteAccount';
 
 const ProfileScreen = () => {
+  const [isOpenConfirmLogout, setOpenConfirmLogout] = useState(false);
+  const [isOpenConfirmDelete, setOpenConfirmDelete] = useState(false);
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const userData = useUserData();
+  const toggleConfirmLogout = useCallback(
+    () => setOpenConfirmLogout(current => !current),
+    [],
+  );
+  const toggleConfirmDelete = useCallback(
+    () => setOpenConfirmDelete(current => !current),
+    [],
+  );
   const onLogout = useCallback(async () => {
     await dispatch(logout());
     NavigationServices.reset(StackID.AuthStack);
@@ -25,12 +38,6 @@ const ProfileScreen = () => {
     api.deleteUser();
     onLogout();
   }, [onLogout]);
-  const onDeleteAccountPress = useCallback(() => {
-    Alert.alert('Alert', 'are you sure you want to delete your account?', [
-      {text: 'Cancel'},
-      {text: 'Delete', style: 'destructive', onPress: onDeleteAccount},
-    ]);
-  }, [onDeleteAccount]);
   return (
     <View style={styles.container}>
       <UserInfo userData={userData} />
@@ -40,7 +47,7 @@ const ProfileScreen = () => {
             styles.actionItem,
             {backgroundColor: colors.activeBackgroundLight},
           ]}
-          onPress={onLogout}>
+          onPress={toggleConfirmLogout}>
           <SVG.IconMenuLogout />
           <Text style={[styles.actionLabel, {color: colors.text}]}>
             Log out
@@ -52,7 +59,7 @@ const ProfileScreen = () => {
             styles.actionItem,
             {backgroundColor: colors.activeBackgroundLight},
           ]}
-          onPress={onDeleteAccountPress}>
+          onPress={toggleConfirmDelete}>
           <SVG.IconMenuDelete />
           <Text style={[styles.actionLabel, {color: colors.text}]}>
             Delete Account
@@ -60,6 +67,28 @@ const ProfileScreen = () => {
           <SVG.IconArrowRight fill={colors.subtext} />
         </Touchable>
       </View>
+      <ModalBottom
+        isVisible={isOpenConfirmLogout}
+        onSwipeComplete={toggleConfirmLogout}
+        onBackdropPress={toggleConfirmLogout}>
+        <MenuConfirm
+          user={userData}
+          onClose={toggleConfirmLogout}
+          onConfirm={onLogout}
+          confirmLabel="Log out"
+          message="Are you sure you want to log out?"
+        />
+      </ModalBottom>
+      <ModalBottom
+        isVisible={isOpenConfirmDelete}
+        onSwipeComplete={toggleConfirmDelete}
+        onBackdropPress={toggleConfirmDelete}>
+        <MenuConfirmDeleteAccount
+          user={userData}
+          onClose={toggleConfirmDelete}
+          onConfirm={onDeleteAccount}
+        />
+      </ModalBottom>
     </View>
   );
 };
