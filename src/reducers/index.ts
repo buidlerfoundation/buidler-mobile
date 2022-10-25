@@ -11,6 +11,7 @@ import refreshReducer from './refreshReducer';
 import networkReducer from './NetworkReducer';
 import transactionReducer from './TransactionReducer';
 import collectibleReducer from './CollectibleReducers';
+import galleryReducer from './GalleryReducers';
 
 const appReducer = combineReducers({
   configs: configReducers,
@@ -25,6 +26,7 @@ const appReducer = combineReducers({
   network: networkReducer,
   transaction: transactionReducer,
   collectible: collectibleReducer,
+  gallery: galleryReducer,
 });
 
 const rootReducer = (state, action) => {

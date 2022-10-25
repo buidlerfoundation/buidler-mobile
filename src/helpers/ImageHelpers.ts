@@ -1,4 +1,5 @@
 import ImageResizer from 'react-native-image-resizer';
+import RNConvertPhAsset from 'react-native-convert-ph-asset';
 
 export const imageNewSize = (width: number, height: number) => {
   const minSize = 2048;
@@ -28,4 +29,24 @@ export const resizeImage = (image: any) => {
     'JPEG',
     100,
   );
+};
+
+export const convertPHAssetVideo = (image: any) => {
+  return RNConvertPhAsset.convertVideoFromUrl({
+    url: image.uri,
+    convertTo: 'mov',
+    quality: 'original',
+  });
+};
+
+export const convertLocalIdentifierToAssetLibrary = (
+  uri: string,
+  ext: string,
+) => {
+  if (uri.includes('ph://')) {
+    const localIdentifier = uri.replace('ph://', '');
+    const hash = localIdentifier.split('/')[0];
+    return `assets-library://asset/asset.${ext}?id=${hash}&ext=${ext}`;
+  }
+  return uri;
 };

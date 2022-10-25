@@ -12,6 +12,8 @@ import useThemeColor from 'hook/useThemeColor';
 import PinPostDetailScreen from 'screens/PinPostDetailScreen';
 import HomeStack from './HomeStack';
 import UserScreen from 'screens/UserScreen';
+import AllPhotoScreen from 'screens/AllPhotoScreen';
+import HeaderAllPhoto from 'components/HeaderAllPhoto';
 
 const Stack = createNativeStackNavigator();
 
@@ -53,6 +55,11 @@ const RootNavigator = () => {
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
         <Stack.Screen name={StackID.AuthStack} component={AuthStack} />
+        <Stack.Screen
+          name={ScreenID.AllPhotoScreen}
+          component={AllPhotoScreen}
+          options={{header: () => <HeaderAllPhoto />}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

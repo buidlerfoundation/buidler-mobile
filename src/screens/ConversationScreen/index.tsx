@@ -29,7 +29,7 @@ import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import api from 'services/api';
 import {getUniqueId} from 'helpers/GenerateUUID';
-import {resizeImage} from 'helpers/ImageHelpers';
+import {convertPHAssetVideo, resizeImage} from 'helpers/ImageHelpers';
 import SocketUtils from 'utils/SocketUtils';
 import {titleMessageFromNow} from 'utils/DateUtils';
 import useThemeColor from 'hook/useThemeColor';
@@ -365,6 +365,7 @@ const ConversationScreen = () => {
       toggleGallery();
       const imagesResized = await Promise.all(
         items.map(image => {
+          if (image.playableDuration) return convertPHAssetVideo(image);
           return resizeImage(image);
         }),
       );
@@ -372,14 +373,20 @@ const ConversationScreen = () => {
         const randomId = Math.random();
         setAttachments(current => [
           ...current,
-          {uri: img.uri, randomId, loading: true},
+          {
+            uri: img.uri || img.path,
+            randomId,
+            loading: true,
+            type: img.type || 'image',
+          },
         ]);
+        const body = {
+          uri: img.uri || img.path,
+          name: img.name || img.filename,
+          type: 'multipart/form-data',
+        };
         api
-          .uploadFile(currentTeamId, SocketUtils.generateId, {
-            uri: img.uri,
-            name: img.name,
-            type: 'multipart/form-data',
-          })
+          .uploadFile(currentTeamId, SocketUtils.generateId, body)
           .then(res => {
             if (res.statusCode === 200) {
               setAttachments(current =>
@@ -732,7 +739,7 @@ const ConversationScreen = () => {
           isVisible={isOpenModalEmoji}
           onSwipeComplete={closeModalEmoji}>
           <View
-            style={[styles.galleryView, {backgroundColor: colors.background}]}>
+            style={[styles.emojiView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle
               title="Reaction"
               onClosePress={closeModalEmoji}
@@ -804,6 +811,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   galleryView: {
+    height: '50%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  emojiView: {
     height: '90%',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,

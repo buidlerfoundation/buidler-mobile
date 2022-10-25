@@ -29,6 +29,8 @@ import MentionItem from 'components/MentionItem';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useCommunityId from 'hook/useCommunityId';
 import AppStyles from 'common/AppStyles';
+import PermissionHelper from 'helpers/PermissionHelper';
+import Video from 'react-native-video';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -45,15 +47,28 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
   }, [attachment.id, attachment.randomId, onPress]);
   return (
     <View style={styles.attachmentItem}>
-      <FastImage
-        source={{
-          uri:
-            attachment.uri ||
-            ImageHelper.normalizeImage(attachment.url, teamId),
-        }}
-        style={{borderRadius: 5, width: 150, height: 90}}
-        resizeMode="cover"
-      />
+      {attachment.type === 'video' ? (
+        <Video
+          source={{
+            uri:
+              attachment.uri ||
+              ImageHelper.normalizeImage(attachment.url, teamId),
+          }}
+          style={{borderRadius: 5, width: 150, height: 90}}
+          paused
+          resizeMode="contain"
+        />
+      ) : (
+        <FastImage
+          source={{
+            uri:
+              attachment.uri ||
+              ImageHelper.normalizeImage(attachment.url, teamId),
+          }}
+          style={{borderRadius: 5, width: 150, height: 90}}
+          resizeMode="cover"
+        />
+      )}
       {attachment.loading && (
         <Spinner size="small" backgroundColor="#11111180" />
       )}
@@ -201,6 +216,16 @@ const MessageInput = ({
     onFocusChanged?.(false);
     setFocus(false);
   }, [onFocusChanged]);
+
+  const onPlusPress = useCallback(async () => {
+    const grand = await PermissionHelper.checkPermissionPhoto();
+    if (grand) {
+      // navigation.navigate(ScreenID.AllPhotoScreen);
+      openGallery();
+    } else {
+      PermissionHelper.requestSettingPhoto();
+    }
+  }, [openGallery]);
 
   const handleChangeText = useCallback(text => {
     setVal(text);
@@ -469,7 +494,7 @@ const MessageInput = ({
             />
           )}
           <View style={styles.inputContainer}>
-            <Touchable style={{padding: 5}} onPress={openGallery}>
+            <Touchable style={{padding: 5}} onPress={onPlusPress}>
               <SVG.IconPlusCircle />
             </Touchable>
             <TextInput

@@ -1901,10 +1901,9 @@
   dependencies:
     merge-options "^3.0.4"
 
-"@react-native-camera-roll/camera-roll@^5.0.2":
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/@react-native-camera-roll/camera-roll/-/camera-roll-5.0.2.tgz#299bcd25fc51c1e8564808e744439bf7761286af"
-  integrity sha512-5gBol4mHjw9u1hUQzYWWdnB+uYgjuBd+adLQfJWhE6yv7rNFb+Noi872bYLyzBb8ayaVAbp/EtlxiG1lWY/IyA==
+"@react-native-camera-roll/camera-roll@https://github.com/HungNguyenBao/react-native-cameraroll":
+  version "4.0.4"
+  resolved "https://github.com/HungNguyenBao/react-native-cameraroll#fff93a356290c7c7858cf07317668a09ee5b03f8"
 
 "@react-native-clipboard/clipboard@^1.8.5":
   version "1.11.1"
@@ -8008,6 +8007,16 @@ react-native-collapsible@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/react-native-collapsible/-/react-native-collapsible-1.6.0.tgz#ca261ffff16914f872059bb0972e3a78c4b37f9c"
   integrity sha512-beZjdgbT9Y/Pg591Xy5XkKG20HffJiVad4n9bfcUF/f783A+tvOVXnqvbS58Lkaym93mi4jcDPMuW9Vc1t6rqg==
+
+react-native-convert-ph-asset@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/react-native-convert-ph-asset/-/react-native-convert-ph-asset-1.0.3.tgz#af299a6a3f7270b55c3bdfe472a40cea02c93c80"
+  integrity sha512-qdTrUsDlxOvC7KnamjjRnxaijr3myfOwzbYR0vyTl0BjPT25jkCQ9a4Q26egRdy8uqiw7mqB1ZhG5OohwnpsOg==
+
+react-native-create-thumbnail@^1.6.3:
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/react-native-create-thumbnail/-/react-native-create-thumbnail-1.6.3.tgz#3032bb7f5c07a44f578c362c3cc1c671baa0d445"
+  integrity sha512-QsIhUBAefXBYq808KUMe0MnvgIokO4ULM43X1jJ2N9xzQX6Zyu/D1VhlE0LjGL0jHoiULmIRa05QdJgnq/2zBA==
 
 react-native-crypto@^2.2.0:
   version "2.2.0"

@@ -16,11 +16,11 @@ class PermissionHelper {
   openSelectPhoto = () => openLimitedPhotoLibraryPicker();
   checkPermissionNotification = async () => {
     const res = await checkNotifications();
-    return res.status == RESULTS.GRANTED;
+    return res.status === RESULTS.GRANTED;
   };
   requestPermissionNotification = async () => {
     const res = await requestNotifications(['alert', 'sound']);
-    return res.status == RESULTS.GRANTED;
+    return res.status === RESULTS.GRANTED;
   };
 
   checkLimitPhotoIOS = async () => {
@@ -29,111 +29,114 @@ class PermissionHelper {
     return res === RESULTS.LIMITED;
   };
 
-  checkPermissionCamera = async () => {
+  checkPermissionPhoto = async () => {
     const {ANDROID, IOS} = PERMISSIONS;
     const requestPermission: Array<any> = [];
-    let permissionCamera: Permission = null;
     let permissionPhoto: Permission = null;
     let permissionSavePhoto: Permission = null;
-    // let permissionRecordAudio: Permission = null;
-    if (Platform.OS == 'android') {
-      permissionCamera = ANDROID.CAMERA;
+    if (Platform.OS === 'android') {
       permissionPhoto = ANDROID.READ_EXTERNAL_STORAGE;
       permissionSavePhoto = ANDROID.WRITE_EXTERNAL_STORAGE;
-      // permissionRecordAudio = ANDROID.RECORD_AUDIO;
-
-      const [
-        cameraStatus,
-        readPhotoStatus,
-        savePhotoStatus,
-        // recordAudioStatus,
-      ] = await Promise.all([
-        check(permissionCamera),
+      const [readPhotoStatus, savePhotoStatus] = await Promise.all([
         check(permissionPhoto),
         check(permissionSavePhoto),
-        // check(permissionRecordAudio),
       ]);
       if (
-        cameraStatus == RESULTS.GRANTED &&
-        readPhotoStatus == RESULTS.GRANTED &&
-        savePhotoStatus == RESULTS.GRANTED
-        // recordAudioStatus == RESULTS.GRANTED
+        readPhotoStatus === RESULTS.GRANTED &&
+        savePhotoStatus === RESULTS.GRANTED
       )
         return true;
       if (
-        cameraStatus == RESULTS.BLOCKED ||
-        readPhotoStatus == RESULTS.BLOCKED ||
-        savePhotoStatus == RESULTS.BLOCKED
-        // recordAudioStatus == RESULTS.BLOCKED
+        readPhotoStatus === RESULTS.BLOCKED ||
+        savePhotoStatus === RESULTS.BLOCKED
       ) {
-        this.requestSettingCamera();
         return false;
       }
-      if (cameraStatus == RESULTS.DENIED) {
-        requestPermission.push(ANDROID.CAMERA);
-      }
-      if (readPhotoStatus == RESULTS.DENIED) {
+      if (readPhotoStatus === RESULTS.DENIED) {
         requestPermission.push(ANDROID.READ_EXTERNAL_STORAGE);
       }
-      if (savePhotoStatus == RESULTS.DENIED) {
+      if (savePhotoStatus === RESULTS.DENIED) {
         requestPermission.push(ANDROID.WRITE_EXTERNAL_STORAGE);
       }
-      // if (recordAudioStatus == RESULTS.DENIED) {
-      //   requestPermission.push(ANDROID.RECORD_AUDIO);
-      // }
       const requestStatus: any = await PermissionsAndroid.requestMultiple(
         requestPermission,
       );
       requestPermission.forEach(p => {
-        if (requestStatus[p] != RESULTS.GRANTED) {
+        if (requestStatus[p] !== RESULTS.GRANTED) {
+          return false;
+        }
+      });
+      return true;
+    } else {
+      permissionPhoto = IOS.PHOTO_LIBRARY;
+      const [readPhotoStatus] = await Promise.all([check(permissionPhoto)]);
+      if (
+        readPhotoStatus === RESULTS.GRANTED ||
+        readPhotoStatus === RESULTS.LIMITED
+      )
+        return true;
+      if (readPhotoStatus === RESULTS.BLOCKED) {
+        return false;
+      }
+      if (readPhotoStatus === RESULTS.DENIED) {
+        requestPermission.push(request(permissionPhoto));
+      }
+      const requestStatus = await Promise.all(requestPermission);
+      return requestStatus.find(status => status !== RESULTS.GRANTED) !== null;
+    }
+  };
+
+  checkPermissionCamera = async () => {
+    const {ANDROID, IOS} = PERMISSIONS;
+    const requestPermission: Array<any> = [];
+    let permissionCamera: Permission = null;
+    if (Platform.OS === 'android') {
+      permissionCamera = ANDROID.CAMERA;
+      const [cameraStatus] = await Promise.all([check(permissionCamera)]);
+      if (cameraStatus === RESULTS.GRANTED) return true;
+      if (cameraStatus === RESULTS.BLOCKED) {
+        return false;
+      }
+      if (cameraStatus === RESULTS.DENIED) {
+        requestPermission.push(ANDROID.CAMERA);
+      }
+      const requestStatus: any = await PermissionsAndroid.requestMultiple(
+        requestPermission,
+      );
+      requestPermission.forEach(p => {
+        if (requestStatus[p] !== RESULTS.GRANTED) {
           return false;
         }
       });
       return true;
     } else {
       permissionCamera = IOS.CAMERA;
-      permissionPhoto = IOS.PHOTO_LIBRARY;
-      // permissionRecordAudio = IOS.MICROPHONE;
-      const [
-        cameraStatus,
-        readPhotoStatus,
-        // recordAudioStatus,
-      ] = await Promise.all([
-        check(permissionCamera),
-        check(permissionPhoto),
-        // check(permissionRecordAudio),
-      ]);
-      if (
-        cameraStatus == RESULTS.GRANTED &&
-        (readPhotoStatus == RESULTS.GRANTED ||
-          readPhotoStatus == RESULTS.LIMITED)
-        // recordAudioStatus == RESULTS.GRANTED
-      )
-        return true;
-      if (
-        cameraStatus == RESULTS.BLOCKED ||
-        readPhotoStatus == RESULTS.BLOCKED
-        // recordAudioStatus == RESULTS.BLOCKED
-      ) {
-        this.requestSettingCamera();
+      const [cameraStatus] = await Promise.all([check(permissionCamera)]);
+      if (cameraStatus === RESULTS.GRANTED) return true;
+      if (cameraStatus === RESULTS.BLOCKED) {
         return false;
       }
 
-      if (cameraStatus == RESULTS.DENIED) {
+      if (cameraStatus === RESULTS.DENIED) {
         requestPermission.push(request(permissionCamera));
       }
-      if (readPhotoStatus == RESULTS.DENIED) {
-        requestPermission.push(request(permissionPhoto));
-      }
       const requestStatus = await Promise.all(requestPermission);
-      return requestStatus.find(status => status != RESULTS.GRANTED) !== null;
+      return requestStatus.find(status => status !== RESULTS.GRANTED) !== null;
     }
   };
 
   requestSettingCamera = () => {
     Alert.alert(
       'Alert',
-      'Notable need to access to your camera and photos to use that feature',
+      'Buidler need to access to your camera to use that feature',
+      [{text: 'Cancel'}, {text: 'Open Setting', onPress: () => openSettings()}],
+    );
+  };
+
+  requestSettingPhoto = () => {
+    Alert.alert(
+      'Alert',
+      'Buidler need to access to your photos to use that feature',
       [{text: 'Cancel'}, {text: 'Open Setting', onPress: () => openSettings()}],
     );
   };

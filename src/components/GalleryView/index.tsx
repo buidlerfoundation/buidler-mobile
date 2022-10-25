@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import {
   StyleSheet,
-  Image,
   useWindowDimensions,
   View,
   FlatList,
@@ -16,38 +15,14 @@ import {
   Text,
 } from 'react-native';
 import ActionSheet from 'react-native-actionsheet';
-import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import CameraRoll from '@react-native-camera-roll/camera-roll';
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import Touchable from 'components/Touchable';
 import PermissionHelper from 'helpers/PermissionHelper';
 import Fonts from 'common/Fonts';
 import useThemeColor from 'hook/useThemeColor';
-
-type PhotoItemProps = {
-  item: any;
-  onSelect: (images: Array<any>) => void;
-  index: number;
-  imageSize: number;
-};
-
-const PhotoItem = ({item, onSelect, index, imageSize}: PhotoItemProps) => {
-  const handlePress = useCallback(
-    () => onSelect([item.node.image]),
-    [item.node.image, onSelect],
-  );
-  return (
-    <Touchable onPress={handlePress} useReactNative>
-      <Image
-        style={{
-          width: imageSize,
-          height: imageSize,
-          marginHorizontal: (index - 1) % 3 === 0 ? 3 : 0,
-        }}
-        source={{uri: item.node.image.uri}}
-      />
-    </Touchable>
-  );
-};
+import PhotoItem from 'components/PhotoItem';
+import AppDimension from 'common/AppDimension';
 
 type GalleryViewProps = {
   useFlatList?: boolean;
@@ -79,7 +54,7 @@ const GalleryView = ({
     CameraRoll.getPhotos({
       first: 20,
       after,
-      assetType: 'Photos',
+      assetType: 'All',
     })
       .then(res => {
         if (res.edges.length > 0) {
@@ -105,6 +80,12 @@ const GalleryView = ({
       PermissionHelper.openPhotoSetting();
     }
   }, []);
+  const handleSelectPhoto = useCallback(
+    item => {
+      onSelectPhoto([item.node.image]);
+    },
+    [onSelectPhoto],
+  );
   return (
     <>
       <ListComponent
@@ -115,6 +96,9 @@ const GalleryView = ({
         ItemSeparatorComponent={() => <View style={{width: 3, height: 3}} />}
         onEndReachedThreshold={0.5}
         onEndReached={onEndReached}
+        ListFooterComponent={
+          <View style={{height: AppDimension.extraBottom}} />
+        }
         renderItem={({item, index}) => {
           if (item.type === 'select-photo') {
             return (
@@ -138,7 +122,7 @@ const GalleryView = ({
             <PhotoItem
               item={item}
               index={index}
-              onSelect={onSelectPhoto}
+              onSelect={handleSelectPhoto}
               imageSize={imageSize}
             />
           );

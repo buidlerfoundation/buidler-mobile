@@ -380,7 +380,9 @@ PODS:
   - React-jsinspector (0.70.1)
   - React-logger (0.70.1):
     - glog
-  - react-native-cameraroll (5.0.2):
+  - react-native-cameraroll (4.0.4):
+    - React-Core
+  - react-native-create-thumbnail (1.6.3):
     - React-Core
   - react-native-golden-keystore (1.0.0):
     - React
@@ -478,6 +480,8 @@ PODS:
     - React-Core
   - RNCClipboard (1.11.1):
     - React-Core
+  - RNConvertPhAsset (1.0.3):
+    - React
   - RNFastImage (8.6.1):
     - React-Core
     - SDWebImage (~> 5.11.1)
@@ -598,6 +602,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - "react-native-cameraroll (from `../node_modules/@react-native-camera-roll/camera-roll`)"
+  - react-native-create-thumbnail (from `../node_modules/react-native-create-thumbnail`)
   - react-native-golden-keystore (from `../node_modules/react-native-golden-keystore`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
@@ -621,6 +626,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
+  - RNConvertPhAsset (from `../node_modules/react-native-convert-ph-asset`)
   - RNFastImage (from `../node_modules/react-native-fast-image`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
@@ -715,6 +721,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   react-native-cameraroll:
     :path: "../node_modules/@react-native-camera-roll/camera-roll"
+  react-native-create-thumbnail:
+    :path: "../node_modules/react-native-create-thumbnail"
   react-native-golden-keystore:
     :path: "../node_modules/react-native-golden-keystore"
   react-native-image-picker:
@@ -761,6 +769,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
+  RNConvertPhAsset:
+    :path: "../node_modules/react-native-convert-ph-asset"
   RNFastImage:
     :path: "../node_modules/react-native-fast-image"
   RNFBApp:
@@ -834,7 +844,8 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 47201924064085223b63ec7e3ee9fd40ad8508e8
   React-jsinspector: 1363be638eccfe1aea1b10dd42e632b0397e5ec8
   React-logger: 7bd569e3857d74ed412ce0a5c51f421ff7d4ca7f
-  react-native-cameraroll: 4d0cb1c3413d4b7b85beb68a8c14325d887b404c
+  react-native-cameraroll: 88f4e62d9ecd0e1f253abe4f685474f2ea14bfa2
+  react-native-create-thumbnail: 94e68f6cc050a870f830352d1a924c1e8d38b52f
   react-native-golden-keystore: 091b0fc11154a97d96ef938b3c22a21a396b4d7b
   react-native-image-picker: 4bc9ed38c8be255b515d8c88babbaf74973f91a8
   react-native-image-resizer: d9fb629a867335bdc13230ac2a58702bb8c8828f
@@ -858,6 +869,7 @@ SPEC CHECKSUMS:
   ReactCommon: 7f86326b92009925c6dcf93f8e825060171c379f
   RNCAsyncStorage: 0c357f3156fcb16c8589ede67cc036330b6698ca
   RNCClipboard: 2834e1c4af68697089cdd455ee4a4cdd198fa7dd
+  RNConvertPhAsset: 9b366b8a1abc194b76572712c6f7dd89c9e4e37f
   RNFastImage: 3207b9eb17c2425d574ca40db35185db6e324f4e
   RNFBApp: dda844e7084b590eb3d9bec1b2115cabbe4bc40e
   RNFBCrashlytics: 425c8b11415495c7e771745ca0ab1142ed0bd5b2

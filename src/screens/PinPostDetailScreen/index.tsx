@@ -23,7 +23,7 @@ import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import SocketUtils from 'utils/SocketUtils';
 import {getUniqueId} from 'helpers/GenerateUUID';
-import {resizeImage} from 'helpers/ImageHelpers';
+import {convertPHAssetVideo, resizeImage} from 'helpers/ImageHelpers';
 import api from 'services/api';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -115,6 +115,7 @@ const PinPostDetailScreen = () => {
       toggleGallery();
       const imagesResized = await Promise.all(
         items.map(image => {
+          if (image.playableDuration) return convertPHAssetVideo(image);
           return resizeImage(image);
         }),
       );
@@ -122,14 +123,20 @@ const PinPostDetailScreen = () => {
         const randomId = Math.random();
         setAttachments(current => [
           ...current,
-          {uri: img.uri, randomId, loading: true},
+          {
+            uri: img.uri || img.path,
+            randomId,
+            loading: true,
+            type: img.type || 'image',
+          },
         ]);
+        const body = {
+          uri: img.uri || img.path,
+          name: img.name || img.filename,
+          type: 'multipart/form-data',
+        };
         api
-          .uploadFile(community.team_id, SocketUtils.generateId, {
-            uri: img.uri,
-            name: img.name,
-            type: 'multipart/form-data',
-          })
+          .uploadFile(community.team_id, SocketUtils.generateId, body)
           .then(res => {
             if (res.statusCode === 200) {
               setAttachments(current =>
@@ -339,7 +346,7 @@ const PinPostDetailScreen = () => {
           isVisible={isOpenModalEmoji}
           onSwipeComplete={closeModalEmoji}>
           <View
-            style={[styles.galleryView, {backgroundColor: colors.background}]}>
+            style={[styles.emojiView, {backgroundColor: colors.background}]}>
             <BottomSheetHandle
               title="Reaction"
               onClosePress={closeModalEmoji}
@@ -398,6 +405,11 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   galleryView: {
+    height: '50%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  emojiView: {
     height: '90%',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
