@@ -8,12 +8,14 @@ type BottomSheetHandleProps = {
   title?: string;
   titleComponent?: any;
   onClosePress: () => void;
+  renderRight?: React.ReactNode;
 };
 
 const BottomSheetHandle = ({
   title,
   titleComponent,
   onClosePress,
+  renderRight,
 }: BottomSheetHandleProps) => {
   const {colors} = useThemeColor();
   return (
@@ -41,7 +43,7 @@ const BottomSheetHandle = ({
           {title}
         </Text>
       )}
-      <ButtonClose onPress={onClosePress} />
+      {renderRight ? renderRight : <ButtonClose onPress={onClosePress} />}
     </View>
   );
 };

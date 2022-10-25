@@ -47,7 +47,7 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
   }, [attachment.id, attachment.randomId, onPress]);
   return (
     <View style={styles.attachmentItem}>
-      {attachment.type === 'video' ? (
+      {attachment.type.includes('video') ? (
         <Video
           source={{
             uri:

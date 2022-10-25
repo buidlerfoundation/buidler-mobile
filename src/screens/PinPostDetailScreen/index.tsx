@@ -38,6 +38,8 @@ import {addReact, removeReact} from 'actions/ReactActions';
 import MenuReport from 'components/MenuReport';
 import ModalBottom from 'components/ModalBottom';
 import AppConfig from 'common/AppConfig';
+import ViewAllButton from 'components/ViewAllButton';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -115,7 +117,10 @@ const PinPostDetailScreen = () => {
       toggleGallery();
       const imagesResized = await Promise.all(
         items.map(image => {
-          if (image.playableDuration) return convertPHAssetVideo(image);
+          if (image.type?.includes('video')) {
+            if (image.playableDuration) return convertPHAssetVideo(image);
+            return image;
+          }
           return resizeImage(image);
         }),
       );
@@ -132,7 +137,7 @@ const PinPostDetailScreen = () => {
         ]);
         const body = {
           uri: img.uri || img.path,
-          name: img.name || img.filename,
+          name: img.name || img.filename || img.fileName,
           type: 'multipart/form-data',
         };
         api
@@ -209,6 +214,15 @@ const PinPostDetailScreen = () => {
     onCloseMenuMessage,
     selectedMessage?.message_id,
   ]);
+  const openGallery = useCallback(async () => {
+    const result = await launchImageLibrary({
+      selectionLimit: 10,
+      mediaType: 'mixed',
+    });
+    if (result.assets) {
+      onSelectPhoto(result.assets);
+    }
+  }, [onSelectPhoto]);
   const onReactPress = useCallback(
     (name: string) => {
       const reacts = reactData[selectedMessage?.message_id];
@@ -338,7 +352,11 @@ const PinPostDetailScreen = () => {
         <ModalBottom isVisible={isOpenGallery} onSwipeComplete={toggleGallery}>
           <View
             style={[styles.galleryView, {backgroundColor: colors.background}]}>
-            <BottomSheetHandle title="Photos" onClosePress={toggleGallery} />
+            <BottomSheetHandle
+              title="Photos"
+              onClosePress={toggleGallery}
+              renderRight={<ViewAllButton onPress={openGallery} />}
+            />
             <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
           </View>
         </ModalBottom>
