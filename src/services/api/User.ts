@@ -4,6 +4,7 @@ import {
   CollectibleDataApi,
   Community,
   InitialApiData,
+  NFTCollectionDataApi,
   Space,
   SpaceCollectionData,
   TransactionApiData,

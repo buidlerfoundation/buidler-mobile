@@ -15,6 +15,7 @@ import ConversationStack from './ConversationStack';
 import SideBarCommunity from 'components/SideBarCommunity';
 import useAppDispatch from 'hook/useAppDispatch';
 import {acceptInvitation} from 'actions/UserActions';
+import WalletHeader from 'screens/WalletScreen/WalletHeader';
 
 const Tab = createBottomTabNavigator();
 
@@ -137,11 +138,14 @@ const HomeStack = () => {
           component={ConversationStack}
           initialParams={route.params}
         />
-        {/* <Tab.Screen
-          options={{tabBarIcon: tabBarIconWallet}}
+        <Tab.Screen
+          options={{
+            tabBarIcon: tabBarIconWallet,
+            header: () => <WalletHeader />,
+          }}
           name={ScreenID.WalletScreen}
           component={WalletScreen}
-        /> */}
+        />
         <Tab.Screen
           options={{tabBarIcon: tabBarIconProfile}}
           name={ScreenID.ProfileScreen}
