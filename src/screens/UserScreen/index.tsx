@@ -48,8 +48,12 @@ const UserScreen = () => {
   const onPressMenu = useCallback(() => {
     setOpenMenu(true);
   }, []);
-  const onDirectMessage = useCallback(() => {}, []);
-  const onSendCrypto = useCallback(() => {}, []);
+  const onDirectMessage = useCallback(() => {
+    Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
+  }, []);
+  const onSendCrypto = useCallback(() => {
+    Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
+  }, []);
   const onCloseMenu = useCallback(() => setOpenMenu(false), []);
   const onCloseConfirmBlock = useCallback(() => setOpenConfirmBlock(false), []);
   const fetchUserProfileById = useCallback(async () => {
