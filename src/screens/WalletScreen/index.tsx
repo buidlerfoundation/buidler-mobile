@@ -18,7 +18,7 @@ const WalletScreen = () => {
           paddingHorizontal: 10,
           marginTop: 40,
         },
-        tabBarLabelStyle: [AppStyles.TextSemi16, {textTransform: 'capitalize'}],
+        tabBarLabelStyle: [AppStyles.TextSemi16, {textTransform: 'none'}],
         tabBarInactiveTintColor: colors.subtext,
         tabBarActiveTintColor: colors.text,
         tabBarIndicator: () => null,

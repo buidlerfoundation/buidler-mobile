@@ -66,9 +66,15 @@ const WalletCollectibles = () => {
   const collectibles = useAppSelector(state => state.collectible.data);
   const itemSize = useMemo(() => Math.floor((width - 70) / 3), [width]);
   const [collectibleToggle, setCollectibleToggle] = useState({});
-  useEffect(() => {
-    dispatch(getCollectibles());
+  const [loading, setLoading] = useState(false);
+  const fetchCollectible = useCallback(async () => {
+    setLoading(true);
+    await dispatch(getCollectibles());
+    setLoading(false);
   }, [dispatch]);
+  useEffect(() => {
+    fetchCollectible();
+  }, [dispatch, fetchCollectible]);
   const dataCollectibles = useMemo(() => {
     return collectibles.reduce((res, val) => {
       const nfts = collectibleToggle?.[val.contract_address]
@@ -148,7 +154,19 @@ const WalletCollectibles = () => {
     [collectibleToggle, colors.border, itemSize, onHeaderPress],
   );
   const renderFooter = useCallback(() => <View style={{height: 7.5}} />, []);
-  if (dataCollectibles.length === 0) return null;
+  if (dataCollectibles.length === 0) {
+    if (!loading)
+      return (
+        <Text
+          style={[
+            AppStyles.TextMed15,
+            {color: colors.subtext, marginHorizontal: 20},
+          ]}>
+          No NFT in your collection yet
+        </Text>
+      );
+    return null;
+  }
   return (
     <RecyclerListView
       rowRenderer={renderRow}
