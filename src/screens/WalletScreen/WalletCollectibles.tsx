@@ -1,13 +1,63 @@
 import {getCollectibles} from 'actions/CollectibleActions';
 import AppStyles from 'common/AppStyles';
+import SVG from 'common/SVG';
 import CollectibleLayoutProvider from 'components/CollectibleLayoutProvider';
+import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
-import React, {memo, useCallback, useEffect, useMemo} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {DataProvider, RecyclerListView} from 'recyclerlistview';
+
+type CollectibleHeaderProps = {
+  item: any;
+  onPress: (item: any) => void;
+  toggle?: boolean;
+};
+
+const CollectibleHeader = memo(
+  ({item, onPress, toggle}: CollectibleHeaderProps) => {
+    const {colors} = useThemeColor();
+    const handlePress = useCallback(() => onPress(item), [item, onPress]);
+    return (
+      <Touchable
+        style={[styles.collectionContainer]}
+        onPress={handlePress}
+        useReactNative>
+        <FastImage source={{uri: item.image}} style={styles.collectionImage} />
+        <Text
+          style={[
+            styles.collectionName,
+            AppStyles.TextSemi16,
+            {color: colors.text},
+          ]}>
+          {item.name}
+        </Text>
+        <View
+          style={{
+            marginLeft: 8,
+            transform: [{rotate: toggle ? '-90deg' : '0deg'}],
+          }}>
+          <SVG.IconCollapse fill={colors.subtext} />
+        </View>
+        <View style={{flex: 1}} />
+        {toggle && (
+          <View
+            style={[
+              styles.count,
+              {backgroundColor: colors.activeBackgroundLight},
+            ]}>
+            <Text style={[AppStyles.TextSemi15, {color: colors.subtext}]}>
+              {item.count}
+            </Text>
+          </View>
+        )}
+      </Touchable>
+    );
+  },
+);
 
 const WalletCollectibles = () => {
   const {colors} = useThemeColor();
@@ -15,11 +65,20 @@ const WalletCollectibles = () => {
   const {width} = useWindowDimensions();
   const collectibles = useAppSelector(state => state.collectible.data);
   const itemSize = useMemo(() => Math.floor((width - 70) / 3), [width]);
+  const [collectibleToggle, setCollectibleToggle] = useState({});
   useEffect(() => {
     dispatch(getCollectibles());
   }, [dispatch]);
   const dataCollectibles = useMemo(() => {
     return collectibles.reduce((res, val) => {
+      const nfts = collectibleToggle?.[val.contract_address]
+        ? []
+        : val.nft.map((el, idx) => ({
+            ...el,
+            key: el.token_id,
+            type: 'collection-item',
+            isFirst: idx % 3 === 0,
+          }));
       res.push(
         ...[
           {
@@ -29,27 +88,30 @@ const WalletCollectibles = () => {
             count: val.nft.length,
             type: 'collection',
           },
-          ...val.nft.map((el, idx) => ({
-            ...el,
-            key: el.token_id,
-            type: 'collection-item',
-            isFirst: idx % 3 === 0,
-          })),
+          ...nfts,
         ],
       );
       return res;
     }, []);
-  }, [collectibles]);
+  }, [collectibleToggle, collectibles]);
   const dataProvider = useMemo(
     () =>
       new DataProvider((r1, r2) => {
-        return r1.unified !== r2.unified;
+        return r1.key !== r2.key;
       }).cloneWithRows(dataCollectibles),
     [dataCollectibles],
   );
   const layoutProvider = useMemo(
     () => new CollectibleLayoutProvider(dataProvider),
     [dataProvider],
+  );
+  const onHeaderPress = useCallback(
+    item =>
+      setCollectibleToggle(current => ({
+        ...current,
+        [item.key]: !current?.[item.key],
+      })),
+    [],
   );
   const renderRow = useCallback(
     (type, data) => {
@@ -76,23 +138,14 @@ const WalletCollectibles = () => {
         );
       }
       return (
-        <View style={[styles.collectionContainer]}>
-          <FastImage
-            source={{uri: data.image}}
-            style={styles.collectionImage}
-          />
-          <Text
-            style={[
-              styles.collectionName,
-              AppStyles.TextSemi16,
-              {color: colors.text},
-            ]}>
-            {data.name}
-          </Text>
-        </View>
+        <CollectibleHeader
+          item={data}
+          onPress={onHeaderPress}
+          toggle={collectibleToggle?.[data.key]}
+        />
       );
     },
-    [colors.border, colors.text, itemSize],
+    [collectibleToggle, colors.border, itemSize, onHeaderPress],
   );
   const renderFooter = useCallback(() => <View style={{height: 7.5}} />, []);
   if (dataCollectibles.length === 0) return null;
@@ -109,9 +162,10 @@ const WalletCollectibles = () => {
 const styles = StyleSheet.create({
   collectionContainer: {
     flexDirection: 'row',
-    height: 55,
+    height: 40,
     paddingHorizontal: 20,
-    paddingTop: 15,
+    marginTop: 15,
+    alignItems: 'center',
   },
   collectionImage: {
     width: 25,
@@ -126,6 +180,14 @@ const styles = StyleSheet.create({
     paddingTop: 15,
   },
   collectionItemImage: {
+    borderRadius: 5,
+  },
+  count: {
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    minWidth: 30,
     borderRadius: 5,
   },
 });
