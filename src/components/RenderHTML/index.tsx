@@ -93,6 +93,22 @@ const RenderHTML = ({
         color: colors.mention,
         textDecorationLine: 'none',
       },
+      h1: {
+        fontSize: 26,
+        lineHeight: 34,
+      },
+      h2: {
+        fontSize: 24,
+        lineHeight: 30,
+      },
+      h3: {
+        fontSize: 22,
+        lineHeight: 26,
+      },
+      h4: {
+        fontSize: 20,
+        lineHeight: 22,
+      },
     }),
     [colors.mention],
   );
