@@ -77,7 +77,7 @@ const UnlockScreen = () => {
             placeholderTextColor={colors.subtext}
             value={pass}
             onChangeText={text => setPass(text)}
-            textContentType="none"
+            textContentType="oneTimeCode"
             style={[
               styles.input,
               {

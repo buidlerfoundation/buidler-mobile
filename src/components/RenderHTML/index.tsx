@@ -22,7 +22,7 @@ type RenderHTMLProps = {
 const RenderHTML = ({
   html,
   onLinkPress,
-  defaultTextProps,
+  defaultTextProps = {},
   embeds,
 }: RenderHTMLProps) => {
   const dispatch = useAppDispatch();
@@ -177,7 +177,7 @@ const RenderHTML = ({
       contentWidth={width}
       source={{html}}
       tagsStyles={tagsStyles}
-      defaultTextProps={defaultTextProps}
+      defaultTextProps={{...defaultTextProps, allowFontScaling: false}}
       renderersProps={renderersProps}
       classesStyles={classesStyles}
     />

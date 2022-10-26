@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {StatusBar, View, LogBox, AppState} from 'react-native';
+import {StatusBar, View, LogBox, AppState, Text, TextInput} from 'react-native';
 import RootNavigator from 'navigation';
 import {Provider} from 'react-redux';
 import store from './src/store';
@@ -18,6 +18,10 @@ LogBox.ignoreAllLogs();
 const App = () => {
   const appState = useRef(AppState.currentState);
   useEffect(() => {
+    if (Text.defaultProps == null) Text.defaultProps = {};
+    Text.defaultProps.allowFontScaling = false;
+    if (TextInput.defaultProps == null) TextInput.defaultProps = {};
+    TextInput.defaultProps.allowFontScaling = false;
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
         appState.current.match(/inactive|background/) &&
