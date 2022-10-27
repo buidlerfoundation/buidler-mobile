@@ -2,6 +2,7 @@ import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
 import CommunityLogo from 'components/CommunityLogo';
 import Touchable from 'components/Touchable';
+import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
 import {Community} from 'models';
 import React, {memo, useCallback} from 'react';
@@ -27,9 +28,18 @@ const CommunityItem = ({
     () => onPressMenu(community),
     [community, onPressMenu],
   );
+  const communityId = useCommunityId();
   return (
     <Touchable
-      style={[styles.container, {backgroundColor: colors.background}]}
+      style={[
+        styles.container,
+        {
+          backgroundColor:
+            communityId === community.team_id
+              ? colors.border
+              : colors.background,
+        },
+      ]}
       onPress={handlePress}>
       <CommunityLogo community={community} />
       <Text

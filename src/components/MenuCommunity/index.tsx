@@ -16,6 +16,8 @@ type MenuCommunityProps = {
   onCreateCommunity: () => void;
   onEditCommunity: () => void;
   onLeaveCommunity: () => void;
+  canEdit?: boolean;
+  canCreate?: boolean;
 };
 
 const MenuCommunity = ({
@@ -25,6 +27,8 @@ const MenuCommunity = ({
   onCreateCommunity,
   onEditCommunity,
   onLeaveCommunity,
+  canEdit,
+  canCreate,
 }: MenuCommunityProps) => {
   const {colors} = useThemeColor();
   return (
@@ -50,16 +54,20 @@ const MenuCommunity = ({
           label="Invite member"
           onPress={onInviteMember}
         />
-        <MenuItem
-          Icon={SVG.IconMenuCreate}
-          label="Create community"
-          onPress={onCreateCommunity}
-        />
-        <MenuItem
-          Icon={SVG.IconMenuSetting}
-          label="Edit community"
-          onPress={onEditCommunity}
-        />
+        {canCreate && (
+          <MenuItem
+            Icon={SVG.IconMenuCreate}
+            label="Create community"
+            onPress={onCreateCommunity}
+          />
+        )}
+        {canEdit && (
+          <MenuItem
+            Icon={SVG.IconMenuSetting}
+            label="Edit community"
+            onPress={onEditCommunity}
+          />
+        )}
       </View>
       <MenuItem
         Icon={SVG.IconMenuLogout}
