@@ -1,4 +1,5 @@
 import AppStyles from 'common/AppStyles';
+import SVG from 'common/SVG';
 import CommunityLogo from 'components/CommunityLogo';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
@@ -9,13 +10,22 @@ import {StyleSheet, Text} from 'react-native';
 type CommunityItemProps = {
   community: Community;
   onPress: (community: Community) => void;
+  onPressMenu: (community: Community) => void;
 };
 
-const CommunityItem = ({community, onPress}: CommunityItemProps) => {
+const CommunityItem = ({
+  community,
+  onPress,
+  onPressMenu,
+}: CommunityItemProps) => {
   const {colors} = useThemeColor();
   const handlePress = useCallback(
     () => onPress(community),
     [community, onPress],
+  );
+  const handleMenuPress = useCallback(
+    () => onPressMenu(community),
+    [community, onPressMenu],
   );
   return (
     <Touchable
@@ -32,6 +42,9 @@ const CommunityItem = ({community, onPress}: CommunityItemProps) => {
         numberOfLines={1}>
         {community.team_display_name}
       </Text>
+      <Touchable onPress={handleMenuPress}>
+        <SVG.IconMore fill={colors.text} />
+      </Touchable>
     </Touchable>
   );
 };
@@ -47,6 +60,7 @@ const styles = StyleSheet.create({
   },
   communityName: {
     marginHorizontal: 15,
+    flex: 1,
   },
 });
 

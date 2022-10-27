@@ -82,7 +82,7 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
           <Touchable onPress={handlePress} style={{padding: 10}}>
             <View
               style={[styles.clearButton, {backgroundColor: colors.subtext}]}>
-              <SVG.IconClose fill={colors.text} />
+              <SVG.IconClose fill={colors.text} width={15} height={15} />
             </View>
           </Touchable>
         </View>

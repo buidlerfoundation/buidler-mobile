@@ -5,10 +5,11 @@ import {AsyncKey} from 'common/AppStorage';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import MenuEmojiItem from 'components/MenuEmojiItem';
+import MenuItem from 'components/MenuItem';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, StyleSheet, Image} from 'react-native';
 
 type MenuPinPostProps = {
   onReply: () => void;
@@ -130,82 +131,61 @@ const MenuPinPost = ({
         </Touchable>
       </View>
       <View style={[styles.groupMenu, {backgroundColor: colors.border}]}>
-        <Touchable style={styles.menuItem} onPress={onReply}>
-          <SVG.IconMenuReply />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>Reply</Text>
-        </Touchable>
+        <MenuItem onPress={onReply} label="Reply" Icon={SVG.IconMenuReply} />
         {canJumpMessage && (
-          <Touchable style={styles.menuItem} onPress={onJumpToMessage}>
-            <SVG.IconMenuJumpMessage />
-            <Text style={[styles.menuLabel, {color: colors.text}]}>
-              Jump to message
-            </Text>
-          </Touchable>
+          <MenuItem
+            onPress={onJumpToMessage}
+            label="Jump to message"
+            Icon={SVG.IconMenuJumpMessage}
+          />
         )}
         {canUploadToIPFS && (
-          <Touchable style={styles.menuItem} onPress={onUploadToIPFS}>
-            <SVG.IconMenuUploadIPFS />
-            <Text style={[styles.menuLabel, {color: colors.text}]}>
-              Upload to IPFS
-            </Text>
-          </Touchable>
+          <MenuItem
+            onPress={onUploadToIPFS}
+            label="Upload to IPFS"
+            Icon={SVG.IconMenuUploadIPFS}
+          />
         )}
-        <Touchable style={styles.menuItem} onPress={onCopyMessage}>
-          <SVG.IconMenuCopyMessage />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>
-            Copy message link
-          </Text>
-        </Touchable>
-        <Touchable style={styles.menuItem} onPress={onCopyPostLink}>
-          <SVG.IconMenuCopyPost />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>
-            Copy post link
-          </Text>
-        </Touchable>
+        <MenuItem
+          onPress={onCopyMessage}
+          label="Copy message link"
+          Icon={SVG.IconMenuCopyMessage}
+        />
+        <MenuItem
+          onPress={onCopyPostLink}
+          label="Copy post link"
+          Icon={SVG.IconMenuCopyPost}
+        />
         {canUnarchive && (
-          <Touchable style={styles.menuItem} onPress={onUnarchive}>
-            <SVG.IconMenuUnarchive />
-            <Text style={[styles.menuLabel, {color: colors.text}]}>
-              Unarchive
-            </Text>
-          </Touchable>
+          <MenuItem
+            onPress={onUnarchive}
+            label="Unarchive"
+            Icon={SVG.IconMenuUnarchive}
+          />
         )}
         {canReport && (
-          <Touchable style={styles.menuItem} onPress={onReport}>
-            <SVG.IconMenuReport />
-            <Text style={[styles.menuLabel, {color: colors.text}]}>Report</Text>
-          </Touchable>
+          <MenuItem
+            onPress={onReport}
+            label="Report"
+            Icon={SVG.IconMenuReport}
+          />
         )}
       </View>
       {canArchive && (
-        <Touchable
-          style={[
-            styles.menuItem,
-            {
-              marginTop: 10,
-              borderRadius: 5,
-              backgroundColor: colors.border,
-            },
-          ]}
-          onPress={onArchive}>
-          <SVG.IconMenuArchive />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>Archive</Text>
-        </Touchable>
+        <MenuItem
+          onPress={onArchive}
+          label="Archive"
+          Icon={SVG.IconMenuArchive}
+          style={{marginTop: 15}}
+        />
       )}
       {canDelete && (
-        <Touchable
-          style={[
-            styles.menuItem,
-            {
-              marginTop: 10,
-              borderRadius: 5,
-              backgroundColor: colors.border,
-            },
-          ]}
-          onPress={onDelete}>
-          <SVG.IconMenuDelete />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>Delete</Text>
-        </Touchable>
+        <MenuItem
+          onPress={onDelete}
+          label="Delete"
+          Icon={SVG.IconMenuDelete}
+          style={{marginTop: 15}}
+        />
       )}
     </View>
   );
@@ -218,12 +198,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: AppDimension.extraBottom + 12,
     minHeight: 350,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12.5,
   },
   menuLabel: {
     marginLeft: 15,

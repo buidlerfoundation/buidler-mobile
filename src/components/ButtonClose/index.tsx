@@ -17,10 +17,10 @@ const ButtonClose = ({onPress, style, padding = 10}: ButtonCloseProps) => {
       <View
         style={[
           {
-            width: 30,
-            height: 30,
-            borderRadius: 15,
-            backgroundColor: colors.border,
+            width: 25,
+            height: 25,
+            borderRadius: 12.5,
+            backgroundColor: colors.activeBackground,
             alignItems: 'center',
             justifyContent: 'center',
           },

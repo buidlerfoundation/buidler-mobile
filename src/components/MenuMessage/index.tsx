@@ -1,5 +1,5 @@
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {View, StyleSheet, Text, Image} from 'react-native';
+import {View, StyleSheet, Image} from 'react-native';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import Fonts from 'common/Fonts';
@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import MenuEmojiItem from 'components/MenuEmojiItem';
 import {emojiDefault} from 'common/AppConfig';
+import MenuItem from 'components/MenuItem';
 
 type MenuMessageProps = {
   onReply: () => void;
@@ -120,49 +121,33 @@ const MenuMessage = ({
         </Touchable>
       </View>
       <View style={[styles.groupMenu, {backgroundColor: colors.border}]}>
-        <Touchable style={styles.menuItem} onPress={onReply}>
-          <SVG.IconMenuReply />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>Reply</Text>
-        </Touchable>
+        <MenuItem onPress={onReply} Icon={SVG.IconMenuReply} label="Reply" />
         {canPin && (
-          <Touchable style={styles.menuItem} onPress={onPin}>
-            <SVG.IconMenuPin />
-            <Text style={[styles.menuLabel, {color: colors.text}]}>Pin</Text>
-          </Touchable>
+          <MenuItem onPress={onPin} Icon={SVG.IconMenuPin} label="Pin" />
         )}
         {canEdit && (
-          <Touchable style={styles.menuItem} onPress={onEdit}>
-            <SVG.IconMenuEdit />
-            <Text style={[styles.menuLabel, {color: colors.text}]}>Edit</Text>
-          </Touchable>
+          <MenuItem onPress={onEdit} Icon={SVG.IconMenuEdit} label="Edit" />
         )}
-        <Touchable style={styles.menuItem} onPress={onCopyMessage}>
-          <SVG.IconMenuCopyMessage />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>
-            Copy message link
-          </Text>
-        </Touchable>
+        <MenuItem
+          onPress={onCopyMessage}
+          Icon={SVG.IconMenuCopyMessage}
+          label="Copy message link"
+        />
         {canReport && (
-          <Touchable style={styles.menuItem} onPress={onReport}>
-            <SVG.IconMenuReport />
-            <Text style={[styles.menuLabel, {color: colors.text}]}>Report</Text>
-          </Touchable>
+          <MenuItem
+            onPress={onReport}
+            Icon={SVG.IconMenuReport}
+            label="Report"
+          />
         )}
       </View>
       {canDelete && (
-        <Touchable
-          style={[
-            styles.menuItem,
-            {
-              marginTop: 10,
-              borderRadius: 5,
-              backgroundColor: colors.border,
-            },
-          ]}
-          onPress={onDelete}>
-          <SVG.IconMenuDelete />
-          <Text style={[styles.menuLabel, {color: colors.text}]}>Delete</Text>
-        </Touchable>
+        <MenuItem
+          onPress={onDelete}
+          Icon={SVG.IconMenuDelete}
+          label="Delete"
+          style={{marginTop: 15}}
+        />
       )}
     </View>
   );
@@ -178,12 +163,6 @@ const styles = StyleSheet.create({
   },
   groupMenu: {
     borderRadius: 5,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
   },
   menuLabel: {
     marginLeft: 15,

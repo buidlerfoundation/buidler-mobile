@@ -3,7 +3,7 @@ import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
 import ButtonClose from 'components/ButtonClose';
-import Touchable from 'components/Touchable';
+import MenuItem from 'components/MenuItem';
 import useThemeColor from 'hook/useThemeColor';
 import useUserData from 'hook/useUserData';
 import {UserData} from 'models';
@@ -44,32 +44,18 @@ const MenuUser = ({
       </View>
       <View style={styles.menu}>
         {!isCurrentUser && (
-          <Touchable
-            style={[styles.menuItem, {backgroundColor: colors.border}]}
-            onPress={onBlockPress}>
-            <SVG.IconMenuBlock />
-            <Text
-              style={[
-                AppStyles.TextSemi16,
-                {color: colors.text, marginLeft: 15},
-              ]}>
-              {user?.is_blocked ? 'Unblock' : 'Block'}
-            </Text>
-          </Touchable>
+          <MenuItem
+            label={user?.is_blocked ? 'Unblock' : 'Block'}
+            Icon={user?.is_blocked ? SVG.IconMenuUnblock : SVG.IconMenuBlock}
+            onPress={onBlockPress}
+          />
         )}
         {isCurrentUser && (
-          <Touchable
-            style={[styles.menuItem, {backgroundColor: colors.border}]}
-            onPress={onEditPress}>
-            <SVG.IconMenuEdit />
-            <Text
-              style={[
-                AppStyles.TextSemi16,
-                {color: colors.text, marginLeft: 15},
-              ]}>
-              Edit Profile
-            </Text>
-          </Touchable>
+          <MenuItem
+            label="Edit Profile"
+            Icon={SVG.IconMenuEdit}
+            onPress={onEditPress}
+          />
         )}
       </View>
     </View>
@@ -91,14 +77,7 @@ const styles = StyleSheet.create({
   },
   menu: {
     marginTop: 10,
-  },
-  menuItem: {
-    marginHorizontal: 20,
-    height: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingHorizontal: 20,
-    borderRadius: 5,
   },
 });
 

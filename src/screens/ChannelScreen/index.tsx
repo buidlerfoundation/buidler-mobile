@@ -2,7 +2,7 @@ import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Space} from 'models';
 import React, {memo, useCallback, useMemo, useState} from 'react';
-import {View, StyleSheet, Text, FlatList} from 'react-native';
+import {View, StyleSheet, Text, FlatList, Alert} from 'react-native';
 import SpaceItem from './SpaceItem';
 import useThemeColor from 'hook/useThemeColor';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
@@ -15,7 +15,6 @@ import useCommunityId from 'hook/useCommunityId';
 import AppStyles from 'common/AppStyles';
 import numeral from 'numeral';
 import api from 'services/api';
-import Modal from 'react-native-modal';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import SVG from 'common/SVG';
@@ -63,16 +62,18 @@ const ChannelScreen = () => {
     [community.team_cover, showBadge],
   );
   const [inviteLink, setInviteLink] = useState('');
-  const [isOpenInviteModal, setOpenInviteModal] = useState(false);
   const {colors} = useThemeColor();
   const onInvitePress = useCallback(async () => {
+    let link = '';
     if (!inviteLink) {
       const res = await api.invitation(communityId);
+      link = res?.data?.invitation_url;
       setInviteLink(res?.data?.invitation_url);
     }
-    setOpenInviteModal(true);
-  }, [communityId, inviteLink]);
-  const onCloseModal = useCallback(() => setOpenInviteModal(false), []);
+    Alert.alert('Invite Member', inviteLink || link, [
+      {text: 'Copy link', onPress: onCopyInviteLink},
+    ]);
+  }, [communityId, inviteLink, onCopyInviteLink]);
   const renderHeader = useCallback(() => {
     return (
       <View
@@ -156,9 +157,8 @@ const ChannelScreen = () => {
   }, []);
   const onCopyInviteLink = useCallback(async () => {
     await Clipboard.setString(inviteLink);
-    onCloseModal();
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
-  }, [inviteLink, onCloseModal]);
+  }, [inviteLink]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -177,37 +177,6 @@ const ChannelScreen = () => {
           />
         </View>
       </View>
-      <Modal
-        isVisible={isOpenInviteModal}
-        backdropColor={colors.black}
-        backdropOpacity={0.75}
-        onBackdropPress={onCloseModal}
-        backdropTransitionOutTiming={0}
-        hideModalContentWhileAnimating>
-        <View
-          style={[styles.modalInvite, {backgroundColor: colors.background}]}>
-          <Text
-            style={[
-              AppStyles.TextBold17,
-              {color: colors.text, marginTop: 22, alignSelf: 'center'},
-            ]}>
-            Invite Member
-          </Text>
-          <Text
-            style={[
-              AppStyles.TextMed15,
-              {color: colors.text, marginTop: 12, alignSelf: 'center'},
-            ]}>
-            {inviteLink}
-          </Text>
-          <View style={[styles.separate, {backgroundColor: colors.border}]} />
-          <Touchable style={styles.btnCopy} onPress={onCopyInviteLink}>
-            <Text style={[AppStyles.TextSemi17, {color: colors.mention}]}>
-              Copy link
-            </Text>
-          </Touchable>
-        </View>
-      </Modal>
     </View>
   );
 };

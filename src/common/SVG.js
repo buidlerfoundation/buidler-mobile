@@ -61,6 +61,10 @@ import IconShieldStar from '../assets/images/ic_shield_star.svg';
 import IconMenuReport from '../assets/images/ic_menu_report.svg';
 import IconEmotion from '../assets/images/ic_emotion.png';
 import IconMenuBlock from '../assets/images/ic_menu_block.svg';
+import IconMenuInvite from '../assets/images/ic_menu_invite.svg';
+import IconMenuUnblock from '../assets/images/ic_menu_unblock.svg';
+import IconMenuCreate from '../assets/images/ic_menu_create.svg';
+import IconMenuSetting from '../assets/images/ic_menu_setting.svg';
 
 export default {
   IconExpand,
@@ -126,4 +130,8 @@ export default {
   IconMenuReport,
   IconEmotion,
   IconMenuBlock,
+  IconMenuInvite,
+  IconMenuUnblock,
+  IconMenuCreate,
+  IconMenuSetting,
 };
