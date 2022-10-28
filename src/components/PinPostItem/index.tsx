@@ -280,6 +280,7 @@ const PinPostItem = ({
         teamId={community.team_id}
         imageWidth={embeds ? (width - 132) / 2 : (width - 50) / 2}
         stack={!detail}
+        onLongPress={handleLongPress}
       />
       {!embeds && (
         <PinChannelView

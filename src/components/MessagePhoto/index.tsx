@@ -17,6 +17,7 @@ type AttachmentItemProps = {
   imageWidth?: number;
   style?: ViewStyle;
   stackAttachment?: number;
+  onLongPress?: () => void;
 };
 
 const AttachmentItem = ({
@@ -26,6 +27,7 @@ const AttachmentItem = ({
   imageWidth = 100,
   style,
   stackAttachment,
+  onLongPress,
 }: AttachmentItemProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
@@ -34,7 +36,7 @@ const AttachmentItem = ({
       <View
         style={[styles.photoItem, {backgroundColor: colors.backgroundHeader}]}
         key={att.file_id}>
-        <Touchable>
+        <Touchable useReactNative onLongPress={onLongPress}>
           <Video
             source={{uri: ImageHelper.normalizeImage(att.file_url, teamId)}}
             style={{
@@ -64,7 +66,11 @@ const AttachmentItem = ({
           styles.fileItem,
           {backgroundColor: colors.activeBackgroundLight},
         ]}>
-        <Touchable onPress={onFilePress} key={att.file_id}>
+        <Touchable
+          onPress={onFilePress}
+          key={att.file_id}
+          useReactNative
+          onLongPress={onLongPress}>
           <SVG.IconFile fill={colors.subtext} />
           <Text style={[styles.fileName, {color: colors.text}]}>
             {att.original_name}
@@ -89,7 +95,8 @@ const AttachmentItem = ({
         {backgroundColor: colors.backgroundHeader},
       ]}>
       <ImageLightBox
-        originUrl={ImageHelper.normalizeImage(att.file_url, teamId)}>
+        originUrl={ImageHelper.normalizeImage(att.file_url, teamId)}
+        onLongPress={onLongPress}>
         <FastImage
           source={{
             uri: ImageHelper.normalizeImage(att.file_url, teamId, {h: 90}),
@@ -116,6 +123,7 @@ type MessagePhotoProps = {
   imageWidth?: number;
   edited?: boolean;
   stack?: boolean;
+  onLongPress?: () => void;
 };
 
 const MessagePhoto = ({
@@ -125,6 +133,7 @@ const MessagePhoto = ({
   imageWidth = 100,
   edited,
   stack,
+  onLongPress,
 }: MessagePhotoProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(
@@ -156,6 +165,7 @@ const MessagePhoto = ({
             imageWidth={Math.min(imageWidth, 300)}
             style={{marginRight: index % 2 === 0 ? 10 : 0}}
             stackAttachment={index === 1 ? morePhoto : undefined}
+            onLongPress={onLongPress}
           />
         );
       })}

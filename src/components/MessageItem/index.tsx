@@ -304,6 +304,7 @@ const MessageItem = ({
                   item.createdAt !== item.updatedAt &&
                   !item.content
                 }
+                onLongPress={handleLongPress}
               />
               <ReactView
                 reacts={reactData[item.message_id]}
