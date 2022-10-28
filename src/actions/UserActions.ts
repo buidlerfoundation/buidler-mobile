@@ -413,3 +413,18 @@ export const accessToHome =
     }
     NavigationServices.replace(StackID.HomeStack, params);
   };
+
+export const leaveTeam = (teamId: string) => async (dispatch: Dispatch) => {
+  dispatch({
+    type: actionTypes.LEAVE_TEAM_REQUEST,
+    payload: {teamId},
+  });
+  const res = await api.leaveTeam(teamId);
+  if (res.statusCode !== 200) {
+    dispatch({
+      type: actionTypes.LEAVE_TEAM_FAIL,
+      payload: res,
+    });
+  }
+  return res.statusCode === 200;
+};

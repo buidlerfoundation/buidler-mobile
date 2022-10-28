@@ -20,6 +20,7 @@ import {
   actionFetchWalletBalance,
   logout,
   refreshToken,
+  setCurrentTeam,
 } from 'actions/UserActions';
 import {getTransactions} from 'actions/TransactionActions';
 import {formatTokenValue} from 'helpers/TokenHelper';
@@ -336,8 +337,7 @@ class SocketUtil {
     });
     this.socket?.on('ON_USER_LEAVE_TEAM', data => {
       const {user_id, team_id} = data;
-      const {userData, team, lastChannel, currentTeamId} =
-        store.getState().user;
+      const {userData, team, currentTeamId} = store.getState().user;
       if (team_id === currentTeamId && user_id === userData.user_id) {
         store.dispatch({
           type: actionTypes.LEAVE_TEAM_SUCCESS,
@@ -351,12 +351,7 @@ class SocketUtil {
             ? team?.filter?.(el => el.team_id !== currentTeamId)?.[0]
             : null;
         if (nextTeam) {
-          const channelId = lastChannel?.[nextTeam.team_id]?.channel_id;
-          if (channelId) {
-            // Update screen
-          } else {
-            // Update screen
-          }
+          store.dispatch(setCurrentTeam(nextTeam));
         } else if (currentTeamId === team_id) {
           AsyncStorage.removeItem(AsyncKey.lastTeamId);
           AsyncStorage.removeItem(AsyncKey.lastChannelId);

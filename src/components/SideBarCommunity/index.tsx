@@ -1,11 +1,13 @@
 import {useNavigation} from '@react-navigation/native';
-import {setCurrentTeam} from 'actions/UserActions';
+import {leaveTeam, setCurrentTeam} from 'actions/UserActions';
+import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import {StackID} from 'common/ScreenID';
 import SVG from 'common/SVG';
 import CommunityItem from 'components/CommunityItem';
 import MenuCommunity from 'components/MenuCommunity';
+import MenuConfirmLeaveCommunity from 'components/MenuConfirmLeaveCommunity';
 import ModalBottom from 'components/ModalBottom';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
@@ -21,6 +23,7 @@ const SideBarCommunity = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const [isOpenMenu, setOpenMenu] = useState(false);
+  const [isOpenMenuConfirmLeave, setOpenMenuConfirmLeave] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(
     null,
   );
@@ -32,6 +35,10 @@ const SideBarCommunity = () => {
       dispatch(setCurrentTeam(item));
     },
     [dispatch, navigation],
+  );
+  const onCloseMenuConfirmLeave = useCallback(
+    () => setOpenMenuConfirmLeave(false),
+    [],
   );
   const onCloseMenu = useCallback(() => setOpenMenu(false), []);
   const handleMenuPress = useCallback(async (item: Community) => {
@@ -53,7 +60,19 @@ const SideBarCommunity = () => {
   const onCreateCommunity = useCallback(() => {}, []);
   const onEditCommunity = useCallback(() => {}, []);
   const onInviteMember = useCallback(() => {}, []);
-  const onLeaveCommunity = useCallback(() => {}, []);
+  const onLeaveCommunity = useCallback(() => {
+    onCloseMenu();
+    setTimeout(() => {
+      setOpenMenuConfirmLeave(true);
+    }, AppConfig.timeoutCloseBottomSheet);
+  }, [onCloseMenu]);
+  const onConfirmLeave = useCallback(async () => {
+    if (!selectedCommunity?.team_id) return;
+    const success = await dispatch(leaveTeam?.(selectedCommunity?.team_id));
+    if (success) {
+      onCloseMenuConfirmLeave();
+    }
+  }, [dispatch, onCloseMenuConfirmLeave, selectedCommunity?.team_id]);
   const renderFooter = useCallback(() => {
     if (userRole === 'Owner' || userRole === 'Admin') {
       return (
@@ -108,6 +127,16 @@ const SideBarCommunity = () => {
             selectedCommunity?.role === 'Owner' ||
             selectedCommunity?.role === 'Admin'
           }
+        />
+      </ModalBottom>
+      <ModalBottom
+        isVisible={isOpenMenuConfirmLeave}
+        onSwipeComplete={onCloseMenuConfirmLeave}
+        onBackdropPress={onCloseMenuConfirmLeave}>
+        <MenuConfirmLeaveCommunity
+          community={selectedCommunity}
+          onClose={onCloseMenuConfirmLeave}
+          onConfirm={onConfirmLeave}
         />
       </ModalBottom>
     </View>
