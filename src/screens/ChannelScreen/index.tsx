@@ -142,14 +142,38 @@ const ChannelScreen = () => {
     showCover,
     teamUserData,
   ]);
+  const onCreateSpace = useCallback(() => {}, []);
+  const onCreateChannel = useCallback(() => {}, []);
   const renderFooter = useCallback(() => {
+    if (isOwner) {
+      return (
+        <Touchable
+          style={[styles.createButton, {backgroundColor: colors.background}]}
+          onPress={onCreateSpace}>
+          <SVG.IconPlus fill={colors.subtext} />
+          <Text
+            style={[
+              AppStyles.TextSemi15,
+              {color: colors.subtext, marginLeft: 13},
+            ]}>
+            New space
+          </Text>
+        </Touchable>
+      );
+    }
     return <View style={{height: 10}} />;
-  }, []);
+  }, [colors.background, colors.subtext, isOwner, onCreateSpace]);
   const renderSpace = useCallback(
     ({item}: {item: Space}) => {
-      return <SpaceItem item={item} teamId={communityId} />;
+      return (
+        <SpaceItem
+          item={item}
+          isOwner={isOwner}
+          onCreateChannel={onCreateChannel}
+        />
+      );
     },
-    [communityId],
+    [isOwner, onCreateChannel],
   );
 
   const renderItemSeparate = useCallback(() => {
@@ -247,6 +271,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: 46,
+  },
+  createButton: {
+    margin: 10,
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 23,
+    borderRadius: 5,
   },
 });
 

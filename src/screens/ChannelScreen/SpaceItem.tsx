@@ -14,10 +14,11 @@ import AppStyles from 'common/AppStyles';
 
 type SpaceItemProps = {
   item: Space;
-  teamId: string;
+  isOwner?: boolean;
+  onCreateChannel: () => void;
 };
 
-const SpaceItem = ({item}: SpaceItemProps) => {
+const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
   const isCollapsed = useMemo(() => !item.isExpanded, [item.isExpanded]);
   const currentChannel = useCurrentChannel();
   const channel = useChannel();
@@ -81,6 +82,20 @@ const SpaceItem = ({item}: SpaceItemProps) => {
           isFirst={idx === 0}
         />
       ))}
+      {isOwner && (
+        <Touchable
+          style={[styles.createButton, {backgroundColor: colors.background}]}
+          onPress={onCreateChannel}>
+          <SVG.IconPlus fill={colors.subtext} />
+          <Text
+            style={[
+              AppStyles.TextSemi15,
+              {color: colors.subtext, marginLeft: 13},
+            ]}>
+            New channel
+          </Text>
+        </Touchable>
+      )}
       <View style={{height: 10}} />
     </View>
   );
@@ -112,6 +127,13 @@ const styles = StyleSheet.create({
   },
   badgeWrapper: {
     marginRight: 5,
+  },
+  createButton: {
+    height: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 27,
+    borderRadius: 5,
   },
 });
 

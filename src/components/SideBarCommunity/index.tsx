@@ -74,7 +74,7 @@ const SideBarCommunity = () => {
     }
   }, [dispatch, onCloseMenuConfirmLeave, selectedCommunity?.team_id]);
   const renderFooter = useCallback(() => {
-    if (userRole === 'Owner' || userRole === 'Admin') {
+    if (userRole === 'Owner') {
       return (
         <Touchable
           style={[styles.createButton, {backgroundColor: colors.background}]}
@@ -119,14 +119,8 @@ const SideBarCommunity = () => {
           onEditCommunity={onEditCommunity}
           onInviteMember={onInviteMember}
           onLeaveCommunity={onLeaveCommunity}
-          canCreate={
-            selectedCommunity?.role === 'Owner' ||
-            selectedCommunity?.role === 'Admin'
-          }
-          canEdit={
-            selectedCommunity?.role === 'Owner' ||
-            selectedCommunity?.role === 'Admin'
-          }
+          canCreate={selectedCommunity?.role === 'Owner'}
+          canEdit={selectedCommunity?.role === 'Owner'}
         />
       </ModalBottom>
       <ModalBottom
