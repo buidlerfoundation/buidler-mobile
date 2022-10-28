@@ -24,7 +24,7 @@ const CommunityHeader = () => {
   const currentTeam = useCurrentCommunity();
   const navigation = useNavigation();
   const openDrawer = useCallback(() => {
-    navigation.navigate(ScreenID.CommunityScreen);
+    navigation.navigate(ScreenID.CommunityDetailScreen);
   }, [navigation]);
   return (
     <Touchable style={styles.communityContainer} onPress={openDrawer}>
@@ -108,7 +108,10 @@ const ChannelScreen = () => {
         <View style={[styles.rowMemberWrap, {marginTop: 15}]}>
           <View style={[styles.dot, {backgroundColor: colors.lightText}]} />
           <Text style={[AppStyles.TextSemi15, {color: colors.lightText}]}>
-            All members: {numeral(teamUserData.length).format('0[.][0]a')}
+            All members:{' '}
+            {numeral(teamUserData.filter(el => !el.is_deleted).length).format(
+              '0[.][0]a',
+            )}
           </Text>
         </View>
         <View style={[styles.rowMemberWrap, {marginTop: 8}]}>

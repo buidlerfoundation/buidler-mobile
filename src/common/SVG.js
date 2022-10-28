@@ -65,6 +65,8 @@ import IconMenuInvite from '../assets/images/ic_menu_invite.svg';
 import IconMenuUnblock from '../assets/images/ic_menu_unblock.svg';
 import IconMenuCreate from '../assets/images/ic_menu_create.svg';
 import IconMenuSetting from '../assets/images/ic_menu_setting.svg';
+import IconSetting from '../assets/images/ic_setting.svg';
+import IconUser from '../assets/images/ic_user.svg';
 
 export default {
   IconExpand,
@@ -134,4 +136,6 @@ export default {
   IconMenuUnblock,
   IconMenuCreate,
   IconMenuSetting,
+  IconSetting,
+  IconUser,
 };

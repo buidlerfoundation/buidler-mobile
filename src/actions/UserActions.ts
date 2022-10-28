@@ -17,6 +17,7 @@ import {AppGetState} from 'store';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import Toast from 'react-native-toast-message';
 import {getDeviceCode} from 'helpers/GenerateUUID';
+import {UserRole} from 'common/AppConfig';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -428,3 +429,32 @@ export const leaveTeam = (teamId: string) => async (dispatch: Dispatch) => {
   }
   return res.statusCode === 200;
 };
+
+export const getMemberData =
+  (teamId: string, role: UserRoleType, page: number) =>
+  async (dispatch: Dispatch) => {
+    if (page > 1) {
+      dispatch({
+        type: actionTypes.MEMBER_DATA_MORE,
+        payload: {teamId, role, page},
+      });
+    } else {
+      dispatch({
+        type: actionTypes.MEMBER_DATA_REQUEST,
+        payload: {teamId, role, page},
+      });
+    }
+    const roles = role === UserRole.Member ? Object.values(UserRole) : [role];
+    const res = await api.getMembersByRole(teamId, roles, {page});
+    if (res.success) {
+      dispatch({
+        type: actionTypes.MEMBER_DATA_SUCCESS,
+        payload: {role, page, data: res.data, total: res.metadata?.total},
+      });
+    } else {
+      dispatch({
+        type: actionTypes.MEMBER_DATA_FAIL,
+        payload: res,
+      });
+    }
+  };

@@ -145,12 +145,12 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
       memberData[role] = {
         data: page === 1 ? data : [...(memberData[role]?.data || []), ...data],
         total,
-        canMore: data.length === 50,
+        canMore: data.length === 30,
         currentPage: page,
       };
       return {
         ...state,
-        memberData,
+        memberData: {...memberData},
       };
     }
     case actionTypes.ACCEPT_TEAM_SUCCESS: {

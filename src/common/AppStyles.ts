@@ -2,6 +2,11 @@ import {StyleSheet} from 'react-native';
 import Fonts from './Fonts';
 
 const AppStyles = StyleSheet.create({
+  TextBold22: {
+    fontSize: 22,
+    fontFamily: Fonts.Bold,
+    lineHeight: 28,
+  },
   TextBold20: {
     fontSize: 20,
     fontFamily: Fonts.Bold,

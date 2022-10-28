@@ -16,6 +16,7 @@ export default {
   CommunityScreen: 'CommunityScreen',
   UserScreen: 'UserScreen',
   AllPhotoScreen: 'AllPhotoScreen',
+  CommunityDetailScreen: 'CommunityDetailScreen',
 };
 
 export const StackID = {

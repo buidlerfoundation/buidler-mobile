@@ -52,7 +52,7 @@ const ModalContainer = ({children}: any) => {
         onPress={hideModal}
         activeOpacity={1}>
         <View style={styles.bodyContainer}>
-          <Text>xxxx</Text>
+          <Text>Modal Body</Text>
         </View>
       </Touchable>
     );

@@ -52,9 +52,9 @@ const UserInfo = ({userData, style, userInfoStyle}: UserInfoProps) => {
                 {backgroundColor: colors.activeBackgroundLight},
               ]}>
               {userData.role === 'Owner' ? (
-                <SVG.IconCrow />
+                <SVG.IconCrow fill={colors.doing} />
               ) : (
-                <SVG.IconShieldStar />
+                <SVG.IconShieldStar fill={colors.success} />
               )}
               <Text
                 style={[

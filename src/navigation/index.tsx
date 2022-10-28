@@ -14,6 +14,7 @@ import HomeStack from './HomeStack';
 import UserScreen from 'screens/UserScreen';
 import AllPhotoScreen from 'screens/AllPhotoScreen';
 import HeaderAllPhoto from 'components/HeaderAllPhoto';
+import CommunityDetailScreen from 'screens/CommunityDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +52,10 @@ const RootNavigator = () => {
           <Stack.Screen
             name={ScreenID.PinPostDetailScreen}
             component={PinPostDetailScreen}
+          />
+          <Stack.Screen
+            name={ScreenID.CommunityDetailScreen}
+            component={CommunityDetailScreen}
           />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
