@@ -1,11 +1,14 @@
 import {useNavigation} from '@react-navigation/native';
-import {getMemberData} from 'actions/UserActions';
-import {UserRole} from 'common/AppConfig';
+import {getMemberData, leaveTeam} from 'actions/UserActions';
+import AppConfig, {UserRole} from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
 import CommunityDetailHeader from 'components/CommunityDetailHeader';
 import MemberItem from 'components/MemberItem';
+import MenuCommunity from 'components/MenuCommunity';
+import MenuConfirmLeaveCommunity from 'components/MenuConfirmLeaveCommunity';
+import ModalBottom from 'components/ModalBottom';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
@@ -22,8 +25,19 @@ const CommunityDetailScreen = () => {
   const navigation = useNavigation();
   const {colors} = useThemeColor();
   const community = useCurrentCommunity();
+  const [isOpenMenu, setOpenMenu] = useState(false);
+  const [isOpenMenuConfirmLeave, setOpenMenuConfirmLeave] = useState(false);
+  const isOwner = useMemo(() => community.role === 'Owner', [community.role]);
+  const onCloseMenuConfirmLeave = useCallback(
+    () => setOpenMenuConfirmLeave(false),
+    [],
+  );
+  const onCloseMenu = useCallback(() => setOpenMenu(false), []);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
   const onSettingPress = useCallback(() => {}, []);
+  const onMorePress = useCallback(() => {
+    setOpenMenu(true);
+  }, []);
   const fetchAllMemberData = useCallback(() => {
     dispatch(getMemberData(community.team_id, UserRole.Member, 1));
     dispatch(getMemberData(community.team_id, UserRole.Admin, 1));
@@ -50,6 +64,18 @@ const CommunityDetailScreen = () => {
     ({item, index}) => <MemberItem item={item} index={index} />,
     [],
   );
+  const onLeaveCommunity = useCallback(() => {
+    onCloseMenu();
+    setTimeout(() => {
+      setOpenMenuConfirmLeave(true);
+    }, AppConfig.timeoutCloseBottomSheet);
+  }, [onCloseMenu]);
+  const onConfirmLeave = useCallback(async () => {
+    const success = await dispatch(leaveTeam?.(community?.team_id));
+    if (success) {
+      onCloseMenuConfirmLeave();
+    }
+  }, [dispatch, onCloseMenuConfirmLeave, community?.team_id]);
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <View style={styles.header}>
@@ -60,9 +86,15 @@ const CommunityDetailScreen = () => {
           style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}>
           Community Detail
         </Text>
-        <Touchable onPress={onSettingPress}>
-          <SVG.IconSetting fill={colors.text} />
-        </Touchable>
+        {isOwner ? (
+          <Touchable onPress={onSettingPress}>
+            <SVG.IconSetting fill={colors.text} />
+          </Touchable>
+        ) : (
+          <Touchable onPress={onMorePress}>
+            <SVG.IconMore fill={colors.text} />
+          </Touchable>
+        )}
       </View>
       <FlatList
         data={members}
@@ -82,6 +114,27 @@ const CommunityDetailScreen = () => {
         onEndReachedThreshold={0.5}
         onEndReached={onMoreMemberData}
       />
+      <ModalBottom
+        isVisible={isOpenMenu}
+        onSwipeComplete={onCloseMenu}
+        onBackdropPress={onCloseMenu}>
+        <MenuCommunity
+          onClose={onCloseMenu}
+          community={community}
+          onLeaveCommunity={onLeaveCommunity}
+          communityDetail
+        />
+      </ModalBottom>
+      <ModalBottom
+        isVisible={isOpenMenuConfirmLeave}
+        onSwipeComplete={onCloseMenuConfirmLeave}
+        onBackdropPress={onCloseMenuConfirmLeave}>
+        <MenuConfirmLeaveCommunity
+          community={community}
+          onClose={onCloseMenuConfirmLeave}
+          onConfirm={onConfirmLeave}
+        />
+      </ModalBottom>
     </View>
   );
 };

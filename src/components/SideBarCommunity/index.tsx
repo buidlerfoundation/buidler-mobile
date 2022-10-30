@@ -16,12 +16,16 @@ import useThemeColor from 'hook/useThemeColor';
 import useUserRole from 'hook/useUserRole';
 import {Community} from 'models';
 import React, {memo, useCallback, useState} from 'react';
-import {StyleSheet, Text, View, FlatList} from 'react-native';
+import {StyleSheet, Text, View, FlatList, Alert} from 'react-native';
+import api from 'services/api';
+import Clipboard from '@react-native-clipboard/clipboard';
+import Toast from 'react-native-toast-message';
 
 const SideBarCommunity = () => {
   const {colors} = useThemeColor();
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
+  const [inviteLink, setInviteLink] = useState('');
   const [isOpenMenu, setOpenMenu] = useState(false);
   const [isOpenMenuConfirmLeave, setOpenMenuConfirmLeave] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(
@@ -57,9 +61,21 @@ const SideBarCommunity = () => {
     },
     [handleMenuPress, handlePress],
   );
+  const onCopyInviteLink = useCallback(async () => {
+    await Clipboard.setString(inviteLink);
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [inviteLink]);
   const onCreateCommunity = useCallback(() => {}, []);
   const onEditCommunity = useCallback(() => {}, []);
-  const onInviteMember = useCallback(() => {}, []);
+  const onInviteMember = useCallback(async () => {
+    const res = await api.invitation(selectedCommunity?.team_id);
+    const link = res?.data?.invitation_url;
+    setInviteLink(link);
+    onCloseMenu();
+    Alert.alert('Invite Member', link, [
+      {text: 'Copy link', onPress: onCopyInviteLink},
+    ]);
+  }, [onCloseMenu, onCopyInviteLink, selectedCommunity?.team_id]);
   const onLeaveCommunity = useCallback(() => {
     onCloseMenu();
     setTimeout(() => {

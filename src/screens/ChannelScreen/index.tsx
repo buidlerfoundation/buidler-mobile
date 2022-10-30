@@ -24,7 +24,7 @@ const CommunityHeader = () => {
   const currentTeam = useCurrentCommunity();
   const navigation = useNavigation();
   const openDrawer = useCallback(() => {
-    navigation.navigate(ScreenID.CommunityDetailScreen);
+    navigation.navigate(ScreenID.CommunityScreen);
   }, [navigation]);
   return (
     <Touchable style={styles.communityContainer} onPress={openDrawer}>
@@ -44,6 +44,7 @@ const CommunityHeader = () => {
 };
 
 const ChannelScreen = () => {
+  const navigation = useNavigation();
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
   const communityId = useCommunityId();
@@ -74,10 +75,14 @@ const ChannelScreen = () => {
       {text: 'Copy link', onPress: onCopyInviteLink},
     ]);
   }, [communityId, inviteLink, onCopyInviteLink]);
+  const onCommunityPress = useCallback(() => {
+    navigation.navigate(ScreenID.CommunityDetailScreen);
+  }, [navigation]);
   const renderHeader = useCallback(() => {
     return (
-      <View
-        style={[styles.communityInfo, {backgroundColor: colors.background}]}>
+      <Touchable
+        style={[styles.communityInfo, {backgroundColor: colors.background}]}
+        onPress={onCommunityPress}>
         {showCover && (
           <View
             style={[
@@ -130,7 +135,7 @@ const ChannelScreen = () => {
             Invite member
           </Text>
         </Touchable>
-      </View>
+      </Touchable>
     );
   }, [
     colors.activeBackgroundLight,
@@ -140,6 +145,7 @@ const ChannelScreen = () => {
     colors.text,
     community.team_display_name,
     communityVerified,
+    onCommunityPress,
     onInvitePress,
     showBadge,
     showCover,

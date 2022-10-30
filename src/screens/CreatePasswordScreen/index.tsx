@@ -1,5 +1,5 @@
 import NavigationHeader from 'components/NavigationHeader';
-import React, {memo, useCallback, useMemo, useState} from 'react';
+import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
 import {View, StyleSheet, TextInput, Text} from 'react-native';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
@@ -14,6 +14,7 @@ import {AuthStackParamsList} from 'navigation/AuthStack';
 import useThemeColor from 'hook/useThemeColor';
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessApp} from 'actions/UserActions';
+import {useFocusEffect} from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
@@ -22,6 +23,7 @@ type Props = NativeStackScreenProps<
 
 const CreatePasswordScreen = ({route}: Props) => {
   const dispatch = useAppDispatch();
+  const inputRef = useRef<TextInput>();
   const seed = useMemo(() => route.params?.seed || '', [route.params?.seed]);
   const {colors, dark} = useThemeColor();
   const [showPassword, setShowPassword] = useState(false);
@@ -50,6 +52,11 @@ const CreatePasswordScreen = ({route}: Props) => {
     }
   }, [dispatch, password, seed]);
   const onChangePassword = useCallback(text => setPassword(text), []);
+  useFocusEffect(
+    useCallback(() => {
+      inputRef.current?.focus();
+    }, []),
+  );
   return (
     <KeyboardLayout>
       <View style={styles.container}>
@@ -64,12 +71,12 @@ const CreatePasswordScreen = ({route}: Props) => {
               },
             ]}>
             <TextInput
+              ref={inputRef}
               style={[styles.input, {color: colors.text}]}
               placeholder="Your wallet password"
               placeholderTextColor={colors.subtext}
               secureTextEntry={!showPassword}
               keyboardAppearance={dark ? 'dark' : 'light'}
-              autoFocus
               autoCorrect={false}
               value={password}
               onChangeText={onChangePassword}

@@ -7,7 +7,7 @@ import {StyleSheet, Text, ViewStyle} from 'react-native';
 type MenuItemProps = {
   Icon: React.ReactNode;
   label: string;
-  onPress: () => void;
+  onPress?: () => void;
   style?: ViewStyle;
 };
 

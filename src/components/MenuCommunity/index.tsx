@@ -12,12 +12,13 @@ import {View, StyleSheet, Text} from 'react-native';
 type MenuCommunityProps = {
   community?: Community;
   onClose: () => void;
-  onInviteMember: () => void;
-  onCreateCommunity: () => void;
-  onEditCommunity: () => void;
+  onInviteMember?: () => void;
+  onCreateCommunity?: () => void;
+  onEditCommunity?: () => void;
   onLeaveCommunity: () => void;
   canEdit?: boolean;
   canCreate?: boolean;
+  communityDetail?: boolean;
 };
 
 const MenuCommunity = ({
@@ -29,6 +30,7 @@ const MenuCommunity = ({
   onLeaveCommunity,
   canEdit,
   canCreate,
+  communityDetail,
 }: MenuCommunityProps) => {
   const {colors} = useThemeColor();
   return (
@@ -48,27 +50,29 @@ const MenuCommunity = ({
         )}
         <ButtonClose onPress={onClose} />
       </View>
-      <View style={[styles.menu, {backgroundColor: colors.border}]}>
-        <MenuItem
-          Icon={SVG.IconMenuInvite}
-          label="Invite member"
-          onPress={onInviteMember}
-        />
-        {canCreate && (
+      {!communityDetail && (
+        <View style={[styles.menu, {backgroundColor: colors.border}]}>
           <MenuItem
-            Icon={SVG.IconMenuCreate}
-            label="Create community"
-            onPress={onCreateCommunity}
+            Icon={SVG.IconMenuInvite}
+            label="Invite member"
+            onPress={onInviteMember}
           />
-        )}
-        {canEdit && (
-          <MenuItem
-            Icon={SVG.IconMenuSetting}
-            label="Edit community"
-            onPress={onEditCommunity}
-          />
-        )}
-      </View>
+          {canCreate && (
+            <MenuItem
+              Icon={SVG.IconMenuCreate}
+              label="Create community"
+              onPress={onCreateCommunity}
+            />
+          )}
+          {canEdit && (
+            <MenuItem
+              Icon={SVG.IconMenuSetting}
+              label="Edit community"
+              onPress={onEditCommunity}
+            />
+          )}
+        </View>
+      )}
       <MenuItem
         Icon={SVG.IconMenuLogout}
         label="Leave community"

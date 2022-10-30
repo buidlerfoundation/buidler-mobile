@@ -2,7 +2,9 @@ import {UserRole} from 'common/AppConfig';
 import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
 import CommunityLogo from 'components/CommunityLogo';
+import RenderHTML from 'components/RenderHTML';
 import Touchable from 'components/Touchable';
+import {normalizeMessageText} from 'helpers/MessageHelper';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useTeamUserData from 'hook/useTeamUserData';
 import useThemeColor from 'hook/useThemeColor';
@@ -129,6 +131,16 @@ const CommunityDetailHeader = ({
           </Text>
         </View>
       </View>
+      {community.team_description && (
+        <View style={styles.teamDescription}>
+          <RenderHTML
+            html={normalizeMessageText(community.team_description)}
+            defaultTextProps={{
+              style: [AppStyles.TextMed15, {color: colors.lightText}],
+            }}
+          />
+        </View>
+      )}
       <View
         style={[
           styles.communityMemberTab,
@@ -244,6 +256,10 @@ const styles = StyleSheet.create({
     width: 1,
     height: 16,
     borderRadius: 0.5,
+  },
+  teamDescription: {
+    marginTop: 20,
+    marginHorizontal: 20,
   },
 });
 
