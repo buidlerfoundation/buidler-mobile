@@ -12,7 +12,6 @@ import Touchable from 'components/Touchable';
 import {
   normalizeMessageText,
   normalizeMessageTextPlain,
-  normalizeUserName,
 } from 'helpers/MessageHelper';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
@@ -31,6 +30,7 @@ import {
   useWindowDimensions,
   ActivityIndicator,
   GestureResponderEvent,
+  Linking,
 } from 'react-native';
 import {lastReplyFromNow, messageFromNow} from 'utils/DateUtils';
 
@@ -100,6 +100,7 @@ const PinPostItem = ({
   embedReport,
 }: PinPostItemProps) => {
   const dispatch = useAppDispatch();
+  const [ipfsCollapsed, setIPFSCollapsed] = useState(true);
   const contentRef = useRef();
   const navigation = useNavigation();
   const {width} = useWindowDimensions();
@@ -125,6 +126,10 @@ const PinPostItem = ({
   const isUploadingToIPFS = useMemo(
     () => !!pinPost.uploadingIPFS,
     [pinPost.uploadingIPFS],
+  );
+  const toggleIPFSDescription = useCallback(
+    () => setIPFSCollapsed(current => !current),
+    [],
   );
   const onContentLayout = useCallback(() => {
     contentRef.current.measure((ox, oy, w, h) => {
@@ -162,6 +167,9 @@ const PinPostItem = ({
     },
     [navigation, pinPost.message_sender_id],
   );
+  const openIPFS = useCallback(() => {
+    Linking.openURL(`https://${pinPost?.cid}.ipfs.w3s.link/`);
+  }, [pinPost?.cid]);
   if (!creator) return null;
   return (
     <Touchable
@@ -170,6 +178,53 @@ const PinPostItem = ({
       disabled={detail || embedReport}
       onLongPress={handleLongPress}
       useWithoutFeedBack>
+      {detail && (isIPFS || isUploadingToIPFS) && (
+        <Touchable
+          style={[styles.ipfsDetailWrap, {borderColor: colors.border}]}
+          onPress={toggleIPFSDescription}
+          disabled={isUploadingToIPFS}>
+          <View style={styles.ipfsDetailHeader}>
+            {isUploadingToIPFS ? (
+              <ActivityIndicator size="small" color={colors.mention} />
+            ) : (
+              <SVG.IconIPFSLock fill={colors.mention} />
+            )}
+            <Text
+              style={[
+                AppStyles.TextSemi16,
+                {color: colors.mention, marginLeft: 5, flex: 1},
+              ]}>
+              Verified content
+            </Text>
+            <View style={ipfsCollapsed && {transform: [{rotate: '180deg'}]}}>
+              <SVG.IconCollapse fill={colors.subtext} />
+            </View>
+          </View>
+          {!ipfsCollapsed && isIPFS && (
+            <>
+              <Text
+                style={[
+                  AppStyles.TextMed15,
+                  {color: colors.lightText, marginTop: 10},
+                ]}>
+                This content was stored on decentralized storage, signed and
+                locked by author. No one will be able to change the original
+                content, including the author.
+              </Text>
+              <Touchable onPress={openIPFS} style={styles.btnIPFS}>
+                <Text
+                  style={[
+                    AppStyles.TextMed15,
+                    {color: colors.lightText, marginRight: 2},
+                  ]}>
+                  View on IPFS
+                </Text>
+                <SVG.IconArrowRightUp />
+              </Touchable>
+            </>
+          )}
+        </Touchable>
+      )}
       <View style={[styles.header, embeds && {alignItems: 'flex-start'}]}>
         <Touchable
           onPress={onUserPress}
@@ -209,19 +264,6 @@ const PinPostItem = ({
                 ]}>
                 {messageFromNow(pinPost.message_created_at)}
               </Text>
-              {isIPFS && detail && (
-                <View style={styles.ipfsWrap}>
-                  <SVG.IconIPFSLock fill={colors.mention} />
-                  <Text style={[AppStyles.TextMed15, {color: colors.mention}]}>
-                    {normalizeUserName(pinPost.cid, 4)}
-                  </Text>
-                </View>
-              )}
-              {isUploadingToIPFS && detail && (
-                <View style={styles.ipfsWrap}>
-                  <ActivityIndicator size="small" color={colors.mention} />
-                </View>
-              )}
             </View>
           )}
         </View>
@@ -404,6 +446,22 @@ const styles = StyleSheet.create({
   cidText: {
     textDecorationLine: 'underline',
     marginLeft: 5,
+  },
+  btnIPFS: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  ipfsDetailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ipfsDetailWrap: {
+    marginBottom: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    borderWidth: 1,
   },
 });
 

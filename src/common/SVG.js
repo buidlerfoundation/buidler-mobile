@@ -67,6 +67,7 @@ import IconMenuCreate from '../assets/images/ic_menu_create.svg';
 import IconMenuSetting from '../assets/images/ic_menu_setting.svg';
 import IconSetting from '../assets/images/ic_setting.svg';
 import IconUser from '../assets/images/ic_user.svg';
+import IconArrowRightUp from '../assets/images/ic_arrow_right_up.svg';
 
 export default {
   IconExpand,
@@ -138,4 +139,5 @@ export default {
   IconMenuSetting,
   IconSetting,
   IconUser,
+  IconArrowRightUp,
 };
