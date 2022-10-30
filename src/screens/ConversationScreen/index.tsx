@@ -67,6 +67,7 @@ import MenuReport from 'components/MenuReport';
 import ModalBottom from 'components/ModalBottom';
 import ViewAllButton from 'components/ViewAllButton';
 import {launchImageLibrary} from 'react-native-image-picker';
+import MenuConfirmPin from 'components/MenuConfirmPin';
 
 const ConversationScreen = () => {
   const listRef = useRef<SectionList>();
@@ -97,6 +98,7 @@ const ConversationScreen = () => {
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
+  const [isOpenMenuConfirmPin, setOpenMenuConfirmPin] = useState(false);
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
@@ -420,24 +422,30 @@ const ConversationScreen = () => {
   const onCloseMenuMessage = useCallback(() => {
     setOpenMenuMessage(false);
   }, []);
-  const onCreatePinPost = useCallback(() => {
-    const body: any = {
-      content: selectedMessage?.content,
-      status: 'pinned',
-      channel_ids: [currentChannelId],
-      task_id: selectedMessage?.message_id,
-      team_id: currentTeamId,
-    };
-    dispatch(createTask(currentChannelId, body));
-    onCloseMenuMessage();
-  }, [
-    currentChannelId,
-    currentTeamId,
-    dispatch,
-    onCloseMenuMessage,
-    selectedMessage?.content,
-    selectedMessage?.message_id,
-  ]);
+  const onCreatePinPost = useCallback(
+    async (isLock: boolean) => {
+      const body: any = {
+        content: selectedMessage?.content,
+        status: 'pinned',
+        channel_ids: [currentChannelId],
+        task_id: selectedMessage?.message_id,
+        team_id: currentTeamId,
+      };
+      await dispatch(createTask(currentChannelId, body));
+      if (isLock) {
+        dispatch(uploadToIPFS(body.task_id, currentChannelId));
+      }
+      closeMenuConfirmPin();
+    },
+    [
+      closeMenuConfirmPin,
+      currentChannelId,
+      currentTeamId,
+      dispatch,
+      selectedMessage?.content,
+      selectedMessage?.message_id,
+    ],
+  );
   const onDeleteMessage = useCallback(() => {
     if (!selectedMessage) return;
     dispatch(
@@ -449,9 +457,11 @@ const ConversationScreen = () => {
     );
   }, [currentChannelId, dispatch, selectedMessage]);
   const onMenuPin = useCallback(() => {
-    onCreatePinPost();
     onCloseMenuMessage();
-  }, [onCloseMenuMessage, onCreatePinPost]);
+    setTimeout(() => {
+      setOpenMenuConfirmPin(true);
+    }, AppConfig.timeoutCloseBottomSheet);
+  }, [onCloseMenuMessage]);
   const onMenuDelete = useCallback(() => {
     onCloseMenuMessage();
     onCloseMenuPinPost();
@@ -562,6 +572,9 @@ const ConversationScreen = () => {
       setOpenMenuReport(true);
     }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, onCloseMenuPinPost]);
+  const closeMenuConfirmPin = useCallback(() => {
+    setOpenMenuConfirmPin(false);
+  }, []);
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
   }, []);
@@ -775,6 +788,16 @@ const ConversationScreen = () => {
           <MenuReport
             onClose={closeMenuReport}
             selectedMessage={selectedMessage}
+          />
+        </ModalBottom>
+        <ModalBottom
+          isVisible={isOpenMenuConfirmPin}
+          onSwipeComplete={closeMenuConfirmPin}
+          onBackdropPress={closeMenuConfirmPin}>
+          <MenuConfirmPin
+            message={selectedMessage}
+            onClose={closeMenuConfirmPin}
+            onPin={onCreatePinPost}
           />
         </ModalBottom>
       </View>
