@@ -28,7 +28,7 @@ import {normalizeUserName} from 'helpers/MessageHelper';
 import {getCurrentChannel, getCurrentCommunity} from 'helpers/StoreHelper';
 import {getCollectibles} from 'actions/CollectibleActions';
 import {getDeviceCode} from 'helpers/GenerateUUID';
-import AppConfig from 'common/AppConfig';
+import Config from 'react-native-config';
 import {AsyncKey} from 'common/AppStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NavigationServices from 'services/NavigationServices';
@@ -37,6 +37,7 @@ import {getPinPostMessages} from 'actions/MessageActions';
 import {Socket} from 'socket.io-client';
 import messaging from '@react-native-firebase/messaging';
 import {Platform} from 'react-native';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 const getTasks = async (channelId: string, dispatch: Dispatch) => {
   dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
@@ -196,7 +197,7 @@ class SocketUtil {
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     const deviceCode = await getDeviceCode();
     const deviceToken = await messaging().getToken();
-    this.socket = io(`${AppConfig.baseUrl}`, {
+    this.socket = io(`${Config.API_URL}`, {
       query: {
         token: accessToken,
         device_code: deviceCode,
@@ -211,6 +212,7 @@ class SocketUtil {
     this.socket?.on('connect_error', async err => {
       this.connecting = false;
       const message = err.message || err;
+      MixpanelAnalytics.tracking('Socket error: ', {message: `${message}`});
       if (message === 'Authentication error') {
         const res = await store.dispatch(refreshToken());
         if (res) {

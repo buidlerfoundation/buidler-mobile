@@ -1,6 +1,6 @@
 import {BaseDataApi} from 'models';
 import store from 'store';
-import AppConfig, {whiteListRefreshTokenApis} from 'common/AppConfig';
+import {whiteListRefreshTokenApis} from 'common/AppConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import GlobalVariable from 'services/GlobalVariable';
@@ -9,6 +9,8 @@ import {logout, refreshToken} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import {StackID} from 'common/ScreenID';
 import SocketUtils from 'utils/SocketUtils';
+import Config from 'react-native-config';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 const METHOD_GET = 'get';
 const METHOD_POST = 'post';
@@ -72,7 +74,7 @@ async function requestAPI<T = any>(
   if (serviceBaseUrl) {
     apiUrl = serviceBaseUrl + uri;
   } else {
-    apiUrl = AppConfig.baseUrl + uri;
+    apiUrl = Config.API_URL + uri;
   }
 
   // Get access token and attach it to API request's header
@@ -148,6 +150,13 @@ async function requestAPI<T = any>(
         });
     })
     .catch(err => {
+      MixpanelAnalytics.trackingError(
+        uri,
+        method.toLowerCase(),
+        err.message || '',
+        err.statusCode,
+        body,
+      );
       const msg = err.message || err;
       if (!msg.includes('aborted')) {
         // alert error

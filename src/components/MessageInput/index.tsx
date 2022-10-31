@@ -378,7 +378,12 @@ const MessageInput = ({
           <View
             style={[styles.replyIndicator, {backgroundColor: colors.subtext}]}
           />
-          <Text style={[styles.replyContent, {color: colors.lightText}]}>
+          <Text
+            style={[
+              styles.replyContent,
+              AppStyles.TextMed15,
+              {color: colors.lightText},
+            ]}>
             Edit message
           </Text>
           <Touchable
