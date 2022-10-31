@@ -18,6 +18,7 @@ import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import Toast from 'react-native-toast-message';
 import {getDeviceCode} from 'helpers/GenerateUUID';
 import {UserRole} from 'common/AppConfig';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -67,6 +68,9 @@ export const refreshToken = () => async (dispatch: Dispatch) => {
         payload: refreshTokenRes,
       });
     } else {
+      MixpanelAnalytics.tracking('Refresh failed', {
+        message: refreshTokenRes.message || 'Some thing wrong',
+      });
       dispatch({
         type: actionTypes.REFRESH_TOKEN_FAIL,
         payload: refreshTokenRes,
@@ -74,6 +78,9 @@ export const refreshToken = () => async (dispatch: Dispatch) => {
     }
     return refreshTokenRes.success;
   } catch (error) {
+    MixpanelAnalytics.tracking('Refresh failed', {
+      message: error.message || error,
+    });
     dispatch({type: actionTypes.REFRESH_TOKEN_FAIL, payload: error});
     return false;
   }

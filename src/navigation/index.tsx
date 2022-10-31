@@ -1,4 +1,4 @@
-import React, {memo} from 'react';
+import React, {memo, useEffect} from 'react';
 import {View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -15,11 +15,19 @@ import UserScreen from 'screens/UserScreen';
 import AllPhotoScreen from 'screens/AllPhotoScreen';
 import HeaderAllPhoto from 'components/HeaderAllPhoto';
 import CommunityDetailScreen from 'screens/CommunityDetailScreen';
+import useUserData from 'hook/useUserData';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 const Stack = createNativeStackNavigator();
 
 const RootNavigator = () => {
   const theme = useThemeColor();
+  const userData = useUserData();
+  useEffect(() => {
+    if (userData.user_id) {
+      MixpanelAnalytics.identify(userData);
+    }
+  }, [userData]);
   return (
     <NavigationContainer
       ref={ref => (NavigationServices.navigator = ref)}

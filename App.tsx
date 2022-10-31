@@ -12,6 +12,7 @@ import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import ModalContainer from 'components/ModalContainer';
 import ToastContainer from 'components/ToastContainer';
 import SocketUtils from 'utils/SocketUtils';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 LogBox.ignoreAllLogs();
 
@@ -22,6 +23,7 @@ const App = () => {
     Text.defaultProps.allowFontScaling = false;
     if (TextInput.defaultProps == null) TextInput.defaultProps = {};
     TextInput.defaultProps.allowFontScaling = false;
+    MixpanelAnalytics.init();
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
         appState.current.match(/inactive|background/) &&
