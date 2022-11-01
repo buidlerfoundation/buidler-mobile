@@ -6,6 +6,8 @@ export const uploadFile = (
   teamId?: string,
   attachmentId?: string,
   file?: any,
+  messageEntityType?: string,
+  fileId?: string,
 ): Promise<BaseDataApi<FileApiData>> => {
   if (file?.size > AppConfig.maximumFileSize) {
     return Promise.resolve({
@@ -20,6 +22,12 @@ export const uploadFile = (
   }
   if (attachmentId) {
     data.append('attachment_id', attachmentId);
+  }
+  if (messageEntityType) {
+    data.append('message_entity_type', messageEntityType);
+  }
+  if (fileId) {
+    data.append('file_id', fileId);
   }
   data.append('file', file);
   return ApiCaller.post<FileApiData>('file', data);

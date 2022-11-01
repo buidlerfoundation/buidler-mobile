@@ -31,7 +31,22 @@ const AttachmentItem = ({
 }: AttachmentItemProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
-  if (att.mimetype.includes('video')) {
+  if (att.is_uploaded === false) {
+    return (
+      <View
+        style={[
+          styles.photoItem,
+          style,
+          {
+            backgroundColor: colors.backgroundHeader,
+            width: imageWidth,
+            height: Math.round(imageWidth / 1.667),
+          },
+        ]}
+      />
+    );
+  }
+  if (att?.mimetype?.includes('video')) {
     return (
       <View
         style={[styles.photoItem, {backgroundColor: colors.backgroundHeader}]}
@@ -59,7 +74,7 @@ const AttachmentItem = ({
       </View>
     );
   }
-  if (att.mimetype.includes('application')) {
+  if (att?.mimetype?.includes('application')) {
     return (
       <View
         style={[

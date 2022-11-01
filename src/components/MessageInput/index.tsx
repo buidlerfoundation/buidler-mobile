@@ -249,10 +249,6 @@ const MessageInput = ({
   );
 
   const submitMessage = useCallback(async () => {
-    if (attachments.find(el => el.loading)) {
-      alert('Attachment is uploading');
-      return;
-    }
     const text = normalizeContentMessageSubmit(val);
     const message: any = {
       content: text,
@@ -260,6 +256,9 @@ const MessageInput = ({
       text,
       entity_type: postId ? 'post' : 'channel',
     };
+    if (attachments.length > 0) {
+      message.file_ids = attachments.map(el => el.randomId);
+    }
     if (postId) {
       message.entity_id = postId;
     } else if (currentChannel.channel_id) {
@@ -292,10 +291,6 @@ const MessageInput = ({
     teamId,
   ]);
   const editMessage = useCallback(async () => {
-    if (attachments.find(el => el.loading)) {
-      alert('Attachment is uploading');
-      return;
-    }
     if (!val && attachments.length === 0) return;
     let content = normalizeContentMessageSubmit(val.trim());
     let plain_text = val.trim();

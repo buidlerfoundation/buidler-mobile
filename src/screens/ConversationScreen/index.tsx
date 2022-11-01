@@ -369,15 +369,15 @@ const ConversationScreen = () => {
       toggleGallery();
       const imagesResized = await Promise.all(
         items.map(image => {
+          if (image.playableDuration) return convertPHAssetVideo(image);
           if (image.type?.includes('video')) {
-            if (image.playableDuration) return convertPHAssetVideo(image);
             return image;
           }
           return resizeImage(image);
         }),
       );
       imagesResized.forEach(img => {
-        const randomId = Math.random();
+        const randomId = getUniqueId();
         setAttachments(current => [
           ...current,
           {
@@ -393,7 +393,13 @@ const ConversationScreen = () => {
           type: 'multipart/form-data',
         };
         api
-          .uploadFile(currentTeamId, SocketUtils.generateId, body)
+          .uploadFile(
+            currentTeamId,
+            SocketUtils.generateId,
+            body,
+            'channel',
+            randomId,
+          )
           .then(res => {
             if (res.statusCode === 200) {
               setAttachments(current =>
