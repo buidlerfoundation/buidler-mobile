@@ -18,6 +18,7 @@ type AttachmentItemProps = {
   style?: ViewStyle;
   stackAttachment?: number;
   onLongPress?: () => void;
+  isPinPost?: boolean;
 };
 
 const AttachmentItem = ({
@@ -28,6 +29,7 @@ const AttachmentItem = ({
   style,
   stackAttachment,
   onLongPress,
+  isPinPost,
 }: AttachmentItemProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
@@ -54,10 +56,14 @@ const AttachmentItem = ({
         <Touchable useReactNative onLongPress={onLongPress}>
           <Video
             source={{uri: ImageHelper.normalizeImage(att.file_url, teamId)}}
-            style={{
-              width: imageWidth,
-              height: Math.round(imageWidth / 1.667),
-            }}
+            style={
+              isPinPost
+                ? {width: '100%', aspectRatio: 1.667}
+                : {
+                    width: imageWidth,
+                    height: Math.round(imageWidth / 1.667),
+                  }
+            }
             paused
             controls
             resizeMode="contain"
@@ -139,6 +145,7 @@ type MessagePhotoProps = {
   edited?: boolean;
   stack?: boolean;
   onLongPress?: () => void;
+  isPinPost?: boolean;
 };
 
 const MessagePhoto = ({
@@ -148,6 +155,7 @@ const MessagePhoto = ({
   imageWidth = 100,
   edited,
   stack,
+  isPinPost,
   onLongPress,
 }: MessagePhotoProps) => {
   const {colors} = useThemeColor();
@@ -181,6 +189,7 @@ const MessagePhoto = ({
             style={{marginRight: index % 2 === 0 ? 10 : 0}}
             stackAttachment={index === 1 ? morePhoto : undefined}
             onLongPress={onLongPress}
+            isPinPost={isPinPost}
           />
         );
       })}
