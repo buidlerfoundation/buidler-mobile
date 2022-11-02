@@ -116,16 +116,16 @@ export const getTaskFromUser =
   };
 
 export const getTasks =
-  (channelId: string, createdAt?: string) =>
+  (channelId: string, id?: string) =>
   async (dispatch: Dispatch, getState: AppGetState) => {
     const lastController = getState().task.apiController;
     lastController?.abort?.();
     // eslint-disable-next-line no-undef
     const controller = new AbortController();
-    if (createdAt) {
+    if (id) {
       dispatch({
         type: actionTypes.TASK_MORE,
-        payload: {channelId, createdAt, controller: controller},
+        payload: {channelId, id, controller: controller},
       });
     } else {
       dispatch({
@@ -134,19 +134,14 @@ export const getTasks =
       });
     }
     try {
-      const taskRes = await api.getTasks(
-        channelId,
-        createdAt,
-        undefined,
-        controller,
-      );
+      const taskRes = await api.getTasks(channelId, id, undefined, controller);
       if (taskRes.statusCode === 200) {
         dispatch({
           type: actionTypes.TASK_SUCCESS,
           payload: {
             channelId,
             tasks: taskRes.data,
-            createdAt,
+            id,
           },
         });
       } else {
@@ -235,13 +230,13 @@ export const updateTask =
   };
 
 export const getArchivedTasks =
-  (channelId: string, createdAt?: string) => async (dispatch: Dispatch) => {
-    if (createdAt) {
+  (channelId: string, id?: string) => async (dispatch: Dispatch) => {
+    if (id) {
       dispatch({
         type: actionTypes.ARCHIVED_TASK_MORE,
         payload: {
           channelId,
-          createdAt,
+          id,
         },
       });
     } else {
@@ -253,13 +248,13 @@ export const getArchivedTasks =
       });
     }
     try {
-      const res = await api.getArchivedTasks(channelId, createdAt);
+      const res = await api.getArchivedTasks(channelId, id);
       dispatch({
         type: actionTypes.ARCHIVED_TASK_SUCCESS,
         payload: {
           res: res.data,
           channelId,
-          createdAt,
+          id,
         },
       });
     } catch (e) {

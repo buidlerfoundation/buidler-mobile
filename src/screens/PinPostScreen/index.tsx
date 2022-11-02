@@ -84,7 +84,7 @@ const PinPostScreen = () => {
   const onEndReached = useCallback(() => {
     if (loadMoreTask || !canMoreTask) return;
     const last = pinPosts[pinPosts.length - 1];
-    dispatch(getTasks(currentChannelId, last.message_created_at));
+    dispatch(getTasks(currentChannelId, last.task_id));
   }, [canMoreTask, currentChannelId, dispatch, loadMoreTask, pinPosts]);
   const onDeletePost = useCallback(async () => {
     await dispatch(deleteTask(selectedPinPost?.task_id, currentChannelId));
