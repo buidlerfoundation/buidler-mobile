@@ -196,7 +196,7 @@ const PinPostItem = ({
               ]}>
               Verified content
             </Text>
-            <View style={ipfsCollapsed && {transform: [{rotate: '180deg'}]}}>
+            <View style={!ipfsCollapsed && {transform: [{rotate: '180deg'}]}}>
               <SVG.IconCollapse fill={colors.subtext} />
             </View>
           </View>
