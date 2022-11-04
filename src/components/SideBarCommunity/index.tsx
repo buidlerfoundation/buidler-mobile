@@ -3,7 +3,7 @@ import {leaveTeam, setCurrentTeam} from 'actions/UserActions';
 import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
-import {StackID} from 'common/ScreenID';
+import {DrawerID} from 'common/ScreenID';
 import SVG from 'common/SVG';
 import CommunityItem from 'components/CommunityItem';
 import MenuCommunity from 'components/MenuCommunity';
@@ -35,7 +35,7 @@ const SideBarCommunity = () => {
   const team = useAppSelector(state => state.user.team || []);
   const handlePress = useCallback(
     async (item: Community) => {
-      navigation.navigate(StackID.ConversationStack);
+      navigation.navigate(DrawerID.ChannelDrawer);
       dispatch(setCurrentTeam(item));
     },
     [dispatch, navigation],

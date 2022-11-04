@@ -70,8 +70,14 @@ const PinPostScreen = () => {
     }
   }, [currentChannelId, dispatch]);
   const renderPinPost = useCallback(
-    ({item}: {item: TaskData}) => {
-      return <PinPostItem pinPost={item} onLongPress={openMenuPinPost} />;
+    ({item, index}: {item: TaskData; index: number}) => {
+      return (
+        <PinPostItem
+          style={{paddingBottom: 30, paddingTop: index === 0 ? 20 : 30}}
+          pinPost={item}
+          onLongPress={openMenuPinPost}
+        />
+      );
     },
     [openMenuPinPost],
   );
@@ -233,9 +239,8 @@ const PinPostScreen = () => {
           keyExtractor={item => item.task_id}
           renderItem={renderPinPost}
           ItemSeparatorComponent={renderSeparator}
-          ListHeaderComponent={<View style={{height: 20}} />}
           ListFooterComponent={
-            <View style={{height: 30 + AppDimension.extraBottom}} />
+            <View style={{height: AppDimension.extraBottom}} />
           }
           onEndReachedThreshold={0.5}
           onEndReached={onEndReached}
@@ -316,7 +321,6 @@ const styles = StyleSheet.create({
   },
   ppSeparate: {
     height: 1,
-    marginVertical: 30,
   },
   emojiView: {
     height: '90%',
