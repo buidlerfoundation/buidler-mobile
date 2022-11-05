@@ -17,6 +17,8 @@ import HeaderAllPhoto from 'components/HeaderAllPhoto';
 import CommunityDetailScreen from 'screens/CommunityDetailScreen';
 import useUserData from 'hook/useUserData';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
+import StoreSeedPhraseScreen from 'screens/StoreSeedPhraseScreen';
+import BackupScreen from 'screens/BackupScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -65,6 +67,11 @@ const RootNavigator = () => {
             name={ScreenID.CommunityDetailScreen}
             component={CommunityDetailScreen}
           />
+          <Stack.Screen
+            name={ScreenID.StoreSeedPhraseScreen}
+            component={StoreSeedPhraseScreen}
+          />
+          <Stack.Screen name={ScreenID.BackupScreen} component={BackupScreen} />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
         <Stack.Screen name={StackID.AuthStack} component={AuthStack} />

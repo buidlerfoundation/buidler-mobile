@@ -9,28 +9,28 @@ import SVG from 'common/SVG';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import AppDimension from 'common/AppDimension';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {AuthStackParamsList} from 'navigation/AuthStack';
 import useThemeColor from 'hook/useThemeColor';
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessApp} from 'actions/UserActions';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
-type Props = NativeStackScreenProps<
-  AuthStackParamsList,
-  'StoreSeedPhraseScreen'
->;
-
-const StoreSeedPhraseScreen = ({route}: Props) => {
+const StoreSeedPhraseScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
   const dispatch = useAppDispatch();
-  const {password} = useMemo(() => route.params, [route.params]);
+  const {password, backupSeed} = useMemo(() => route.params, [route.params]);
   const [seed, setSeed] = useState('');
   const {width} = useWindowDimensions();
   const initialSeed = useCallback(async () => {
-    const res = await RNGoldenKeystore.generateMnemonic();
-    setSeed(res);
-  }, []);
+    if (backupSeed) {
+      setSeed(backupSeed);
+    } else {
+      const res = await RNGoldenKeystore.generateMnemonic();
+      setSeed(res);
+    }
+  }, [backupSeed]);
   useEffect(() => {
     initialSeed();
   }, [initialSeed]);
@@ -38,15 +38,23 @@ const StoreSeedPhraseScreen = ({route}: Props) => {
   const space = useMemo(() => (AppDevice.isIphoneX ? 12 : 6), []);
   const seedWidth = useMemo(() => (width - 41 - space * 2) / 3, [space, width]);
   const onNextPress = useCallback(() => {
-    NavigationServices.pushToScreen(ScreenID.BackupScreen, {seed, password});
-  }, [password, seed]);
+    NavigationServices.pushToScreen(ScreenID.BackupScreen, {
+      seed,
+      password,
+      fromBackup: !!backupSeed,
+    });
+  }, [backupSeed, password, seed]);
   const onCopy = useCallback(async () => {
     await Clipboard.setString(seed);
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
   }, [seed]);
   const onLaterPress = useCallback(() => {
-    dispatch(accessApp?.(seed, password));
-  }, [dispatch, password, seed]);
+    if (backupSeed) {
+      navigation.goBack();
+    } else {
+      dispatch(accessApp?.(seed, password, true));
+    }
+  }, [backupSeed, dispatch, navigation, password, seed]);
   return (
     <View style={styles.container}>
       <NavigationHeader title="Store seed phrase" />

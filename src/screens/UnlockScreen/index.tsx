@@ -20,43 +20,74 @@ import {accessToHome} from 'actions/UserActions';
 import {useCallback} from 'react';
 import useThemeColor from 'hook/useThemeColor';
 import AvatarView from 'components/AvatarView';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import ScreenID from 'common/ScreenID';
 
 const UnlockScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
   const [pass, setPass] = useState('');
   const {colors} = useThemeColor();
   const dispatch = useDispatch();
   const user = useAppSelector(state => state.user.userData);
   const [loading, setLoading] = useState(false);
+  const handleAccessToHome = useCallback(
+    async (iv: string) => {
+      try {
+        const encryptedStr: any = await AsyncStorage.getItem(
+          AsyncKey.encryptedDataKey,
+        );
+        const decryptedStr = decryptString(encryptedStr, pass, iv);
+        if (!decryptedStr) {
+          alert('Invalid Password');
+        } else {
+          const json = JSON.parse(decryptedStr);
+          const privateKey = json?.[user.user_id];
+          dispatch({
+            type: actionTypes.SET_PRIVATE_KEY,
+            payload: privateKey,
+          });
+          const privateKeyChannel = await getPrivateChannel(privateKey);
+          dispatch({
+            type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
+            payload: privateKeyChannel,
+          });
+          await dispatch(accessToHome());
+        }
+      } catch (error) {
+        alert('Invalid Password');
+      }
+    },
+    [dispatch, pass, user.user_id],
+  );
+  const handleBackup = useCallback(
+    (iv: string, encryptedStr) => {
+      try {
+        const decryptedStr = decryptString(encryptedStr, pass, iv);
+        if (!decryptedStr) {
+          alert('Invalid Password');
+        } else {
+          const json = JSON.parse(decryptedStr);
+          const seed = json?.[user.user_id];
+          navigation.navigate(ScreenID.ProfileScreen, {seed});
+        }
+      } catch (error) {
+        alert('Invalid Password');
+      }
+    },
+    [navigation, pass, user.user_id],
+  );
   const checkPassword = useCallback(async () => {
     if (loading) return;
     setLoading(true);
-    try {
-      const iv = await getIV();
-      const encryptedStr: any = await AsyncStorage.getItem(
-        AsyncKey.encryptedDataKey,
-      );
-      const decryptedStr = decryptString(encryptedStr, pass, iv);
-      if (!decryptedStr) {
-        alert('Invalid Password');
-      } else {
-        const json = JSON.parse(decryptedStr);
-        const privateKey = json?.[user.user_id];
-        dispatch({
-          type: actionTypes.SET_PRIVATE_KEY,
-          payload: privateKey,
-        });
-        const privateKeyChannel = await getPrivateChannel(privateKey);
-        dispatch({
-          type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
-          payload: privateKeyChannel,
-        });
-        await dispatch(accessToHome());
-      }
-    } catch (error) {
-      alert('Invalid Password');
+    const iv = await getIV();
+    if (route.params?.backupData) {
+      await handleBackup(iv, route.params?.backupData);
+    } else {
+      await handleAccessToHome(iv);
     }
     setLoading(false);
-  }, [dispatch, pass, user.user_id, loading]);
+  }, [loading, route.params?.backupData, handleBackup, handleAccessToHome]);
   if (!user) return <View style={styles.container} />;
 
   return (

@@ -4,24 +4,46 @@ import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import useUserData from 'hook/useUserData';
-import React, {memo, useCallback, useState} from 'react';
+import React, {memo, useCallback, useEffect, useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import useAppDispatch from 'hook/useAppDispatch';
 import {logout} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
-import {StackID} from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import api from 'services/api';
 import UserInfo from 'components/UserInfo';
 import ModalBottom from 'components/ModalBottom';
 import MenuConfirm from 'components/MenuConfirm';
 import MenuConfirmDeleteAccount from 'components/MenuConfirmDeleteAccount';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {AsyncKey} from 'common/AppStorage';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 const ProfileScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
   const [isOpenConfirmLogout, setOpenConfirmLogout] = useState(false);
   const [isOpenConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [backupData, setBackupData] = useState(null);
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const userData = useUserData();
+  const initialDataBackup = useCallback(async () => {
+    const dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedSeedKey);
+    setBackupData(dataBackup);
+  }, []);
+  useEffect(() => {
+    if (route.params?.seed) {
+      navigation.navigate(ScreenID.StoreSeedPhraseScreen, {
+        backupSeed: route.params?.seed,
+      });
+    } else {
+      setBackupData(null);
+    }
+  }, [navigation, route.params]);
+  useEffect(() => {
+    initialDataBackup();
+  }, [initialDataBackup]);
   const toggleConfirmLogout = useCallback(
     () => setOpenConfirmLogout(current => !current),
     [],
@@ -38,10 +60,26 @@ const ProfileScreen = () => {
     api.deleteUser();
     onLogout();
   }, [onLogout]);
+  const onBackupPress = useCallback(() => {
+    navigation.navigate(ScreenID.UnlockScreen, {backupData});
+  }, [backupData, navigation]);
   return (
     <View style={styles.container}>
       <UserInfo userData={userData} />
       <View style={styles.userActionWrap}>
+        {backupData && (
+          <Touchable
+            style={[
+              styles.actionItem,
+              {backgroundColor: colors.activeBackgroundLight},
+            ]}
+            onPress={onBackupPress}>
+            <Text style={[styles.actionLabel, {color: colors.text}]}>
+              Backup
+            </Text>
+            <SVG.IconArrowRight fill={colors.subtext} />
+          </Touchable>
+        )}
         <Touchable
           style={[
             styles.actionItem,

@@ -4,8 +4,6 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import ScreenID from 'common/ScreenID';
 import LoginScreen from 'screens/LoginScreen';
 import CreatePasswordScreen from 'screens/CreatePasswordScreen';
-import StoreSeedPhraseScreen from 'screens/StoreSeedPhraseScreen';
-import BackupScreen from 'screens/BackupScreen';
 import ImportSeedPhraseScreen from 'screens/ImportSeedPhraseScreen';
 
 export type AuthStackParamsList = {
@@ -28,11 +26,6 @@ const AuthStack = () => {
         name={ScreenID.CreatePasswordScreen}
         component={CreatePasswordScreen}
       />
-      <Stack.Screen
-        name={ScreenID.StoreSeedPhraseScreen}
-        component={StoreSeedPhraseScreen}
-      />
-      <Stack.Screen name={ScreenID.BackupScreen} component={BackupScreen} />
       <Stack.Screen
         name={ScreenID.ImportSeedPhraseScreen}
         component={ImportSeedPhraseScreen}

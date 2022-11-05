@@ -273,7 +273,8 @@ export const setCurrentTeam =
     actionSetCurrentTeam(team, dispatch, channelId, getState);
 
 export const accessApp =
-  (seed: string, password: string) => async (dispatch: Dispatch) => {
+  (seed: string, password: string, isLater?: boolean) =>
+  async (dispatch: Dispatch) => {
     dispatch({type: actionTypes.ACCESS_APP_REQUEST});
     try {
       const iv = await getIV();
@@ -292,6 +293,15 @@ export const accessApp =
       }
       dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: private_key});
       const publicKey = utils.computePublicKey(`0x${private_key}`, true);
+      if (isLater) {
+        const dataSeed = {[publicKey]: seed};
+        const encryptedDataSeed = encryptString(
+          JSON.stringify(dataSeed),
+          password,
+          iv,
+        );
+        AsyncStorage.setItem(AsyncKey.encryptedSeedKey, encryptedDataSeed);
+      }
       const data = {[publicKey]: private_key};
       const address = utils.computeAddress(publicKey);
       const encryptedData = encryptString(JSON.stringify(data), password, iv);

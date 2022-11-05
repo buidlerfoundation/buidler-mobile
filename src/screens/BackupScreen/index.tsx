@@ -7,11 +7,14 @@ import AppDevice from 'common/AppDevice';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
 import AppDimension from 'common/AppDimension';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {AuthStackParamsList} from 'navigation/AuthStack';
 import useThemeColor from 'hook/useThemeColor';
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessApp} from 'actions/UserActions';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
+import ScreenID from 'common/ScreenID';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {AsyncKey} from 'common/AppStorage';
 
 type ShuffleSeedItemProps = {
   title: string;
@@ -107,12 +110,15 @@ const ConfirmSeedItem = ({
   );
 };
 
-type Props = NativeStackScreenProps<AuthStackParamsList, 'BackupScreen'>;
-
-const BackupScreen = ({route}: Props) => {
+const BackupScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
-  const {seed, password} = useMemo(() => route.params, [route.params]);
+  const {seed, password, fromBackup} = useMemo(
+    () => route.params,
+    [route.params],
+  );
   const {width} = useWindowDimensions();
   const [confirmSeed, setConfirmSeed] = useState(createConfirmSeedState());
   const shuffleSeedData = useMemo(() => shuffle(seed.split(' ')), [seed]);
@@ -126,11 +132,20 @@ const BackupScreen = ({route}: Props) => {
         .join(' ')
         .trim()
     ) {
-      dispatch(accessApp?.(seed, password));
+      if (fromBackup) {
+        Toast.show({
+          type: 'customSuccess',
+          props: {message: 'You have successfully backup your seed phrase.'},
+        });
+        AsyncStorage.removeItem(AsyncKey.encryptedSeedKey);
+        navigation.navigate(ScreenID.ProfileScreen);
+      } else {
+        dispatch(accessApp?.(seed, password));
+      }
     } else {
       alert('Invalid seed phrase');
     }
-  }, [confirmSeed, dispatch, password, seed]);
+  }, [confirmSeed, dispatch, fromBackup, navigation, password, seed]);
   const onClearBackup = useCallback(
     () => setConfirmSeed(createConfirmSeedState()),
     [],
