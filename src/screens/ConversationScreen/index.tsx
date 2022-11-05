@@ -204,7 +204,7 @@ const ConversationScreen = () => {
   const onRemoveAttachment = useCallback(
     id =>
       setAttachments(current =>
-        current.filter(attachment => attachment.randomId !== id),
+        current.filter(attachment => attachment.id !== id),
       ),
     [],
   );

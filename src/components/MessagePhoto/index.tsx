@@ -19,6 +19,7 @@ type AttachmentItemProps = {
   stackAttachment?: number;
   onLongPress?: () => void;
   isPinPost?: boolean;
+  disabled?: boolean;
 };
 
 const AttachmentItem = ({
@@ -30,6 +31,7 @@ const AttachmentItem = ({
   stackAttachment,
   onLongPress,
   isPinPost,
+  disabled,
 }: AttachmentItemProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
@@ -53,7 +55,7 @@ const AttachmentItem = ({
       <View
         style={[styles.photoItem, {backgroundColor: colors.backgroundHeader}]}
         key={att.file_id}>
-        <Touchable useReactNative onLongPress={onLongPress}>
+        <Touchable useReactNative onLongPress={onLongPress} disabled={disabled}>
           <Video
             source={{uri: ImageHelper.normalizeImage(att.file_url, teamId)}}
             style={
@@ -91,7 +93,8 @@ const AttachmentItem = ({
           onPress={onFilePress}
           key={att.file_id}
           useReactNative
-          onLongPress={onLongPress}>
+          onLongPress={onLongPress}
+          disabled={disabled}>
           <SVG.IconFile fill={colors.subtext} />
           <Text style={[styles.fileName, {color: colors.text}]}>
             {att.original_name}
@@ -117,7 +120,8 @@ const AttachmentItem = ({
       ]}>
       <ImageLightBox
         originUrl={ImageHelper.normalizeImage(att.file_url, teamId)}
-        onLongPress={onLongPress}>
+        onLongPress={onLongPress}
+        disabled={disabled}>
         <FastImage
           source={{
             uri: ImageHelper.normalizeImage(att.file_url, teamId, {h: 90}),
@@ -146,6 +150,7 @@ type MessagePhotoProps = {
   stack?: boolean;
   onLongPress?: () => void;
   isPinPost?: boolean;
+  disabled?: boolean;
 };
 
 const MessagePhoto = ({
@@ -157,6 +162,7 @@ const MessagePhoto = ({
   stack,
   isPinPost,
   onLongPress,
+  disabled,
 }: MessagePhotoProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(
@@ -190,6 +196,7 @@ const MessagePhoto = ({
             stackAttachment={index === 1 ? morePhoto : undefined}
             onLongPress={onLongPress}
             isPinPost={isPinPost}
+            disabled={disabled}
           />
         );
       })}

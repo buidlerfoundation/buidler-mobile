@@ -104,7 +104,7 @@ const PinPostDetailScreen = () => {
   const onRemoveAttachment = useCallback(
     id =>
       setAttachments(current =>
-        current.filter(attachment => attachment.randomId !== id),
+        current.filter(attachment => attachment.id !== id),
       ),
     [],
   );
@@ -302,19 +302,20 @@ const PinPostDetailScreen = () => {
                   style={[styles.separate, {backgroundColor: colors.border}]}
                 />
               )}
-              {(messages?.length || 0) <
-                parseInt(pinPost.data?.total_messages || '0') && (
-                <Touchable onPress={onMorePPMessage}>
-                  <Text
-                    style={[
-                      styles.textMore,
-                      AppStyles.TextSemi15,
-                      {color: colors.mention},
-                    ]}>
-                    View previous replies
-                  </Text>
-                </Touchable>
-              )}
+              {messages &&
+                (messages?.length || 0) <
+                  parseInt(pinPost.data?.total_messages || '0') && (
+                  <Touchable onPress={onMorePPMessage}>
+                    <Text
+                      style={[
+                        styles.textMore,
+                        AppStyles.TextSemi15,
+                        {color: colors.mention},
+                      ]}>
+                      View previous replies
+                    </Text>
+                  </Touchable>
+                )}
             </View>
           }
           keyExtractor={item => item.message_id}

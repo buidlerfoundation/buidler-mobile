@@ -214,8 +214,8 @@ const MessageItem = ({
     state => state.message.highlightMessageId,
   );
   const showAvatar = useMemo(() => {
-    return item.isHead || !!item.reply_message_id;
-  }, [item.isHead, item.reply_message_id]);
+    return item.isHead || !!item.task || !!item.reply_message_id;
+  }, [item.isHead, item.reply_message_id, item.task]);
   const handleLongPress = useCallback(
     () => onLongPress?.(item),
     [item, onLongPress],
@@ -298,18 +298,22 @@ const MessageItem = ({
               <MessagePhoto
                 attachments={item?.message_attachments || []}
                 teamId={teamId}
-                imageWidth={width - 160}
+                imageWidth={!embeds ? width - 160 : (width - 132) / 2}
+                stack={embeds}
                 edited={
                   !item.isSending &&
                   item.createdAt !== item.updatedAt &&
                   !item.content
                 }
                 onLongPress={handleLongPress}
+                disabled={embeds}
               />
-              <ReactView
-                reacts={reactData[item.message_id]}
-                onReactPress={handleReactPress}
-              />
+              {!embeds && (
+                <ReactView
+                  reacts={reactData[item.message_id]}
+                  onReactPress={handleReactPress}
+                />
+              )}
             </>
           )}
         </View>

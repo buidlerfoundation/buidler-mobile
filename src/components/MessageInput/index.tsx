@@ -31,6 +31,7 @@ import useCommunityId from 'hook/useCommunityId';
 import AppStyles from 'common/AppStyles';
 import PermissionHelper from 'helpers/PermissionHelper';
 import Video from 'react-native-video';
+import AppConfig from 'common/AppConfig';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -43,8 +44,8 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
   const handlePress = useCallback(async () => {
     if (!attachment.id) return;
     await api.removeFile(attachment.id);
-    onPress(attachment.randomId);
-  }, [attachment.id, attachment.randomId, onPress]);
+    onPress(attachment.id);
+  }, [attachment.id, onPress]);
   return (
     <View style={styles.attachmentItem}>
       {attachment.type.includes('video') ? (
@@ -181,10 +182,17 @@ const MessageInput = ({
       setVal(res);
       setTimeout(() => {
         inputRef?.current?.focus();
-      }, 400);
+      }, AppConfig.timeoutCloseBottomSheet);
     },
     [inputRef],
   );
+  useEffect(() => {
+    if (messageReply) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, AppConfig.timeoutCloseBottomSheet);
+    }
+  }, [inputRef, messageReply]);
   useEffect(() => {
     if (messageEdit) {
       normalizeMessageEdit(messageEdit.content);
@@ -448,24 +456,6 @@ const MessageInput = ({
   );
   return (
     <View>
-      <View>
-        {isOpenPopupMention && isFocus && dataMention.length > 0 && (
-          <FlatList
-            style={[
-              styles.mentionView,
-              {
-                backgroundColor: colors.background,
-                borderTopColor: colors.border,
-              },
-            ]}
-            data={dataMention}
-            keyExtractor={el => el.user_id}
-            renderItem={renderMentionItem}
-            ListHeaderComponent={<View style={{height: 10}} />}
-            ListFooterComponent={<View style={{height: 10}} />}
-          />
-        )}
-      </View>
       <View
         style={[
           {
@@ -484,6 +474,7 @@ const MessageInput = ({
               keyExtractor={attachment => attachment.id || attachment.randomId}
               horizontal
               showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="always"
               renderItem={({item}) => (
                 <AttachmentItem
                   attachment={item}
@@ -493,6 +484,25 @@ const MessageInput = ({
               )}
             />
           )}
+          <View>
+            {isOpenPopupMention && isFocus && dataMention.length > 0 && (
+              <FlatList
+                style={[
+                  styles.mentionView,
+                  {
+                    backgroundColor: colors.background,
+                    borderTopColor: colors.border,
+                  },
+                ]}
+                data={dataMention}
+                keyboardShouldPersistTaps="always"
+                keyExtractor={el => el.user_id}
+                renderItem={renderMentionItem}
+                ListHeaderComponent={<View style={{height: 10}} />}
+                ListFooterComponent={<View style={{height: 10}} />}
+              />
+            )}
+          </View>
           <View style={styles.inputContainer}>
             <Touchable style={{padding: 5}} onPress={onPlusPress}>
               <SVG.IconPlusCircle />
