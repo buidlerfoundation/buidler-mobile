@@ -256,6 +256,17 @@ const MessageInput = ({
     [mentions, teamUserData],
   );
 
+  const getMentionData = useCallback(() => {
+    const res = [];
+    mentions.forEach(el => {
+      const user = teamUserData.find(u => u.user_name === el);
+      if (user) {
+        res.push({mention_id: user.user_id, tag_type: 'User'});
+      }
+    });
+    return res;
+  }, [mentions, teamUserData]);
+
   const submitMessage = useCallback(async () => {
     const text = normalizeContentMessageSubmit(val);
     const message: any = {
@@ -263,6 +274,7 @@ const MessageInput = ({
       plain_text: val,
       text,
       entity_type: postId ? 'post' : 'channel',
+      mentions: getMentionData(),
     };
     if (attachments.length > 0) {
       message.file_ids = attachments.map(el => el.randomId);
@@ -288,10 +300,11 @@ const MessageInput = ({
     setVal('');
     onClearAttachment?.();
   }, [
-    attachments,
-    val,
     normalizeContentMessageSubmit,
+    val,
     postId,
+    getMentionData,
+    attachments,
     currentChannel.channel_id,
     currentChannel.user,
     messageReply,

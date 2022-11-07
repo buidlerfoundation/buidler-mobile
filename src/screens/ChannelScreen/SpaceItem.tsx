@@ -39,7 +39,9 @@ const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
       .filter(el => {
         if (isCollapsed)
           return (
-            !!el && (!el.seen || el.channel_id === currentChannel.channel_id)
+            !!el &&
+            ((!el.seen && el.notification_type !== 'Muted') ||
+              el.channel_id === currentChannel.channel_id)
           );
         return !!el;
       });
