@@ -19,7 +19,7 @@ const NotificationItem = ({item}: NotificationItemProps) => {
   const {colors} = useThemeColor();
   const communities = useAppSelector(state => state.user.team);
   const community = useMemo(
-    () => communities.find(el => el.team_id === item.team_id),
+    () => communities?.find(el => el.team_id === item.team_id),
     [communities, item.team_id],
   );
   const contentAction = useMemo(() => {

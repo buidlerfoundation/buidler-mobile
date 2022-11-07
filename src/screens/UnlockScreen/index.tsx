@@ -22,6 +22,8 @@ import useThemeColor from 'hook/useThemeColor';
 import AvatarView from 'components/AvatarView';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
+import SVG from 'common/SVG';
+import AppDimension from 'common/AppDimension';
 
 const UnlockScreen = () => {
   const navigation = useNavigation();
@@ -31,6 +33,9 @@ const UnlockScreen = () => {
   const dispatch = useDispatch();
   const user = useAppSelector(state => state.user.userData);
   const [loading, setLoading] = useState(false);
+  const goBack = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
   const handleAccessToHome = useCallback(
     async (iv: string) => {
       try {
@@ -94,6 +99,14 @@ const UnlockScreen = () => {
     <KeyboardLayout>
       <View style={styles.container}>
         <View style={styles.body}>
+          {route.params?.backupData && (
+            <Touchable
+              style={styles.backButton}
+              useReactNative
+              onPress={goBack}>
+              <SVG.IconArrowBack />
+            </Touchable>
+          )}
           <AvatarView user={user} withStatus={false} size={120} />
           <Text style={[styles.userName, {color: colors.text}]}>
             {user?.user_name}
@@ -105,6 +118,7 @@ const UnlockScreen = () => {
             secureTextEntry
             returnKeyType="done"
             onSubmitEditing={checkPassword}
+            blurOnSubmit={false}
             placeholderTextColor={colors.subtext}
             value={pass}
             onChangeText={text => setPass(text)}
@@ -172,6 +186,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
     fontFamily: Fonts.SemiBold,
+  },
+  backButton: {
+    position: 'absolute',
+    top: AppDimension.extraTop + 25,
+    left: 15,
   },
 });
 
