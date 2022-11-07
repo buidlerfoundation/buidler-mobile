@@ -68,6 +68,7 @@ import IconMenuSetting from '../assets/images/ic_menu_setting.svg';
 import IconSetting from '../assets/images/ic_setting.svg';
 import IconUser from '../assets/images/ic_user.svg';
 import IconArrowRightUp from '../assets/images/ic_arrow_right_up.svg';
+import IconTabNotification from '../assets/images/ic_tab_notification.svg';
 
 export default {
   IconExpand,
@@ -140,4 +141,5 @@ export default {
   IconSetting,
   IconUser,
   IconArrowRightUp,
+  IconTabNotification,
 };

@@ -68,6 +68,7 @@ export interface UserData {
   verified_username_asset_collection?: NFTCollection;
   is_deleted?: boolean;
   is_blocked?: boolean;
+  total_unread_notifications?: number;
 }
 
 export interface Channel {

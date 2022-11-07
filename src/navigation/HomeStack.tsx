@@ -16,6 +16,7 @@ import SideBarCommunity from 'components/SideBarCommunity';
 import useAppDispatch from 'hook/useAppDispatch';
 import {acceptInvitation} from 'actions/UserActions';
 import WalletHeader from 'screens/WalletScreen/WalletHeader';
+import NotificationScreen from 'screens/NotificationScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -70,6 +71,31 @@ const HomeStack = () => {
       return <SVG.IconTabWallet fill={color} />;
     },
     [],
+  );
+  const tabBarIconNotification = useCallback(
+    ({color}: {focused: boolean; color: string}) => {
+      return (
+        <View>
+          <SVG.IconTabNotification fill={color} />
+          {userData.total_unread_notifications > 0 && (
+            <View
+              style={{
+                position: 'absolute',
+                width: 11,
+                height: 11,
+                borderRadius: 5.5,
+                backgroundColor: colors.mention,
+                top: 3.5,
+                right: 3.5,
+                borderColor: colors.background,
+                borderWidth: 1.5,
+              }}
+            />
+          )}
+        </View>
+      );
+    },
+    [colors.background, colors.mention, userData.total_unread_notifications],
   );
   const tabBarIconProfile = useCallback(
     ({focused}: {focused: boolean; color: string}) => {
@@ -145,6 +171,11 @@ const HomeStack = () => {
           }}
           name={ScreenID.WalletScreen}
           component={WalletScreen}
+        />
+        <Tab.Screen
+          options={{tabBarIcon: tabBarIconNotification}}
+          name={ScreenID.NotificationScreen}
+          component={NotificationScreen}
         />
         <Tab.Screen
           options={{tabBarIcon: tabBarIconProfile}}
