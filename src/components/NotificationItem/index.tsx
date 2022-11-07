@@ -1,9 +1,13 @@
+import {useNavigation} from '@react-navigation/native';
+import {markAsReadNotification} from 'actions/NotificationActions';
 import AppStyles from 'common/AppStyles';
+import ScreenID from 'common/ScreenID';
 import AvatarView from 'components/AvatarView';
 import ChannelIcon from 'components/ChannelIcon';
 import RenderHTML from 'components/RenderHTML';
 import Touchable from 'components/Touchable';
 import {normalizeMessageTextPlain} from 'helpers/MessageHelper';
+import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
 import {NotificationData} from 'models';
@@ -16,6 +20,8 @@ type NotificationItemProps = {
 };
 
 const NotificationItem = ({item}: NotificationItemProps) => {
+  const dispatch = useAppDispatch();
+  const navigation = useNavigation();
   const {colors} = useThemeColor();
   const communities = useAppSelector(state => state.user.team);
   const community = useMemo(
@@ -66,8 +72,36 @@ const NotificationItem = ({item}: NotificationItemProps) => {
         );
     }
   }, [colors.text, item.channel, item.notification_type, item.post?.content]);
+  const onItemPress = useCallback(() => {
+    if (!item.is_read) {
+      dispatch(markAsReadNotification(item.notification_id));
+    }
+    switch (item.notification_type) {
+      case 'post_mention':
+      case 'post_reply':
+        navigation.navigate(ScreenID.PinPostDetailScreen, {
+          postId: item.post?.task_id,
+        });
+        break;
+      case 'channel_mention':
+        navigation.navigate(ScreenID.ConversationScreen, {
+          jumpMessageId: `${item?.message_id}:${Math.random()}`,
+        });
+        break;
+      default:
+        break;
+    }
+  }, [
+    dispatch,
+    item.is_read,
+    item?.message_id,
+    item.notification_id,
+    item.notification_type,
+    item.post?.task_id,
+    navigation,
+  ]);
   return (
-    <Touchable style={styles.container} useReactNative>
+    <Touchable style={styles.container} useReactNative onPress={onItemPress}>
       <AvatarView user={item.from_user} style={{marginTop: 3}} size={35} />
       <View style={styles.contentWrap}>
         <View style={styles.userNameWrap}>
