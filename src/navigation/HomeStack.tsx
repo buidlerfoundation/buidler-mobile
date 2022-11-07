@@ -17,6 +17,7 @@ import useAppDispatch from 'hook/useAppDispatch';
 import {acceptInvitation} from 'actions/UserActions';
 import WalletHeader from 'screens/WalletScreen/WalletHeader';
 import NotificationScreen from 'screens/NotificationScreen';
+import NotificationHeader from 'screens/NotificationScreen/NotificationHeader';
 
 const Tab = createBottomTabNavigator();
 
@@ -173,7 +174,10 @@ const HomeStack = () => {
           component={WalletScreen}
         />
         <Tab.Screen
-          options={{tabBarIcon: tabBarIconNotification}}
+          options={{
+            tabBarIcon: tabBarIconNotification,
+            header: () => <NotificationHeader />,
+          }}
           name={ScreenID.NotificationScreen}
           component={NotificationScreen}
         />

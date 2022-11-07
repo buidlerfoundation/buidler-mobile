@@ -5,6 +5,7 @@ import {
   Community,
   InitialApiData,
   NFTCollectionDataApi,
+  NotificationData,
   Space,
   SpaceCollectionData,
   TransactionApiData,
@@ -180,3 +181,31 @@ export const unblockUser = (userId: string) =>
   ApiCaller.delete(`user-relationship/block/${userId}`);
 
 export const deleteUser = () => ApiCaller.delete('user');
+
+export const getNotification = (
+  filterType: NotificationFilterType,
+  before?: string,
+) => {
+  let uri = 'notifications?page[size]=20';
+  if (filterType === 'Mention') {
+    uri +=
+      '&notification_types[]=channel_mention&notification_types[]=post_mention';
+  } else if (filterType === 'Unread') {
+    uri += '&is_read=false';
+  }
+  if (before) {
+    uri += `&page[before]=${before}`;
+  }
+  return ApiCaller.get<NotificationData[]>(uri);
+};
+
+export const readNotification = (notificationId: string) =>
+  ApiCaller.put(`notifications/${notificationId}`);
+
+export const readAllNotification = () => ApiCaller.put('notifications');
+
+export const deleteNotification = (notificationId: string) =>
+  ApiCaller.delete(`notifications/${notificationId}`);
+
+export const configNotificationFromTask = (taskId: string) =>
+  ApiCaller.post(`notifications/task/${taskId}`);
