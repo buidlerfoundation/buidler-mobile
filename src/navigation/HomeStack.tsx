@@ -78,20 +78,28 @@ const HomeStack = () => {
       return (
         <View>
           <SVG.IconTabNotification fill={color} />
-          {userData.total_unread_notifications > 0 && (
+          {true && (
             <View
               style={{
                 position: 'absolute',
-                width: 11,
-                height: 11,
-                borderRadius: 5.5,
-                backgroundColor: colors.mention,
-                top: 3.5,
-                right: 3.5,
-                borderColor: colors.background,
-                borderWidth: 1.5,
-              }}
-            />
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: colors.background,
+                top: 3,
+                right: 3,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: colors.mention,
+                }}
+              />
+            </View>
           )}
         </View>
       );
