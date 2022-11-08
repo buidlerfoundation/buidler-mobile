@@ -78,7 +78,7 @@ const HomeStack = () => {
       return (
         <View>
           <SVG.IconTabNotification fill={color} />
-          {true && (
+          {userData.total_unread_notifications > 0 && (
             <View
               style={{
                 position: 'absolute',
