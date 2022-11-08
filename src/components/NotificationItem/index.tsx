@@ -17,9 +17,10 @@ import {notificationFromNow} from 'utils/DateUtils';
 
 type NotificationItemProps = {
   item: NotificationData;
+  onLongPress: (item: NotificationData) => void;
 };
 
-const NotificationItem = ({item}: NotificationItemProps) => {
+const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
   const {colors} = useThemeColor();
@@ -100,8 +101,15 @@ const NotificationItem = ({item}: NotificationItemProps) => {
     item.post?.task_id,
     navigation,
   ]);
+  const handleLongPress = useCallback(() => {
+    onLongPress(item);
+  }, [item, onLongPress]);
   return (
-    <Touchable style={styles.container} useReactNative onPress={onItemPress}>
+    <Touchable
+      style={styles.container}
+      useReactNative
+      onPress={onItemPress}
+      onLongPress={handleLongPress}>
       <AvatarView user={item.from_user} style={{marginTop: 3}} size={35} />
       <View style={styles.contentWrap}>
         <View style={styles.userNameWrap}>
