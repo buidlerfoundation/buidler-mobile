@@ -66,7 +66,10 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
         style={styles.logoContract}
       />
       <Text
-        style={[AppStyles.TextMed15, {color: colors.text, flex: 1}]}
+        style={[
+          AppStyles.TextMed15,
+          {color: colors.text, flex: 1, marginLeft: 12},
+        ]}
         numberOfLines={1}
         ellipsizeMode="tail">
         {item.nft_collection.name}
@@ -134,11 +137,11 @@ const SpaceDetailHeader = ({
               styles.spaceBadge,
               {backgroundColor: colors.border, marginRight: 10},
             ]}>
-            <SVG.IconStar fill={space.icon_color} />
+            <SVG.IconStar fill={space.icon_color} width={25} height={25} />
             <Text
               style={[
                 AppStyles.TextMed15,
-                {marginLeft: 8, color: space.icon_color},
+                {marginLeft: 3, color: space.icon_color},
               ]}>
               Exclusive Space
             </Text>
@@ -217,7 +220,8 @@ const styles = StyleSheet.create({
     height: 34,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingLeft: 5,
+    paddingRight: 10,
     borderRadius: 5,
   },
   contentDescription: {

@@ -298,6 +298,7 @@ const MessageInput = ({
     SocketUtils.sendMessage(message);
     SocketUtils.generateId = null;
     setVal('');
+    setMentions([]);
     onClearAttachment?.();
   }, [
     normalizeContentMessageSubmit,
@@ -319,6 +320,7 @@ const MessageInput = ({
     setVal('');
     onClearReply?.();
     onClearAttachment?.();
+    setMentions([]);
   }, [
     attachments,
     messageEdit?.message_id,

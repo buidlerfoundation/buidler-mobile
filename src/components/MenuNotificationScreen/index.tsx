@@ -24,7 +24,7 @@ const MenuNotificationScreen = ({
         <MenuItem
           onPress={onMarkRead}
           Icon={SVG.IconMenuMarkRead}
-          label="Mark as read"
+          label="Mark all as read"
         />
         {canOpenSetting && (
           <MenuItem
