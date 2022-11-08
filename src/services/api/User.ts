@@ -79,6 +79,9 @@ export const removeDevice = (body: any) =>
 export const getNFTCollection = () =>
   ApiCaller.get<Array<UserNFTCollection>>('user/nft-collection');
 
+export const getSpaceMembers = (id: string, controller?: AbortController) =>
+  ApiCaller.get<Array<UserData>>(`space/${id}/member`, undefined, controller);
+
 export const getSpaceCondition = (spaceId: string) =>
   ApiCaller.get<Array<SpaceCollectionData>>(`space/${spaceId}/condition`);
 

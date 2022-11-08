@@ -222,9 +222,12 @@ export const uniqChannelPrivateKey = async () => {
   }
 };
 
-export const spaceNameToAvatar = (name: string) => {
+export const spaceNameToAvatar = (name: string, size?: number = 1) => {
   if (!name.trim()) return 'B';
   const split = name.trim().split(' ');
-  if (split.length > 1) return `${split[0].charAt(0)}${split[1].charAt(0)}`;
-  return `${split[0].charAt(0)}`;
+  let res = '';
+  for (let index = 0; index < size; index++) {
+    res += split[index].charAt(0);
+  }
+  return res;
 };

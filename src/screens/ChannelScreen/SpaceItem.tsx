@@ -11,6 +11,8 @@ import ChannelItem from './ChannelItem';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useChannel from 'hook/useChannel';
 import AppStyles from 'common/AppStyles';
+import {useNavigation} from '@react-navigation/native';
+import ScreenID from 'common/ScreenID';
 
 type SpaceItemProps = {
   item: Space;
@@ -19,6 +21,7 @@ type SpaceItemProps = {
 };
 
 const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
+  const navigation = useNavigation();
   const isCollapsed = useMemo(() => !item.isExpanded, [item.isExpanded]);
   const currentChannel = useCurrentChannel();
   const channel = useChannel();
@@ -33,10 +36,13 @@ const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
       },
     });
   }, [dispatch, isCollapsed, item.space_id]);
+  const onBadgePress = useCallback(() => {
+    navigation.navigate(ScreenID.SpaceDetailScreen, {space: item});
+  }, [item, navigation]);
   const channelData = useMemo(() => {
     return item.channel_ids
-      .map(el => channel.find(c => c.channel_id === el))
-      .filter(el => {
+      ?.map(el => channel.find(c => c.channel_id === el))
+      ?.filter(el => {
         if (isCollapsed)
           return (
             !!el &&
@@ -71,12 +77,12 @@ const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
           {item.space_name}
         </Text>
         {item.space_type === 'Private' && (
-          <View style={styles.badgeWrapper}>
+          <Touchable style={styles.badgeWrapper} onPress={onBadgePress}>
             <SVG.IconStar fill={item.icon_color} />
-          </View>
+          </Touchable>
         )}
       </Touchable>
-      {channelData.map((el, idx) => (
+      {channelData?.map((el, idx) => (
         <ChannelItem
           c={el}
           isActive={currentChannel.channel_id === el.channel_id}
@@ -128,7 +134,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeWrapper: {
-    marginRight: 5,
+    padding: 5,
   },
   createButton: {
     height: 40,

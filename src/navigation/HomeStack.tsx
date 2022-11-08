@@ -140,6 +140,7 @@ const HomeStack = () => {
         tabBarStyle: {
           borderTopColor:
             currentRoute.name === ScreenID.PinPostScreen ||
+            currentRoute.name === ScreenID.SpaceDetailScreen ||
             currentRoute.params?.drawerStatus === 'open'
               ? colors.border
               : colors.background,
