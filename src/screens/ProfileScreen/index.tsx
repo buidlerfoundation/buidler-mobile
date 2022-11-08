@@ -74,9 +74,11 @@ const ProfileScreen = () => {
               {backgroundColor: colors.activeBackgroundLight},
             ]}
             onPress={onBackupPress}>
+            <SVG.IconMenuBackup />
             <Text style={[styles.actionLabel, {color: colors.text}]}>
               Backup
             </Text>
+            <View style={[styles.dot, {backgroundColor: colors.mention}]} />
             <SVG.IconArrowRight fill={colors.subtext} />
           </Touchable>
         )}
@@ -187,6 +189,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
     lineHeight: 20,
     marginLeft: 15,
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginLeft: 15,
+    marginRight: 10,
   },
 });
 

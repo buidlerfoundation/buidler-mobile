@@ -72,6 +72,7 @@ import IconTabNotification from '../assets/images/ic_tab_notification.svg';
 import IconMenuMarkRead from '../assets/images/ic_menu_mark_read.svg';
 import IconMenuClose from '../assets/images/ic_menu_close.svg';
 import IconMenuSilent from '../assets/images/ic_menu_silent.svg';
+import IconMenuBackup from '../assets/images/ic_menu_backup.svg';
 
 export default {
   IconExpand,
@@ -148,4 +149,5 @@ export default {
   IconMenuMarkRead,
   IconMenuClose,
   IconMenuSilent,
+  IconMenuBackup,
 };

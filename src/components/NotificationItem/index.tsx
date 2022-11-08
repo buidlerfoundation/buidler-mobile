@@ -1,5 +1,6 @@
 import {useNavigation} from '@react-navigation/native';
 import {markAsReadNotification} from 'actions/NotificationActions';
+import {setCurrentTeam} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
 import AvatarView from 'components/AvatarView';
@@ -9,6 +10,7 @@ import Touchable from 'components/Touchable';
 import {normalizeMessageTextPlain} from 'helpers/MessageHelper';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
+import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
 import {NotificationData} from 'models';
 import React, {memo, useCallback, useMemo} from 'react';
@@ -22,6 +24,7 @@ type NotificationItemProps = {
 
 const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   const dispatch = useAppDispatch();
+  const communityId = useCommunityId();
   const navigation = useNavigation();
   const {colors} = useThemeColor();
   const communities = useAppSelector(state => state.user.team);
@@ -73,9 +76,12 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
         );
     }
   }, [colors.text, item.channel, item.notification_type, item.post?.content]);
-  const onItemPress = useCallback(() => {
+  const onItemPress = useCallback(async () => {
     if (!item.is_read) {
       dispatch(markAsReadNotification(item.notification_id));
+    }
+    if (communityId !== item.team_id && community) {
+      await dispatch(setCurrentTeam(community, item.channel?.channel_id));
     }
     switch (item.notification_type) {
       case 'post_mention':
@@ -93,12 +99,16 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
         break;
     }
   }, [
+    community,
+    communityId,
     dispatch,
+    item.channel?.channel_id,
     item.is_read,
     item?.message_id,
     item.notification_id,
     item.notification_type,
     item.post?.task_id,
+    item.team_id,
     navigation,
   ]);
   const handleLongPress = useCallback(() => {
