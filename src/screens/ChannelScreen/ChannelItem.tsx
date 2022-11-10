@@ -26,6 +26,10 @@ const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
     NavigationServices.pushToScreen(ScreenID.ConversationScreen);
   }, [c, dispatch]);
   const isUnSeen = useMemo(() => !c?.seen, [c?.seen]);
+  const isQuiet = useMemo(
+    () => c?.notification_type === 'Quiet',
+    [c?.notification_type],
+  );
   const isMuted = useMemo(
     () => c?.notification_type === 'Muted',
     [c?.notification_type],
@@ -43,6 +47,10 @@ const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
     isMuted,
     isUnSeen,
   ]);
+  const showBadge = useMemo(
+    () => !isQuiet && !isMuted && isUnSeen && !isActive,
+    [isActive, isMuted, isQuiet, isUnSeen],
+  );
 
   return (
     <View style={[styles.container]}>
@@ -68,6 +76,11 @@ const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
           numberOfLines={1}>
           {c.channel_name}
         </Text>
+        {showBadge && (
+          <View
+            style={[styles.unSeenBadge, {backgroundColor: colors.mention}]}
+          />
+        )}
       </Touchable>
     </View>
   );
@@ -86,6 +99,12 @@ const styles = StyleSheet.create({
   },
   channelName: {
     marginHorizontal: 10,
+    flex: 1,
+  },
+  unSeenBadge: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });
 
