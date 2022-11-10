@@ -105,9 +105,9 @@ const CommunityDetailScreen = () => {
           />
         }
         keyExtractor={item => item.user_id}
-        numColumns={4}
+        numColumns={3}
         renderItem={renderItem}
-        ItemSeparatorComponent={() => <View style={{height: 15}} />}
+        ItemSeparatorComponent={() => <View style={{height: 25}} />}
         ListFooterComponent={
           <View style={{height: 15 + AppDimension.extraBottom}} />
         }

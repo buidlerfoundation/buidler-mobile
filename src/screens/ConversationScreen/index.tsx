@@ -90,6 +90,9 @@ const ConversationScreen = () => {
     [messageData?.canMore],
   );
   const reactData = useAppSelector(state => state.reactReducer.reactData);
+  const updateFromSocket = useAppSelector(
+    state => state.message.updateFromSocket,
+  );
   const userData = useAppSelector(state => state.user.userData);
   const userRole = useUserRole();
   const currentTeamId = useCommunityId();
@@ -652,7 +655,7 @@ const ConversationScreen = () => {
           renderItem={renderItem}
           initialNumToRender={20}
           ListHeaderComponent={
-            loadMoreAfterMessage ? (
+            loadMoreAfterMessage || updateFromSocket ? (
               <View style={styles.footerMessage}>
                 <ActivityIndicator />
               </View>

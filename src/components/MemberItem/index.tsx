@@ -12,9 +12,9 @@ type MemberItemProps = {
 
 const MemberItem = ({item, index}: MemberItemProps) => {
   const {width} = useWindowDimensions();
-  const itemWidth = useMemo(() => Math.floor((width - 85) / 4), [width]);
+  const itemWidth = useMemo(() => Math.floor((width - 70) / 3), [width]);
   const {colors} = useThemeColor();
-  const marginLeft = useMemo(() => (index % 4 === 0 ? 20 : 15), [index]);
+  const marginLeft = useMemo(() => (index % 3 === 0 ? 20 : 15), [index]);
   return (
     <View style={[styles.container, {width: itemWidth, marginLeft}]}>
       <AvatarView user={item} withStatus={false} size={30} />
@@ -30,7 +30,7 @@ const MemberItem = ({item, index}: MemberItemProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 80,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -42,23 +42,19 @@ import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 const getTasks = async (channelId: string, dispatch: Dispatch) => {
   dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
   try {
-    const [taskRes, archivedCountRes] = await Promise.all([
-      api.getTasks(channelId),
-      api.getArchivedTaskCount(channelId),
-    ]);
-    if (taskRes.statusCode === 200 && archivedCountRes.statusCode === 200) {
+    const taskRes = await api.getTasks(channelId);
+    if (taskRes.statusCode === 200) {
       dispatch({
         type: actionTypes.TASK_SUCCESS,
         payload: {
           channelId,
           tasks: taskRes.data,
-          archivedCount: archivedCountRes.total,
         },
       });
     } else {
       dispatch({
         type: actionTypes.TASK_FAIL,
-        payload: {message: 'Error', taskRes, archivedCountRes},
+        payload: {message: 'Error', taskRes},
       });
     }
   } catch (e) {
@@ -103,6 +99,7 @@ const getMessages = async (
   channelType: string,
   dispatch: Dispatch,
 ) => {
+  dispatch({type: actionTypes.UPDATE_FROM_SOCKET, payload: true});
   const messageRes = await api.getMessages(channelId);
   const isPrivate = channelType === 'Private' || channelType === 'Direct';
   const messageData = isPrivate
@@ -117,6 +114,7 @@ const getMessages = async (
       payload: {data: messageData, channelId, reloadSocket: true},
     });
   }
+  dispatch({type: actionTypes.UPDATE_FROM_SOCKET, payload: false});
 };
 
 const actionSetCurrentTeam = async (

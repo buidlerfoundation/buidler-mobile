@@ -94,12 +94,15 @@ const SpaceDetailHeader = ({
 }: SpaceDetailHeaderProps) => {
   const contentRef = useRef<View>();
   const {colors} = useThemeColor();
-  const [isMore, setIsMore] = useState(false);
+  const [isMore, setIsMore] = useState<boolean | null>(null);
   const onContentLayout = useCallback(() => {
     contentRef.current.measure((ox, oy, w, h) => {
-      setIsMore(h > 130);
+      if (isMore === null) {
+        setIsMore(h > 80);
+      }
     });
-  }, []);
+  }, [isMore]);
+  const toggleViewMore = useCallback(() => setIsMore(current => !current), []);
   return (
     <View style={styles.container}>
       <View style={[styles.coverWrap, {backgroundColor: colors.border}]}>
@@ -153,17 +156,40 @@ const SpaceDetailHeader = ({
         </Text>
       </View>
       {!!space.space_description && (
-        <View
-          ref={contentRef}
-          style={styles.contentDescription}
-          onLayout={onContentLayout}>
-          <RenderHTML
-            html={normalizeMessageText(space.space_description)}
-            defaultTextProps={{
-              style: [AppStyles.TextMed15, {color: colors.lightText}],
-            }}
-          />
-        </View>
+        <>
+          {!isMore ? (
+            <View
+              ref={contentRef}
+              style={styles.contentDescription}
+              onLayout={onContentLayout}>
+              <RenderHTML
+                html={normalizeMessageText(space.space_description)}
+                defaultTextProps={{
+                  style: [AppStyles.TextMed15, {color: colors.lightText}],
+                }}
+              />
+            </View>
+          ) : (
+            <Text
+              style={[
+                AppStyles.TextMed15,
+                {color: colors.lightText, marginTop: 20, marginHorizontal: 20},
+              ]}
+              numberOfLines={3}
+              ellipsizeMode="tail">
+              {space.space_description
+                .replace(/<br>|<br\/>/gi, '\n')
+                .replace(/(<([^>]+)>)/gi, '')}
+            </Text>
+          )}
+          {isMore !== null && (
+            <Touchable style={styles.btnViewMore} onPress={toggleViewMore}>
+              <Text style={[AppStyles.TextSemi15, {color: colors.subtext}]}>
+                {isMore ? 'View more' : 'View less'}
+              </Text>
+            </Touchable>
+          )}
+        </>
       )}
       {spaceConditions.length > 0 && (
         <View style={styles.spaceConditionWrap}>
@@ -171,7 +197,7 @@ const SpaceDetailHeader = ({
             Entry requirement
           </Text>
           {spaceConditions.map(el => (
-            <ConditionItem item={el} key={el.token_contract} />
+            <ConditionItem item={el} key={el.contract_address} />
           ))}
           <Text
             style={[
@@ -247,6 +273,10 @@ const styles = StyleSheet.create({
   btnGet: {
     padding: 10,
     marginHorizontal: 10,
+  },
+  btnViewMore: {
+    marginTop: 5,
+    marginHorizontal: 20,
   },
 });
 

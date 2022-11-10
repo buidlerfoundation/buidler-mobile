@@ -203,7 +203,6 @@ const MessageInput = ({
     if (currentChannel.channel_id) {
       setVal('');
       onClearAttachment?.();
-      setMentions([]);
     }
   }, [currentChannel.channel_id, onClearAttachment]);
 
@@ -211,10 +210,13 @@ const MessageInput = ({
     if (postId) {
       setVal('');
       onClearAttachment?.();
-      setMentions([]);
     }
   }, [onClearAttachment, postId]);
-
+  useEffect(() => {
+    if (!val) {
+      setMentions([]);
+    }
+  }, [val]);
   const handleFocus = useCallback(() => {
     onFocusChanged?.(true);
     setFocus(true);
@@ -298,7 +300,6 @@ const MessageInput = ({
     SocketUtils.sendMessage(message);
     SocketUtils.generateId = null;
     setVal('');
-    setMentions([]);
     onClearAttachment?.();
   }, [
     normalizeContentMessageSubmit,
@@ -320,7 +321,6 @@ const MessageInput = ({
     setVal('');
     onClearReply?.();
     onClearAttachment?.();
-    setMentions([]);
   }, [
     attachments,
     messageEdit?.message_id,

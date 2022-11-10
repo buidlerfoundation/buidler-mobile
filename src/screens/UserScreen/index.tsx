@@ -11,6 +11,7 @@ import Touchable from 'components/Touchable';
 import UserInfo from 'components/UserInfo';
 import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
+import useUserData from 'hook/useUserData';
 import {NFTCollection, UserData} from 'models';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
@@ -36,10 +37,15 @@ const VerifyItem = memo(({item}: VerifyItemProps) => {
 
 const UserScreen = () => {
   const navigation = useNavigation();
+  const userData = useUserData();
   const [userProfile, setUserProfile] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const communityId = useCommunityId();
+  const isMine = useMemo(
+    () => userData.user_id === userProfile?.user_id,
+    [userData.user_id, userProfile?.user_id],
+  );
   const route = useRoute();
   const {colors} = useThemeColor();
   const [isOpenMenu, setOpenMenu] = useState(false);
@@ -170,27 +176,29 @@ const UserScreen = () => {
         </Touchable>
       </View>
       <Body />
-      <View style={styles.bottom}>
-        <Touchable
-          useReactNative
-          style={[styles.bottomButton, {backgroundColor: colors.primary}]}
-          onPress={onDirectMessage}>
-          <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-            Direct Message
-          </Text>
-        </Touchable>
-        <Touchable
-          useReactNative
-          style={[
-            styles.bottomButton,
-            {backgroundColor: colors.border, marginTop: 10},
-          ]}
-          onPress={onSendCrypto}>
-          <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-            Send Crypto
-          </Text>
-        </Touchable>
-      </View>
+      {!isMine && (
+        <View style={styles.bottom}>
+          <Touchable
+            useReactNative
+            style={[styles.bottomButton, {backgroundColor: colors.border}]}
+            onPress={onSendCrypto}>
+            <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
+              Send Crypto
+            </Text>
+          </Touchable>
+          <Touchable
+            useReactNative
+            style={[
+              styles.bottomButton,
+              {backgroundColor: colors.blue, marginLeft: 10},
+            ]}
+            onPress={onDirectMessage}>
+            <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
+              Direct Message
+            </Text>
+          </Touchable>
+        </View>
+      )}
       <ModalBottom
         isVisible={isOpenMenu}
         onSwipeComplete={onCloseMenu}
@@ -240,15 +248,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   bottomButton: {
-    height: 60,
-    marginHorizontal: 20,
+    height: 45,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
+    flex: 1,
   },
   bottom: {
     marginTop: 20,
     marginBottom: 20 + AppDimension.extraBottom,
+    marginHorizontal: 20,
+    flexDirection: 'row',
   },
   verifyContainer: {
     marginTop: 20,

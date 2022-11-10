@@ -17,6 +17,7 @@ type MessageReducerState = {
   ppApiController?: AbortController | null;
   highlightMessageId?: string;
   loadMoreAfterMessage?: boolean;
+  updateFromSocket?: boolean;
 };
 
 const initialState: MessageReducerState = {
@@ -24,6 +25,7 @@ const initialState: MessageReducerState = {
   apiController: null,
   ppApiController: null,
   loadMoreAfterMessage: false,
+  updateFromSocket: false,
 };
 
 const messageReducers: Reducer<MessageReducerState, AnyAction> = (
@@ -32,6 +34,12 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
 ) => {
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.UPDATE_FROM_SOCKET: {
+      return {
+        ...state,
+        updateFromSocket: payload,
+      };
+    }
     case actionTypes.UPLOAD_ATTACHMENT_SUCCESS: {
       const {file, file_url} = payload;
       const newMessageData = state.messageData;
