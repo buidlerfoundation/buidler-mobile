@@ -90,7 +90,7 @@ const AttachmentItem = ({
     return (
       <View
         style={[
-          styles.fileItem,
+          styles.fileItemWrap,
           {backgroundColor: colors.activeBackgroundLight},
         ]}>
         <Touchable
@@ -98,7 +98,8 @@ const AttachmentItem = ({
           key={att.file_id}
           useReactNative
           onLongPress={onLongPress}
-          disabled={disabled}>
+          disabled={disabled}
+          style={styles.fileItem}>
           <SVG.IconFile fill={colors.subtext} />
           <Text style={[styles.fileName, {color: colors.text}]}>
             {att.original_name}
@@ -236,12 +237,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     overflow: 'hidden',
   },
-  fileItem: {
+  fileItemWrap: {
     marginTop: 10,
-    marginRight: 10,
+  },
+  fileItem: {
     padding: 10,
     flexDirection: 'row',
     borderRadius: 5,
+    alignItems: 'center',
   },
   fileName: {
     marginHorizontal: 16,
