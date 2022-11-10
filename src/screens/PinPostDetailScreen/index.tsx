@@ -320,7 +320,11 @@ const PinPostDetailScreen = () => {
           }
           keyExtractor={item => item.message_id}
           renderItem={({item}) => (
-            <MessageItem item={item} onLongPress={openMenuMessage} />
+            <MessageItem
+              item={item}
+              onLongPress={openMenuMessage}
+              contentId={postId}
+            />
           )}
         />
         <View>

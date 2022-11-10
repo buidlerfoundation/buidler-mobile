@@ -89,6 +89,7 @@ type PinPostItemProps = {
   detail?: boolean;
   onLongPress?: () => void;
   embedReport?: boolean;
+  contentId?: string;
 };
 
 const PinPostItem = ({
@@ -98,6 +99,7 @@ const PinPostItem = ({
   style,
   onLongPress,
   embedReport,
+  contentId,
 }: PinPostItemProps) => {
   const dispatch = useAppDispatch();
   const [ipfsCollapsed, setIPFSCollapsed] = useState(true);
@@ -324,6 +326,7 @@ const PinPostItem = ({
         stack={!detail}
         onLongPress={handleLongPress}
         isPinPost
+        contentId={contentId}
       />
       {!embeds && (
         <PinChannelView

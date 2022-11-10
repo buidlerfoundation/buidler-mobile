@@ -20,6 +20,8 @@ type AttachmentItemProps = {
   onLongPress?: () => void;
   isPinPost?: boolean;
   disabled?: boolean;
+  contentId?: string;
+  allAttachments?: any[];
 };
 
 const AttachmentItem = ({
@@ -32,6 +34,8 @@ const AttachmentItem = ({
   onLongPress,
   isPinPost,
   disabled,
+  contentId,
+  allAttachments,
 }: AttachmentItemProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
@@ -121,7 +125,9 @@ const AttachmentItem = ({
       <ImageLightBox
         originUrl={ImageHelper.normalizeImage(att.file_url, teamId)}
         onLongPress={onLongPress}
-        disabled={disabled}>
+        disabled={disabled}
+        contentId={contentId}
+        allAttachments={allAttachments}>
         <FastImage
           source={{
             uri: ImageHelper.normalizeImage(att.file_url, teamId, {h: 90}),
@@ -151,6 +157,7 @@ type MessagePhotoProps = {
   onLongPress?: () => void;
   isPinPost?: boolean;
   disabled?: boolean;
+  contentId?: string;
 };
 
 const MessagePhoto = ({
@@ -163,6 +170,7 @@ const MessagePhoto = ({
   isPinPost,
   onLongPress,
   disabled,
+  contentId,
 }: MessagePhotoProps) => {
   const {colors} = useThemeColor();
   const onFilePress = useCallback(
@@ -197,6 +205,16 @@ const MessagePhoto = ({
             onLongPress={onLongPress}
             isPinPost={isPinPost}
             disabled={disabled}
+            contentId={contentId}
+            allAttachments={
+              contentId
+                ? undefined
+                : attachments
+                    .filter(el => el.mimetype?.includes('image'))
+                    .map(el => ({
+                      url: ImageHelper.normalizeImage(el.file_url, teamId),
+                    }))
+            }
           />
         );
       })}

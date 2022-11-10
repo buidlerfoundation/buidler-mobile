@@ -194,6 +194,7 @@ type MessageItemProps = {
   onPressMessageReply?: (replyMessage: MessageData) => void;
   style?: ViewStyle;
   embeds?: boolean;
+  contentId?: string;
 };
 
 const MessageItem = ({
@@ -202,6 +203,7 @@ const MessageItem = ({
   onPressMessageReply,
   style,
   embeds,
+  contentId,
 }: MessageItemProps) => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
@@ -280,6 +282,7 @@ const MessageItem = ({
               embeds
               style={[styles.pinPostContainer, {borderColor: colors.border}]}
               onLongPress={handleLongPress}
+              contentId={contentId}
             />
           ) : (
             <>
@@ -307,6 +310,7 @@ const MessageItem = ({
                 }
                 onLongPress={handleLongPress}
                 disabled={embeds}
+                contentId={contentId}
               />
               {!embeds && (
                 <ReactView

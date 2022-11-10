@@ -1,6 +1,6 @@
 import {useNavigation} from '@react-navigation/native';
 import {markAsReadNotification} from 'actions/NotificationActions';
-import {setCurrentTeam} from 'actions/UserActions';
+import {setCurrentChannel, setCurrentTeam} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
 import AvatarView from 'components/AvatarView';
@@ -10,6 +10,7 @@ import Touchable from 'components/Touchable';
 import {normalizeMessageTextPlain} from 'helpers/MessageHelper';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
+import useChannelId from 'hook/useChannelId';
 import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
 import {NotificationData} from 'models';
@@ -25,6 +26,7 @@ type NotificationItemProps = {
 const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   const dispatch = useAppDispatch();
   const communityId = useCommunityId();
+  const channelId = useChannelId();
   const navigation = useNavigation();
   const {colors} = useThemeColor();
   const communities = useAppSelector(state => state.user.team);
@@ -83,6 +85,9 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
     if (communityId !== item.team_id && community) {
       await dispatch(setCurrentTeam(community, item.channel?.channel_id));
     }
+    if (item.channel && channelId !== item.channel?.channel_id) {
+      await dispatch(setCurrentChannel(item.channel));
+    }
     switch (item.notification_type) {
       case 'post_mention':
       case 'post_reply':
@@ -99,10 +104,11 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
         break;
     }
   }, [
+    channelId,
     community,
     communityId,
     dispatch,
-    item.channel?.channel_id,
+    item.channel,
     item.is_read,
     item?.message_id,
     item.notification_id,

@@ -265,10 +265,11 @@ const ConversationScreen = () => {
           item={item}
           onLongPress={openMenuMessage}
           onPressMessageReply={onPressMessageReply}
+          contentId={currentChannelId}
         />
       );
     },
-    [onPressMessageReply, openMenuMessage],
+    [currentChannelId, onPressMessageReply, openMenuMessage],
   );
   const renderFooter = useCallback(
     ({section: {title}}) => (

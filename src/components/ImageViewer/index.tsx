@@ -63,6 +63,7 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
         }}>
         <View style={styles.container}>
           <ImgViewer
+            renderIndicator={() => null}
             loadingRender={() => <ActivityIndicator />}
             enableSwipeDown
             imageUrls={images}
