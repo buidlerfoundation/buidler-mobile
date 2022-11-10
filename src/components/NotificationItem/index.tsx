@@ -5,9 +5,7 @@ import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
 import AvatarView from 'components/AvatarView';
 import ChannelIcon from 'components/ChannelIcon';
-import RenderHTML from 'components/RenderHTML';
 import Touchable from 'components/Touchable';
-import {normalizeMessageTextPlain} from 'helpers/MessageHelper';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useChannelId from 'hook/useChannelId';
@@ -155,14 +153,12 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
           </Text>
           <DestinationNotification />
         </View>
-        <RenderHTML
-          html={normalizeMessageTextPlain(
-            item.content.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2'),
-            undefined,
-            undefined,
-            undefined,
-          )}
-        />
+        <Text
+          style={[AppStyles.TextMed15, {color: colors.text, marginTop: 5}]}
+          numberOfLines={2}
+          ellipsizeMode="tail">
+          {item.content.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2')}
+        </Text>
         {community && (
           <Text
             style={[AppStyles.TextMed13, {color: colors.subtext, marginTop: 5}]}
