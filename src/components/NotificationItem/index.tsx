@@ -17,6 +17,7 @@ import {NotificationData} from 'models';
 import React, {memo, useCallback, useMemo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {notificationFromNow} from 'utils/DateUtils';
+import SocketUtils from 'utils/SocketUtils';
 
 type NotificationItemProps = {
   item: NotificationData;
@@ -80,6 +81,9 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   }, [colors.text, item.channel, item.notification_type, item.post?.content]);
   const onItemPress = useCallback(async () => {
     if (!item.is_read) {
+      if (item.post?.task_id) {
+        SocketUtils.emitSeenPost(item.post?.task_id);
+      }
       dispatch(markAsReadNotification(item.notification_id));
     }
     if (communityId !== item.team_id && community) {

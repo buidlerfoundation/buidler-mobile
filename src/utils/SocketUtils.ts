@@ -267,6 +267,7 @@ class SocketUtil {
         this.socket?.off('ON_USER_LEAVE_TEAM');
         this.socket?.off('ON_ATTACHMENT_UPLOAD_SUCCESSFUL');
         this.socket?.off('ON_NEW_NOTIFICATION');
+        this.socket?.off('ON_READ_NOTIFICATION_IN_POST');
         this.socket?.off('disconnect');
         if (reason === 'io server disconnect') {
           this.socket?.connect();
@@ -333,8 +334,30 @@ class SocketUtil {
     });
   };
   listenSocket() {
+    this.socket?.on('ON_READ_NOTIFICATION_IN_POST', data => {
+      const currentChannel = getCurrentChannel();
+      store.dispatch({
+        type: actionTypes.UPDATE_TASK_REQUEST,
+        payload: {
+          taskId: data.task_id,
+          data: {total_unread_notifications: data.total_unread_notifications},
+          channelId: currentChannel.channel_id,
+        },
+      });
+    });
     this.socket?.on('ON_NEW_NOTIFICATION', data => {
       const {userData} = store.getState().user;
+      if (data.post?.task_id) {
+        const currentChannel = getCurrentChannel();
+        store.dispatch({
+          type: actionTypes.UPDATE_TASK_REQUEST,
+          payload: {
+            taskId: data.post?.task_id,
+            data: {total_unread_notifications: 1},
+            channelId: currentChannel.channel_id,
+          },
+        });
+      }
       store.dispatch({
         type: actionTypes.RECEIVE_NOTIFICATION,
         payload: data,
@@ -877,6 +900,11 @@ class SocketUtil {
       return;
     }
     // this.emitOnline(teamId);
+  }
+  emitSeenPost(postId: string) {
+    this.socket?.emit?.('ON_READ_NOTIFICATION_IN_POST', {
+      task_id: postId,
+    });
   }
   emitSeenChannel(messageId: string | undefined, channelId: string) {
     if (!messageId) return;

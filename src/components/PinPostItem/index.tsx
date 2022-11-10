@@ -344,7 +344,17 @@ const PinPostItem = ({
       {!embedReport && pinPost.total_messages > 0 && (
         <View style={styles.replyWrap}>
           <View style={styles.rowReply}>
-            <SVG.IconPinReply fill={colors.lightText} />
+            <View>
+              <SVG.IconPinReply fill={colors.lightText} />
+              {pinPost.total_unread_notifications > 0 && (
+                <View
+                  style={[
+                    styles.unReadBadge,
+                    {backgroundColor: colors.mention},
+                  ]}
+                />
+              )}
+            </View>
             <Text
               style={[
                 styles.totalMessage,
@@ -466,6 +476,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 5,
     borderWidth: 1,
+  },
+  unReadBadge: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    position: 'absolute',
+    right: 0,
+    top: 1,
   },
 });
 
