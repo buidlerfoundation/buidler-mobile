@@ -15,11 +15,11 @@ const useAttachments = (contentId?: string) => {
     for (let index = messages.length - 1; index >= 0; index--) {
       const message = messages[index];
       res.push(
-        ...message.message_attachments
-          .filter(el => el.mimetype?.includes('image'))
-          .map(el => ({
+        ...(message.message_attachments
+          ?.filter(el => el.mimetype?.includes('image'))
+          ?.map(el => ({
             url: ImageHelper.normalizeImage(el.file_url, communityId),
-          })),
+          })) || []),
       );
     }
     return res;
