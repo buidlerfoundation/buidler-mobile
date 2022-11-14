@@ -23,6 +23,7 @@ import {
   View,
 } from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
+import api from 'services/api';
 
 type NotificationTabItemProps = {
   type: NotificationFilterType;
@@ -59,6 +60,19 @@ const NotificationTabItem = ({type}: NotificationTabItemProps) => {
   const notificationData = useMemo(
     () => normalizeNotificationData(notifications),
     [notifications],
+  );
+  const selectedNotificationType = useMemo(
+    () =>
+      selectedNotification?.post?.notification_type ||
+      selectedNotification?.channel?.notification_type,
+    [
+      selectedNotification?.channel?.notification_type,
+      selectedNotification?.post?.notification_type,
+    ],
+  );
+  const selectedNotificationEntityType = useMemo(
+    () => (selectedNotification?.post ? 'post' : 'channel'),
+    [selectedNotification?.post],
   );
   const onCloseMenu = useCallback(() => setOpenMenu(false), []);
   const onLongPress = useCallback((item: NotificationData) => {
@@ -106,7 +120,39 @@ const NotificationTabItem = ({type}: NotificationTabItemProps) => {
     dispatch(deleteNotification(selectedNotification?.notification_id));
     onCloseMenu();
   }, [dispatch, onCloseMenu, selectedNotification?.notification_id]);
-  const onTurnOffNotification = useCallback(() => {}, []);
+  const onToggleNotification = useCallback(() => {
+    onCloseMenu();
+    if (
+      selectedNotificationEntityType === 'channel' &&
+      selectedNotification?.channel
+    ) {
+      return api.updateChannelNotification(
+        selectedNotification?.channel.channel_id,
+        {
+          notification_type:
+            selectedNotificationType === 'Alert' ? 'Muted' : 'Alert',
+        },
+      );
+    }
+    if (
+      selectedNotificationEntityType === 'post' &&
+      selectedNotification?.post
+    ) {
+      return api.configNotificationFromTask(
+        selectedNotification?.post.task_id,
+        {
+          notification_type:
+            selectedNotificationType === 'Alert' ? 'Muted' : 'Alert',
+        },
+      );
+    }
+  }, [
+    onCloseMenu,
+    selectedNotification?.channel,
+    selectedNotification?.post,
+    selectedNotificationEntityType,
+    selectedNotificationType,
+  ]);
   return (
     <View style={styles.container}>
       <FlatList
@@ -131,7 +177,11 @@ const NotificationTabItem = ({type}: NotificationTabItemProps) => {
         <MenuNotification
           onMarkRead={onMarkRead}
           onRemove={onRemove}
-          onTurnOffNotification={onTurnOffNotification}
+          onTurnOffNotification={onToggleNotification}
+          onTurnOnNotification={onToggleNotification}
+          entityType={selectedNotificationEntityType}
+          canTurnOff={selectedNotificationType === 'Alert'}
+          canTurnOn={selectedNotificationType !== 'Alert'}
         />
       </ModalBottom>
     </View>

@@ -1,9 +1,12 @@
+import {useNavigation} from '@react-navigation/native';
 import AppStyles from 'common/AppStyles';
+import ScreenID from 'common/ScreenID';
 import AvatarView from 'components/AvatarView';
+import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import {UserData} from 'models';
-import React, {memo, useMemo} from 'react';
-import {View, StyleSheet, useWindowDimensions, Text} from 'react-native';
+import React, {memo, useCallback, useMemo} from 'react';
+import {StyleSheet, useWindowDimensions, Text} from 'react-native';
 
 type MemberItemProps = {
   item: UserData;
@@ -11,12 +14,20 @@ type MemberItemProps = {
 };
 
 const MemberItem = ({item, index}: MemberItemProps) => {
+  const navigation = useNavigation();
   const {width} = useWindowDimensions();
   const itemWidth = useMemo(() => Math.floor((width - 70) / 3), [width]);
   const {colors} = useThemeColor();
   const marginLeft = useMemo(() => (index % 3 === 0 ? 20 : 15), [index]);
+  const onUserPress = useCallback(
+    () => navigation.navigate(ScreenID.UserScreen, {userId: item.user_id}),
+    [item.user_id, navigation],
+  );
   return (
-    <View style={[styles.container, {width: itemWidth, marginLeft}]}>
+    <Touchable
+      style={[styles.container, {width: itemWidth, marginLeft}]}
+      useReactNative
+      onPress={onUserPress}>
       <AvatarView user={item} withStatus={false} size={30} />
       <Text
         style={[styles.userName, AppStyles.TextMed14, {color: colors.text}]}
@@ -24,7 +35,7 @@ const MemberItem = ({item, index}: MemberItemProps) => {
         ellipsizeMode="middle">
         {item.user_name}
       </Text>
-    </View>
+    </Touchable>
   );
 };
 

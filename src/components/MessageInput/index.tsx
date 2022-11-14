@@ -31,7 +31,6 @@ import useCommunityId from 'hook/useCommunityId';
 import AppStyles from 'common/AppStyles';
 import PermissionHelper from 'helpers/PermissionHelper';
 import Video from 'react-native-video';
-import AppConfig from 'common/AppConfig';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -162,37 +161,24 @@ const MessageInput = ({
           ?.includes?.(mentionStr?.toLowerCase?.() || ''),
     );
   }, [mentionStr, teamUserData]);
-  const normalizeMessageEdit = useCallback(
-    (content: string) => {
-      let res = content;
-      const matchRegex = /(<@)(.*?)(-)(.*?)(>)/gim;
-      const matchMentions = content.match(matchRegex);
-      matchMentions?.forEach?.(element => {
-        const mentionMatch = /(<@)(.*?)(-)(.*?)(>)/.exec(element);
-        if (mentionMatch.length > 0) {
-          res = res.replace(mentionMatch[0], `@${mentionMatch[2]}`);
-          setMentions(current => {
-            if (current.includes(mentionMatch[2])) {
-              return current;
-            }
-            return [...current, mentionMatch[2]];
-          });
-        }
-      });
-      setVal(res);
-      setTimeout(() => {
-        inputRef?.current?.focus();
-      }, AppConfig.timeoutCloseBottomSheet);
-    },
-    [inputRef],
-  );
-  useEffect(() => {
-    if (messageReply) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, AppConfig.timeoutCloseBottomSheet);
-    }
-  }, [inputRef, messageReply]);
+  const normalizeMessageEdit = useCallback((content: string) => {
+    let res = content;
+    const matchRegex = /(<@)(.*?)(-)(.*?)(>)/gim;
+    const matchMentions = content.match(matchRegex);
+    matchMentions?.forEach?.(element => {
+      const mentionMatch = /(<@)(.*?)(-)(.*?)(>)/.exec(element);
+      if (mentionMatch.length > 0) {
+        res = res.replace(mentionMatch[0], `@${mentionMatch[2]}`);
+        setMentions(current => {
+          if (current.includes(mentionMatch[2])) {
+            return current;
+          }
+          return [...current, mentionMatch[2]];
+        });
+      }
+    });
+    setVal(res);
+  }, []);
   useEffect(() => {
     if (messageEdit) {
       normalizeMessageEdit(messageEdit.content);

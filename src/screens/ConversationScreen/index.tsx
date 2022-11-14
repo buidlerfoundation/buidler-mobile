@@ -191,6 +191,14 @@ const ConversationScreen = () => {
   useEffect(() => {
     scrollDown();
   }, [scrollDown]);
+  useEffect(() => {
+    if (currentChannelId) {
+      setMessageReply(null);
+      setMessageEdit(null);
+      setAttachments([]);
+      SocketUtils.generateId = null;
+    }
+  }, [currentChannelId]);
   const {colors} = useThemeColor();
   const sections = useMemo(
     () =>
@@ -351,6 +359,7 @@ const ConversationScreen = () => {
   const openMenuMessage = useCallback((message: MessageData) => {
     HapticUtils.trigger();
     setSelectedMessage(message);
+    inputRef.current?.blur();
     if (message.task) {
       setOpenMenuPinPost(true);
     } else {
@@ -554,6 +563,9 @@ const ConversationScreen = () => {
     setMessageEdit(null);
     setMessageReply(selectedMessage);
     onCloseMenuMessage();
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, selectedMessage]);
   const onEditMessage = useCallback(() => {
     setMessageReply(null);
@@ -568,6 +580,9 @@ const ConversationScreen = () => {
         url: el.file_url,
       })),
     );
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, selectedMessage]);
   const openSideMenu = useCallback(() => {
     navigation.openDrawer();

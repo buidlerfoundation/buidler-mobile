@@ -12,6 +12,7 @@ import {connect} from 'react-redux';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import {ThemeType} from 'models';
+import FastImage from 'react-native-fast-image';
 
 type ImageViewerState = {
   images: Array<any>;
@@ -71,6 +72,7 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
             saveToLocalByLongPress={false}
             onCancel={this.close}
             swipeDownThreshold={10}
+            renderImage={props => <FastImage {...props} />}
           />
 
           <TouchableOpacity style={styles.button} onPress={this.close}>

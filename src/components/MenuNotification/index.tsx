@@ -10,14 +10,20 @@ type MenuNotificationProps = {
   onMarkRead: () => void;
   onRemove: () => void;
   onTurnOffNotification: () => void;
+  onTurnOnNotification: () => void;
   canTurnOff?: boolean;
+  canTurnOn?: boolean;
+  entityType?: 'post' | 'channel';
 };
 
 const MenuNotification = ({
   onMarkRead,
   onRemove,
   onTurnOffNotification,
+  onTurnOnNotification,
   canTurnOff,
+  canTurnOn,
+  entityType,
 }: MenuNotificationProps) => {
   const {colors} = useThemeColor();
   return (
@@ -32,7 +38,14 @@ const MenuNotification = ({
           <MenuItem
             onPress={onTurnOffNotification}
             Icon={SVG.IconMenuSilent}
-            label="Turn off notification for this post"
+            label={`Turn off notification for this ${entityType}`}
+          />
+        )}
+        {canTurnOn && (
+          <MenuItem
+            onPress={onTurnOnNotification}
+            Icon={SVG.IconMenuNotification}
+            label={`Turn on notification for this ${entityType}`}
           />
         )}
         <MenuItem

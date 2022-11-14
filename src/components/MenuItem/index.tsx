@@ -19,7 +19,10 @@ const MenuItem = ({style, label, Icon, onPress}: MenuItemProps) => {
       onPress={onPress}>
       <Icon />
       <Text
-        style={[AppStyles.TextSemi16, {color: colors.text, marginLeft: 15}]}>
+        style={[
+          AppStyles.TextSemi16,
+          {color: colors.text, marginLeft: 15, flex: 1},
+        ]}>
         {label}
       </Text>
     </Touchable>

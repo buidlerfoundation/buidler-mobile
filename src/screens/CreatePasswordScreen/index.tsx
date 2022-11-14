@@ -80,6 +80,7 @@ const CreatePasswordScreen = ({route}: Props) => {
               autoCorrect={false}
               value={password}
               onChangeText={onChangePassword}
+              textContentType="oneTimeCode"
             />
             <Touchable style={styles.buttonSecure} onPress={togglePassword}>
               <Text style={[styles.secureText, {color: colors.subtext}]}>

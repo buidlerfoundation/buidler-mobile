@@ -2,6 +2,7 @@ import {getCollectibles} from 'actions/CollectibleActions';
 import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
 import CollectibleLayoutProvider from 'components/CollectibleLayoutProvider';
+import SvgUri from 'components/SvgUri';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
@@ -129,17 +130,31 @@ const WalletCollectibles = () => {
               styles.collectionItemContainer,
               data.isFirst && {paddingLeft: 20},
             ]}>
-            <FastImage
-              source={{uri: data.image_url}}
-              style={[
-                styles.collectionItemImage,
-                {
-                  backgroundColor: colors.border,
-                  width: itemSize,
-                  height: itemSize,
-                },
-              ]}
-            />
+            {data.image_url.includes('.svg') ? (
+              <View
+                style={[
+                  styles.collectionItemImage,
+                  {backgroundColor: colors.border},
+                ]}>
+                <SvgUri
+                  uri={data.image_url}
+                  width={itemSize}
+                  height={itemSize}
+                />
+              </View>
+            ) : (
+              <FastImage
+                source={{uri: data.image_url}}
+                style={[
+                  styles.collectionItemImage,
+                  {
+                    backgroundColor: colors.border,
+                    width: itemSize,
+                    height: itemSize,
+                  },
+                ]}
+              />
+            )}
           </View>
         );
       }
@@ -199,6 +214,7 @@ const styles = StyleSheet.create({
   },
   collectionItemImage: {
     borderRadius: 5,
+    overflow: 'hidden',
   },
   count: {
     height: 30,

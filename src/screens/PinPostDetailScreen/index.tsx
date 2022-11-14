@@ -83,6 +83,10 @@ const PinPostDetailScreen = () => {
   useEffect(() => {
     if (postId) {
       dispatch(getPinPostMessages(postId));
+      setMessageReply(null);
+      setMessageEdit(null);
+      setAttachments([]);
+      SocketUtils.generateId = null;
     }
   }, [dispatch, postId]);
   const openMenuMessage = useCallback((message: MessageData) => {
@@ -179,6 +183,9 @@ const PinPostDetailScreen = () => {
     setMessageEdit(null);
     setMessageReply(selectedMessage);
     onCloseMenuMessage();
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, selectedMessage]);
   const onEditMessage = useCallback(() => {
     setMessageReply(null);
@@ -193,6 +200,9 @@ const PinPostDetailScreen = () => {
         url: el.file_url,
       })),
     );
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, selectedMessage]);
   const onDeleteMessage = useCallback(() => {
     if (!selectedMessage) return;
@@ -293,6 +303,7 @@ const PinPostDetailScreen = () => {
           ref={listRef}
           contentContainerStyle={{flexDirection: 'column-reverse'}}
           data={messages}
+          keyboardShouldPersistTaps="handled"
           ListHeaderComponent={<View style={{height: 20}} />}
           ListFooterComponent={
             <View>

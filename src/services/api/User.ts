@@ -12,6 +12,7 @@ import {
   UserData,
   UserNFTCollection,
 } from 'models';
+import {ConfigNotificationRequestBody} from 'models/request';
 import ApiCaller from './ApiCaller';
 
 export const findUser = async () => {
@@ -210,5 +211,7 @@ export const readAllNotification = () => ApiCaller.put('notifications');
 export const deleteNotification = (notificationId: string) =>
   ApiCaller.delete(`notifications/${notificationId}`);
 
-export const configNotificationFromTask = (taskId: string) =>
-  ApiCaller.post(`notifications/task/${taskId}`);
+export const configNotificationFromTask = (
+  pinPostId: string,
+  data: ConfigNotificationRequestBody,
+) => ApiCaller.post(`notifications/task/${pinPostId}`, data);

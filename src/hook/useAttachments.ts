@@ -18,7 +18,12 @@ const useAttachments = (contentId?: string) => {
         ...(message.message_attachments
           ?.filter(el => el.mimetype?.includes('image'))
           ?.map(el => ({
-            url: ImageHelper.normalizeImage(el.file_url, communityId),
+            url: ImageHelper.normalizeImage(
+              el.file_url,
+              communityId,
+              undefined,
+              true,
+            ),
           })) || []),
       );
     }

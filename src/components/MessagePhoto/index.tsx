@@ -124,7 +124,12 @@ const AttachmentItem = ({
         {backgroundColor: colors.backgroundHeader},
       ]}>
       <ImageLightBox
-        originUrl={ImageHelper.normalizeImage(att.file_url, teamId)}
+        originUrl={ImageHelper.normalizeImage(
+          att.file_url,
+          teamId,
+          undefined,
+          true,
+        )}
         onLongPress={onLongPress}
         disabled={disabled}
         contentId={contentId}
@@ -201,7 +206,10 @@ const MessagePhoto = ({
             onPress={onFilePress}
             teamId={teamId}
             imageWidth={Math.min(imageWidth, 300)}
-            style={{marginRight: index % 2 === 0 ? 10 : 0}}
+            style={{
+              marginRight:
+                index % 2 === 0 || index === attachmentData.length - 1 ? 10 : 0,
+            }}
             stackAttachment={index === 1 ? morePhoto : undefined}
             onLongPress={onLongPress}
             isPinPost={isPinPost}

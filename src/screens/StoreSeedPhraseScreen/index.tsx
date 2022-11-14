@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   seedText: {
-    fontSize: AppDevice.isIphoneX ? 16 : 14,
+    fontSize: AppDevice.isIphoneX ? 15 : 13,
     lineHeight: 24,
     fontFamily: Fonts.SemiBold,
   },
