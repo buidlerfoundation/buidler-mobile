@@ -95,6 +95,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
       case 'post_reply':
         navigation.navigate(ScreenID.PinPostDetailScreen, {
           postId: item.post?.task_id,
+          messageId: item?.message_id,
         });
         break;
       case 'channel_mention':

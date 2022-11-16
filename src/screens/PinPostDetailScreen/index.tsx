@@ -1,13 +1,15 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
-import {deleteMessage, getPinPostMessages} from 'actions/MessageActions';
+import {
+  deleteMessage,
+  getPinPostMessages,
+  setScrollData,
+} from 'actions/MessageActions';
 import AppDimension from 'common/AppDimension';
 import SVG from 'common/SVG';
 import PinPostItem from 'components/PinPostItem';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
-import useCurrentChannel from 'hook/useCurrentChannel';
-import useCurrentCommunity from 'hook/useCurrentCommunity';
 import usePostData from 'hook/usePostData';
 import useThemeColor from 'hook/useThemeColor';
 import React, {
@@ -18,7 +20,15 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {StyleSheet, View, Text, FlatList, TextInput} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import SocketUtils from 'utils/SocketUtils';
@@ -40,11 +50,15 @@ import ModalBottom from 'components/ModalBottom';
 import AppConfig from 'common/AppConfig';
 import ViewAllButton from 'components/ViewAllButton';
 import {launchImageLibrary} from 'react-native-image-picker';
+import {updateTask} from 'actions/TaskActions';
+import useChannelId from 'hook/useChannelId';
+import useCommunityId from 'hook/useCommunityId';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
   const listRef = useRef<FlatList>();
   const inputRef = useRef<TextInput>();
+  const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
   const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
@@ -60,15 +74,27 @@ const PinPostDetailScreen = () => {
   const {colors} = useThemeColor();
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userData = useAppSelector(state => state.user.userData);
-  const community = useCurrentCommunity();
-  const currentChannel = useCurrentChannel();
+  const communityId = useCommunityId();
+  const currentChannelId = useChannelId();
   const navigation = useNavigation();
   const route = useRoute();
   const postId = useMemo(() => route.params?.postId, [route.params?.postId]);
+  const messageId = useMemo(
+    () => route.params?.messageId,
+    [route.params?.messageId],
+  );
   const isReply = useMemo(() => route.params?.reply, [route.params?.reply]);
   const pinPost = usePostData(postId);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
+  const isArchived = useMemo(
+    () => pinPost?.data?.status === 'archived',
+    [pinPost?.data?.status],
+  );
   const {messageData} = useAppSelector(state => state.message);
+  const scrollData = useMemo(
+    () => messageData[postId]?.scrollData,
+    [messageData, postId],
+  );
   const messages = useMemo(
     () => messageData[postId]?.data,
     [messageData, postId],
@@ -82,17 +108,21 @@ const PinPostDetailScreen = () => {
   }, [isReply]);
   useEffect(() => {
     if (postId) {
-      dispatch(getPinPostMessages(postId));
+      dispatch(getPinPostMessages(postId, messageId));
       setMessageReply(null);
       setMessageEdit(null);
       setAttachments([]);
       SocketUtils.generateId = null;
     }
-  }, [dispatch, postId]);
-  const openMenuMessage = useCallback((message: MessageData) => {
-    setSelectedMessage(message);
-    setOpenMenuMessage(true);
-  }, []);
+  }, [dispatch, messageId, postId]);
+  const openMenuMessage = useCallback(
+    (message: MessageData) => {
+      if (isArchived) return;
+      setSelectedMessage(message);
+      setOpenMenuMessage(true);
+    },
+    [isArchived],
+  );
   const onCloseMenuMessage = useCallback(() => {
     setOpenMenuMessage(false);
   }, []);
@@ -103,8 +133,68 @@ const PinPostDetailScreen = () => {
   const onMorePPMessage = useCallback(() => {
     const createdAt = messages?.[messages?.length - 1].createdAt;
     if (!createdAt) return;
-    dispatch(getPinPostMessages(postId, createdAt));
+    dispatch(getPinPostMessages(postId, undefined, createdAt));
   }, [dispatch, messages, postId]);
+  const onMoreAfterMessage = useCallback(
+    async (message: MessageData) => {
+      if (!message.createdAt) return;
+      await dispatch(
+        getPinPostMessages(postId, undefined, undefined, message.createdAt),
+      );
+    },
+    [dispatch, postId],
+  );
+  const onListScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const {y} = e.nativeEvent.contentOffset;
+      if (y >= AppConfig.showScrollMoreOffset && !scrollData?.showScrollDown) {
+        dispatch(
+          setScrollData(postId, {
+            showScrollDown: true,
+          }),
+        );
+      } else if (
+        y < AppConfig.showScrollMoreOffset &&
+        scrollData?.showScrollDown
+      ) {
+        dispatch(
+          setScrollData(postId, {
+            showScrollDown: false,
+          }),
+        );
+      }
+      if (
+        y <= 0 &&
+        messageData?.[postId]?.canMoreAfter &&
+        !loadMoreAfterMessage
+      ) {
+        setLoadMoreAfterMessage(true);
+      }
+    },
+    [
+      dispatch,
+      loadMoreAfterMessage,
+      messageData,
+      postId,
+      scrollData?.showScrollDown,
+    ],
+  );
+  const onScrollToIndexFailed = useCallback(
+    (e: {
+      index: number;
+      highestMeasuredFrameIndex: number;
+      averageItemLength: number;
+    }) => {
+      console.log(e);
+    },
+    [],
+  );
+  const onMomentumScrollEnd = useCallback(async () => {
+    if (loadMoreAfterMessage) {
+      await onMoreAfterMessage(messages?.[0]);
+      setLoadMoreAfterMessage(false);
+    }
+  }, [loadMoreAfterMessage, messages, onMoreAfterMessage]);
   const onRemoveAttachment = useCallback(
     id =>
       setAttachments(current =>
@@ -146,7 +236,7 @@ const PinPostDetailScreen = () => {
         };
         api
           .uploadFile(
-            community.team_id,
+            communityId,
             SocketUtils.generateId,
             body,
             'post',
@@ -172,7 +262,7 @@ const PinPostDetailScreen = () => {
           });
       });
     },
-    [community.team_id, toggleGallery],
+    [communityId, toggleGallery],
   );
   const onKeyboardShow = useCallback(() => {
     setTimeout(() => {
@@ -210,23 +300,23 @@ const PinPostDetailScreen = () => {
       deleteMessage(
         selectedMessage?.message_id,
         selectedMessage?.reply_message_id,
-        currentChannel.channel_id,
+        currentChannelId,
       ),
     );
-  }, [currentChannel.channel_id, dispatch, selectedMessage]);
+  }, [currentChannelId, dispatch, selectedMessage]);
   const onMenuDelete = useCallback(() => {
     onCloseMenuMessage();
     onDeleteMessage();
   }, [onCloseMenuMessage, onDeleteMessage]);
   const onMenuCopyMessage = useCallback(async () => {
     await Clipboard.setString(
-      `${buidlerURL}/channels/${community.team_id}/${currentChannel.channel_id}/message/${selectedMessage.message_id}`,
+      `${buidlerURL}/channels/${communityId}/${currentChannelId}/message/${selectedMessage.message_id}`,
     );
     onCloseMenuMessage();
     Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
   }, [
-    currentChannel.channel_id,
-    community.team_id,
+    currentChannelId,
+    communityId,
     onCloseMenuMessage,
     selectedMessage?.message_id,
   ]);
@@ -283,6 +373,15 @@ const PinPostDetailScreen = () => {
     },
     [closeModalEmoji, onCloseMenuMessage, onReactPress],
   );
+  const handleUnarchive = useCallback(() => {
+    if (!pinPost?.data?.task_id) return;
+    dispatch(
+      updateTask(pinPost?.data?.task_id, currentChannelId, {
+        status: 'pinned',
+        team_id: communityId,
+      }),
+    );
+  }, [communityId, currentChannelId, dispatch, pinPost?.data?.task_id]);
   if (!pinPost.data) return null;
   return (
     <KeyboardLayout
@@ -337,22 +436,42 @@ const PinPostDetailScreen = () => {
               contentId={postId}
             />
           )}
+          onScroll={onListScroll}
+          onScrollToIndexFailed={onScrollToIndexFailed}
+          onMomentumScrollEnd={onMomentumScrollEnd}
         />
-        <View>
-          <MessageInput
-            openGallery={toggleGallery}
-            onRemoveAttachment={onRemoveAttachment}
-            attachments={attachments}
-            onClearAttachment={onClearAttachment}
-            messageReply={messageReply}
-            messageEdit={messageEdit}
-            onClearReply={onClearReply}
-            postId={postId}
-            onSent={onKeyboardShow}
-            inputRef={inputRef}
-            inputStyle={styles.inputContainer}
-          />
-        </View>
+        {!isArchived && (
+          <View>
+            <MessageInput
+              openGallery={toggleGallery}
+              onRemoveAttachment={onRemoveAttachment}
+              attachments={attachments}
+              onClearAttachment={onClearAttachment}
+              messageReply={messageReply}
+              messageEdit={messageEdit}
+              onClearReply={onClearReply}
+              postId={postId}
+              onSent={onKeyboardShow}
+              inputRef={inputRef}
+              inputStyle={styles.inputContainer}
+            />
+          </View>
+        )}
+        {isArchived && (
+          <View style={styles.archivedWrap}>
+            <Text style={[AppStyles.TextMed15, {color: colors.text}]}>
+              This post has been archived!
+            </Text>
+            <Touchable
+              style={[styles.btnUnarchive, {backgroundColor: colors.primary}]}
+              useReactNative
+              onPress={handleUnarchive}>
+              <Text style={[AppStyles.TextMed15, {color: colors.text}]}>
+                Unarchive
+              </Text>
+            </Touchable>
+          </View>
+        )}
         <ModalBottom
           isVisible={isOpenMenuMessage}
           onSwipeComplete={onCloseMenuMessage}
@@ -456,6 +575,26 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     paddingBottom: AppDimension.extraBottom + 10,
+  },
+  archivedWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: AppDimension.extraBottom + 10,
+    left: 10,
+    right: 10,
+    borderRadius: 5,
+    height: 50,
+    backgroundColor: '#1E1E1EF7',
+    paddingHorizontal: 10,
+    justifyContent: 'space-between',
+  },
+  btnUnarchive: {
+    height: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    borderRadius: 5,
   },
 });
 

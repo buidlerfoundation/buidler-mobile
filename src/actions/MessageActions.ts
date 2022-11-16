@@ -82,7 +82,13 @@ export const onRemoveAttachment: ActionCreator<any> =
   };
 
 export const getPinPostMessages: ActionCreator<any> =
-  (postId: string, before?: string, isFresh = false) =>
+  (
+    postId: string,
+    messageId?: string,
+    before?: string,
+    after?: string,
+    isFresh = false,
+  ) =>
   async (dispatch: Dispatch, getState: AppGetState) => {
     const {ppApiController} = getState().message;
     ppApiController?.abort?.();
@@ -101,17 +107,22 @@ export const getPinPostMessages: ActionCreator<any> =
     } else {
       dispatch({
         type: actionTypes.MESSAGE_PP_REQUEST,
-        payload: {postId, controller},
+        payload: {postId, controller, messageId, after},
       });
     }
     try {
-      const messageRes = await api.getPinPostMessage(
-        postId,
-        before ? 5 : 20,
-        before,
-        undefined,
-        controller,
-      );
+      let messageRes;
+      if (messageId) {
+        messageRes = await api.getAroundMessageById(messageId, 1);
+      } else {
+        messageRes = await api.getPinPostMessage(
+          postId,
+          before || after ? 5 : 20,
+          before,
+          after,
+          controller,
+        );
+      }
       const messageData = normalizePublicMessageData(
         messageRes.data || [],
         messageRes.metadata?.encrypt_message_key,
@@ -125,6 +136,8 @@ export const getPinPostMessages: ActionCreator<any> =
             before,
             isFresh,
             reloadSocket: !before,
+            messageId,
+            after,
           },
         });
       } else {
