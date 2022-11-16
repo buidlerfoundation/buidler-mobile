@@ -118,7 +118,7 @@ export const getPinPostMessages: ActionCreator<any> =
     try {
       let messageRes;
       if (messageId) {
-        messageRes = await api.getAroundMessageById(messageId, 1);
+        messageRes = await api.getAroundMessageById(messageId, 5);
       } else {
         messageRes = await api.getPinPostMessage(
           postId,
@@ -140,7 +140,7 @@ export const getPinPostMessages: ActionCreator<any> =
             channelId: postId,
             before,
             isFresh,
-            reloadSocket: !before,
+            reloadSocket: !before && !after,
             messageId,
             after,
           },

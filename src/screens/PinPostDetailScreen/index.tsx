@@ -53,6 +53,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import {updateTask} from 'actions/TaskActions';
 import useChannelId from 'hook/useChannelId';
 import useCommunityId from 'hook/useCommunityId';
+import {actionTypes} from 'actions/actionTypes';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -106,15 +107,62 @@ const PinPostDetailScreen = () => {
       }, 400);
     }
   }, [isReply]);
+  const onScrollToMessage = useCallback(
+    (replyMessage: MessageData) => {
+      const messageList = listRef.current?.props?.data;
+      const itemIndex = messageList?.findIndex(
+        el => el.message_id === replyMessage.message_id,
+      );
+      dispatch({
+        type: actionTypes.UPDATE_HIGHLIGHT_MESSAGE,
+        payload: replyMessage.message_id,
+      });
+      if (itemIndex >= 0) {
+        listRef.current.scrollToIndex({
+          index: itemIndex,
+          viewPosition: 0.5,
+        });
+      }
+      setTimeout(() => {
+        dispatch({
+          type: actionTypes.UPDATE_HIGHLIGHT_MESSAGE,
+          payload: null,
+        });
+      }, 1500);
+    },
+    [dispatch],
+  );
+  const findMessageById = useCallback((messageId: string) => {
+    return listRef.current.props.data?.find(el => el.message_id === messageId);
+  }, []);
+  const scrollToMessageId = useCallback(
+    (jumpMessageId: string) => {
+      const message = findMessageById(jumpMessageId);
+      if (message) {
+        setTimeout(() => {
+          onScrollToMessage(message);
+        }, 200);
+      }
+    },
+    [findMessageById, onScrollToMessage],
+  );
+  const handleAroundMessage = useCallback(async () => {
+    await dispatch(getPinPostMessages(postId, messageId));
+    scrollToMessageId(messageId);
+  }, [dispatch, messageId, postId, scrollToMessageId]);
   useEffect(() => {
     if (postId) {
-      dispatch(getPinPostMessages(postId, messageId));
+      if (messageId) {
+        handleAroundMessage();
+      } else {
+        dispatch(getPinPostMessages(postId));
+      }
       setMessageReply(null);
       setMessageEdit(null);
       setAttachments([]);
       SocketUtils.generateId = null;
     }
-  }, [dispatch, messageId, postId]);
+  }, [dispatch, handleAroundMessage, messageId, postId]);
   const openMenuMessage = useCallback(
     (message: MessageData) => {
       if (isArchived) return;
@@ -163,21 +211,8 @@ const PinPostDetailScreen = () => {
           }),
         );
       }
-      if (
-        y <= 0 &&
-        messageData?.[postId]?.canMoreAfter &&
-        !loadMoreAfterMessage
-      ) {
-        setLoadMoreAfterMessage(true);
-      }
     },
-    [
-      dispatch,
-      loadMoreAfterMessage,
-      messageData,
-      postId,
-      scrollData?.showScrollDown,
-    ],
+    [dispatch, postId, scrollData?.showScrollDown],
   );
   const onScrollToIndexFailed = useCallback(
     (e: {
@@ -189,12 +224,13 @@ const PinPostDetailScreen = () => {
     },
     [],
   );
-  const onMomentumScrollEnd = useCallback(async () => {
-    if (loadMoreAfterMessage) {
+  const onEndReached = useCallback(async () => {
+    if (!loadMoreAfterMessage && messageData?.[postId]?.canMoreAfter) {
+      setLoadMoreAfterMessage(true);
       await onMoreAfterMessage(messages?.[0]);
       setLoadMoreAfterMessage(false);
     }
-  }, [loadMoreAfterMessage, messages, onMoreAfterMessage]);
+  }, [loadMoreAfterMessage, messageData, messages, onMoreAfterMessage, postId]);
   const onRemoveAttachment = useCallback(
     id =>
       setAttachments(current =>
@@ -402,6 +438,7 @@ const PinPostDetailScreen = () => {
           ref={listRef}
           contentContainerStyle={{flexDirection: 'column-reverse'}}
           data={messages}
+          onEndReached={onEndReached}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={<View style={{height: 20}} />}
           ListFooterComponent={
@@ -438,7 +475,6 @@ const PinPostDetailScreen = () => {
           )}
           onScroll={onListScroll}
           onScrollToIndexFailed={onScrollToIndexFailed}
-          onMomentumScrollEnd={onMomentumScrollEnd}
         />
         {!isArchived && (
           <View>

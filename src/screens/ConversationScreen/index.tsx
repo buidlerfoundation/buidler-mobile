@@ -686,43 +686,6 @@ const ConversationScreen = () => {
             )
           }
         />
-        {/* <SectionList
-          style={{flex: 1}}
-          ref={listRef}
-          sections={sections}
-          inverted
-          keyExtractor={item => item.message_id}
-          renderItem={renderItem}
-          initialNumToRender={20}
-          ListHeaderComponent={
-            loadMoreAfterMessage || updateFromSocket ? (
-              <View style={styles.footerMessage}>
-                <ActivityIndicator />
-              </View>
-            ) : (
-              <View style={{height: 15}} />
-            )
-          }
-          onEndReached={onEndReached}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="handled"
-          renderSectionFooter={renderFooter}
-          onScroll={onListScroll}
-          onScrollToIndexFailed={onScrollToIndexFailed}
-          onMomentumScrollEnd={onMomentumScrollEnd}
-          maintainVisibleContentPosition={
-            messageData?.canMoreAfter ? {minIndexForVisible} : undefined
-          }
-          ListFooterComponent={
-            loadMoreMessage ? (
-              <View style={styles.footerMessage}>
-                <ActivityIndicator />
-              </View>
-            ) : (
-              <View />
-            )
-          }
-        /> */}
         {((!isFocus && scrollData?.showScrollDown) ||
           messageData?.canMoreAfter) && (
           <View style={styles.scrollDownWrap}>
