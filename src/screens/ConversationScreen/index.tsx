@@ -4,7 +4,7 @@ import AppDimension from 'common/AppDimension';
 import SVG from 'common/SVG';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
-import {normalizeMessage, normalizeMessages} from 'helpers/MessageHelper';
+import {normalizeMessages} from 'helpers/MessageHelper';
 import {MessageData} from 'models';
 import React, {
   memo,
@@ -19,10 +19,10 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  SectionList,
   TextInput,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  FlatList,
 } from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
 import BottomSheetHandle from 'components/BottomSheetHandle';
@@ -57,7 +57,6 @@ import HapticUtils from 'utils/HapticUtils';
 import useCommunityId from 'hook/useCommunityId';
 import useChannelId from 'hook/useChannelId';
 import {useDrawerStatus} from '@react-navigation/drawer';
-import moment from 'moment';
 import AppConfig from 'common/AppConfig';
 import ChannelTitle from 'components/ChannelTitle';
 import AppStyles from 'common/AppStyles';
@@ -70,7 +69,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import MenuConfirmPin from 'components/MenuConfirmPin';
 
 const ConversationScreen = () => {
-  const listRef = useRef<SectionList>();
+  const listRef = useRef<FlatList>();
   const navigation = useNavigation();
   const route = useRoute();
   const messageData = useMessageData();
@@ -134,11 +133,7 @@ const ConversationScreen = () => {
     }
   }, [currentChannelId, dispatch]);
   const findMessageById = useCallback((messageId: string) => {
-    return listRef.current.props.sections
-      ?.reduce((res, val) => {
-        return [...res, ...val.data];
-      }, [])
-      ?.find(el => el.message_id === messageId);
+    return listRef.current.props.data?.find(el => el.message_id === messageId);
   }, []);
   const scrollToMessageId = useCallback(
     (jumpMessageId: string) => {
@@ -178,10 +173,8 @@ const ConversationScreen = () => {
   const scrollDown = useCallback(() => {
     try {
       if (currentChannelId) {
-        listRef.current?.scrollToLocation({
-          sectionIndex: 0,
-          itemIndex: 0,
-          viewPosition: 1,
+        listRef.current?.scrollToIndex({
+          index: 0,
         });
       }
     } catch (error) {
@@ -200,17 +193,9 @@ const ConversationScreen = () => {
     }
   }, [currentChannelId]);
   const {colors} = useThemeColor();
-  const sections = useMemo(
-    () =>
-      normalizeMessages(uniqBy(messages, 'message_id')).map(el => ({
-        data: normalizeMessage(el.data),
-        title: el.title,
-      })),
+  const uniqMessages = useMemo(
+    () => normalizeMessages(uniqBy(messages, 'message_id')),
     [messages],
-  );
-  const minIndexForVisible = useMemo(
-    () => Math.min(10, messages?.length || 0),
-    [messages?.length],
   );
   const onRemoveAttachment = useCallback(
     id =>
@@ -222,24 +207,18 @@ const ConversationScreen = () => {
   const onClearAttachment = useCallback(() => setAttachments([]), []);
   const onScrollToMessage = useCallback(
     (replyMessage: MessageData) => {
-      const messageSections = listRef.current?.props?.sections;
-      const sectionIndex = messageSections.findIndex(
-        el =>
-          el.title ===
-          moment(new Date(replyMessage.createdAt)).format('YYYY-MM-DD'),
-      );
-      const itemIndex = messageSections?.[sectionIndex]?.data?.findIndex(
+      const messageList = listRef.current?.props?.data;
+      const itemIndex = messageList?.findIndex(
         el => el.message_id === replyMessage.message_id,
       );
       dispatch({
         type: actionTypes.UPDATE_HIGHLIGHT_MESSAGE,
         payload: replyMessage.message_id,
       });
-      if (sectionIndex >= 0 && itemIndex >= 0) {
-        listRef.current.scrollToLocation({
-          sectionIndex,
-          itemIndex,
-          viewPosition: 0,
+      if (itemIndex >= 0) {
+        listRef.current.scrollToIndex({
+          index: itemIndex,
+          viewPosition: 0.5,
         });
       }
       setTimeout(() => {
@@ -263,7 +242,9 @@ const ConversationScreen = () => {
           getAroundMessage(replyMessage.message_id, currentChannelId),
         );
         if (res.length > 0) {
-          onScrollToMessage(replyMessage);
+          setTimeout(() => {
+            onScrollToMessage(replyMessage);
+          }, 200);
         }
       }
     },
@@ -271,6 +252,17 @@ const ConversationScreen = () => {
   );
   const renderItem = useCallback(
     ({item}: {item: MessageData}) => {
+      if (item.entity_type === 'date-title') {
+        return (
+          <View style={styles.dateHeader}>
+            <View style={[styles.line, {backgroundColor: colors.separator}]} />
+            <Text style={[AppStyles.TextMed11, {color: colors.secondary}]}>
+              {titleMessageFromNow(item.message_id)}
+            </Text>
+            <View style={[styles.line, {backgroundColor: colors.separator}]} />
+          </View>
+        );
+      }
       return (
         <MessageItem
           item={item}
@@ -280,19 +272,13 @@ const ConversationScreen = () => {
         />
       );
     },
-    [currentChannelId, onPressMessageReply, openMenuMessage],
-  );
-  const renderFooter = useCallback(
-    ({section: {title}}) => (
-      <View style={styles.dateHeader}>
-        <View style={[styles.line, {backgroundColor: colors.separator}]} />
-        <Text style={[AppStyles.TextMed11, {color: colors.secondary}]}>
-          {titleMessageFromNow(title)}
-        </Text>
-        <View style={[styles.line, {backgroundColor: colors.separator}]} />
-      </View>
-    ),
-    [colors.secondary, colors.separator],
+    [
+      colors.secondary,
+      colors.separator,
+      currentChannelId,
+      onPressMessageReply,
+      openMenuMessage,
+    ],
   );
   const onMoreAfterMessage = useCallback(
     async (message: MessageData) => {
@@ -661,7 +647,46 @@ const ConversationScreen = () => {
             <SVG.IconPin fill={colors.text} />
           </Touchable>
         </View>
-        <SectionList
+        <FlatList
+          data={uniqMessages}
+          ref={listRef}
+          inverted
+          keyExtractor={item => item.message_id}
+          renderItem={renderItem}
+          initialNumToRender={20}
+          ListHeaderComponent={
+            loadMoreAfterMessage || updateFromSocket ? (
+              <View style={styles.footerMessage}>
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <View style={{height: 15}} />
+            )
+          }
+          onEndReached={onEndReached}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+          onScroll={onListScroll}
+          onScrollToIndexFailed={onScrollToIndexFailed}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          maintainVisibleContentPosition={
+            messageData?.canMoreAfter
+              ? {
+                  minIndexForVisible: 1,
+                }
+              : undefined
+          }
+          ListFooterComponent={
+            loadMoreMessage ? (
+              <View style={styles.footerMessage}>
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <View />
+            )
+          }
+        />
+        {/* <SectionList
           style={{flex: 1}}
           ref={listRef}
           sections={sections}
@@ -697,7 +722,7 @@ const ConversationScreen = () => {
               <View />
             )
           }
-        />
+        /> */}
         {((!isFocus && scrollData?.showScrollDown) ||
           messageData?.canMoreAfter) && (
           <View style={styles.scrollDownWrap}>

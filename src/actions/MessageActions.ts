@@ -9,10 +9,15 @@ import SocketUtils from 'utils/SocketUtils';
 import {actionTypes} from './actionTypes';
 
 export const getAroundMessage =
-  (messageId: string, channelId: string) => async (dispatch: Dispatch) => {
+  (messageId: string, channelId: string) =>
+  async (dispatch: Dispatch, getState: AppGetState) => {
+    const {apiController} = getState().message;
+    apiController?.abort?.();
+    // eslint-disable-next-line no-undef
+    const controller = new AbortController();
     dispatch({
       type: actionTypes.MESSAGE_REQUEST,
-      payload: {messageId, channelId},
+      payload: {messageId, channelId, controller},
     });
     try {
       const messageRes = await api.getAroundMessageById(messageId);

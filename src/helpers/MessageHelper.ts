@@ -1,3 +1,4 @@
+import {MessageData} from 'models';
 import moment from 'moment';
 
 export const normalizeMessage = (messages: Array<any>) => {
@@ -22,17 +23,17 @@ export const normalizeMessage = (messages: Array<any>) => {
   });
 };
 
-export const normalizeMessages = (messages?: Array<any>) => {
+export const normalizeMessages = (messages?: MessageData[]) => {
   if (!messages) return [];
-  return messages.reduce((result: Array<any>, val) => {
+  return messages.reduce<MessageData[]>((result, val, index) => {
     const date = moment(new Date(val.createdAt)).format('YYYY-MM-DD');
-    const index = result.findIndex(el => el.title === date);
-    if (index >= 0) {
-      const msg =
-        result[index]?.data?.length > 0 ? [...result[index].data, val] : [val];
-      result[index].data = msg;
-    } else {
-      result.push({title: date, data: [val]});
+    const nextItem = messages?.[index + 1];
+    const nextDate = nextItem
+      ? moment(new Date(nextItem.createdAt)).format('YYYY-MM-DD')
+      : null;
+    result.push(val);
+    if (nextDate !== date) {
+      result.push({entity_type: 'date-title', message_id: date});
     }
     return result;
   }, []);

@@ -236,22 +236,22 @@ export interface TaskData {
 }
 
 export interface ConversationData {
-  content: string;
-  createdAt: string;
-  message_attachments: Array<AttachmentData>;
+  content?: string;
+  createdAt?: string;
+  message_attachments?: Array<AttachmentData>;
   message_id: string;
-  message_tag: Array<TagData>;
-  reply_message_id: string;
-  plain_text: string;
-  sender_id: string;
-  updatedAt: string;
+  message_tag?: Array<TagData>;
+  reply_message_id?: string;
+  plain_text?: string;
+  sender_id?: string;
+  updatedAt?: string;
   task?: TaskData;
-  isHead: boolean;
+  isHead?: boolean;
   isSending?: boolean;
   isConversationHead?: boolean;
-  reaction_data: Array<ReactionData>;
-  user_reaction: Array<UserReaction>;
-  entity_id: string;
+  reaction_data?: Array<ReactionData>;
+  user_reaction?: Array<UserReaction>;
+  entity_id?: string;
   entity_type: string;
 }
 
