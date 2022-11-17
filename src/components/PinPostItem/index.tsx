@@ -90,6 +90,7 @@ type PinPostItemProps = {
   onLongPress?: () => void;
   embedReport?: boolean;
   contentId?: string;
+  openReactView?: (pinPost: TaskData) => void;
 };
 
 const PinPostItem = ({
@@ -100,6 +101,7 @@ const PinPostItem = ({
   onLongPress,
   embedReport,
   contentId,
+  openReactView,
 }: PinPostItemProps) => {
   const dispatch = useAppDispatch();
   const [ipfsCollapsed, setIPFSCollapsed] = useState(true);
@@ -172,6 +174,9 @@ const PinPostItem = ({
   const openIPFS = useCallback(() => {
     Linking.openURL(`https://${pinPost?.cid}.ipfs.w3s.link/`);
   }, [pinPost?.cid]);
+  const handleOpenReactView = useCallback(() => {
+    openReactView?.(pinPost);
+  }, [openReactView, pinPost]);
   if (!creator) return null;
   return (
     <Touchable
@@ -339,6 +344,7 @@ const PinPostItem = ({
           style={styles.attachmentWrap}
           reacts={reacts}
           onReactPress={handleReactPress}
+          openReactView={openReactView ? handleOpenReactView : undefined}
         />
       )}
       {!embedReport && pinPost.total_messages > 0 && (

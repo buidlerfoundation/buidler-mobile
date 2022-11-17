@@ -1,10 +1,11 @@
 import {ReactReducerData} from 'models';
 import React, {memo, useCallback} from 'react';
-import {View, StyleSheet, ViewStyle, Text} from 'react-native';
+import {View, StyleSheet, ViewStyle, Text, Image} from 'react-native';
 import useThemeColor from 'hook/useThemeColor';
 import AppStyles from 'common/AppStyles';
 import Emoji from 'components/Emoji';
 import Touchable from 'components/Touchable';
+import SVG from 'common/SVG';
 
 type ReactItemProps = {
   react: any;
@@ -45,9 +46,15 @@ type ReactViewProps = {
   style?: ViewStyle;
   reacts: Array<ReactReducerData>;
   onReactPress?: (name: string) => void;
+  openReactView?: () => void;
 };
 
-const ReactView = ({style, reacts, onReactPress}: ReactViewProps) => {
+const ReactView = ({
+  style,
+  reacts,
+  onReactPress,
+  openReactView,
+}: ReactViewProps) => {
   if (!reacts || reacts.length === 0) return null;
   return (
     <View style={[styles.container, style]}>
@@ -58,6 +65,11 @@ const ReactView = ({style, reacts, onReactPress}: ReactViewProps) => {
           onReactPress={onReactPress}
         />
       ))}
+      {openReactView && (
+        <Touchable useReactNative onPress={openReactView}>
+          <Image source={SVG.IconEmotion} style={{width: 22, height: 22}} />
+        </Touchable>
+      )}
     </View>
   );
 };

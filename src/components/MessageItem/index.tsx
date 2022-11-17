@@ -195,6 +195,7 @@ type MessageItemProps = {
   style?: ViewStyle;
   embeds?: boolean;
   contentId?: string;
+  openReactView?: (message: MessageData) => void;
 };
 
 const MessageItem = ({
@@ -204,6 +205,7 @@ const MessageItem = ({
   style,
   embeds,
   contentId,
+  openReactView,
 }: MessageItemProps) => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
@@ -218,6 +220,9 @@ const MessageItem = ({
   const showAvatar = useMemo(() => {
     return item.isHead || !!item.task || !!item.reply_message_id;
   }, [item.isHead, item.reply_message_id, item.task]);
+  const handleOpenReactView = useCallback(() => {
+    openReactView?.(item);
+  }, [item, openReactView]);
   const handleLongPress = useCallback(
     () => onLongPress?.(item),
     [item, onLongPress],
@@ -283,6 +288,7 @@ const MessageItem = ({
               style={[styles.pinPostContainer, {borderColor: colors.border}]}
               onLongPress={handleLongPress}
               contentId={contentId}
+              openReactView={handleOpenReactView}
             />
           ) : (
             <>
@@ -316,6 +322,7 @@ const MessageItem = ({
                 <ReactView
                   reacts={reactData[item.message_id]}
                   onReactPress={handleReactPress}
+                  openReactView={handleOpenReactView}
                 />
               )}
             </>

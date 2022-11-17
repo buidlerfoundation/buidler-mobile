@@ -186,6 +186,10 @@ const PinPostDetailScreen = () => {
     },
     [],
   );
+  const openReactView = useCallback((message: MessageData) => {
+    setSelectedMessage(message);
+    setOpenModalEmoji(true);
+  }, []);
   const onEndReached = useCallback(async () => {
     if (!loadMoreAfterMessage && messageData?.[postId]?.canMoreAfter) {
       setLoadMoreAfterMessage(true);
@@ -434,6 +438,7 @@ const PinPostDetailScreen = () => {
               item={item}
               onLongPress={openMenuMessage}
               contentId={postId}
+              openReactView={openReactView}
             />
           )}
           onScrollToIndexFailed={onScrollToIndexFailed}

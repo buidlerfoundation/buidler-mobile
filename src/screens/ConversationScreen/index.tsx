@@ -175,6 +175,9 @@ const ConversationScreen = () => {
       if (currentChannelId) {
         listRef.current?.scrollToIndex({
           index: 0,
+          viewOffset: 0,
+          viewPosition: 1,
+          animated: false,
         });
       }
     } catch (error) {
@@ -269,6 +272,7 @@ const ConversationScreen = () => {
           onLongPress={openMenuMessage}
           onPressMessageReply={onPressMessageReply}
           contentId={currentChannelId}
+          openReactView={openReactView}
         />
       );
     },
@@ -278,6 +282,7 @@ const ConversationScreen = () => {
       currentChannelId,
       onPressMessageReply,
       openMenuMessage,
+      openReactView,
     ],
   );
   const onMoreAfterMessage = useCallback(
@@ -589,6 +594,10 @@ const ConversationScreen = () => {
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
   }, []);
+  const openReactView = useCallback((message: MessageData) => {
+    setSelectedMessage(message);
+    setOpenModalEmoji(true);
+  }, []);
   const openModalEmoji = useCallback(() => {
     onCloseMenuMessage();
     onCloseMenuPinPost();
@@ -693,7 +702,7 @@ const ConversationScreen = () => {
               <Touchable
                 style={[
                   styles.iconScrollDown,
-                  {backgroundColor: colors.activeBackgroundLight},
+                  {backgroundColor: colors.activeBackground},
                 ]}
                 onPress={onScrollDownPress}>
                 <SVG.IconScrollDown fill={colors.text} />

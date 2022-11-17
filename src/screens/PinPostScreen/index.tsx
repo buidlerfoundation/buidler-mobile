@@ -69,6 +69,10 @@ const PinPostScreen = () => {
       dispatch(getTasks(currentChannelId));
     }
   }, [currentChannelId, dispatch]);
+  const openReactView = useCallback((item: TaskData) => {
+    setSelectedPinPost(item);
+    setOpenModalEmoji(true);
+  }, []);
   const renderPinPost = useCallback(
     ({item, index}: {item: TaskData; index: number}) => {
       return (
@@ -76,10 +80,11 @@ const PinPostScreen = () => {
           style={{paddingBottom: 30, paddingTop: index === 0 ? 20 : 30}}
           pinPost={item}
           onLongPress={openMenuPinPost}
+          openReactView={openReactView}
         />
       );
     },
-    [openMenuPinPost],
+    [openMenuPinPost, openReactView],
   );
   const renderSeparator = useCallback(
     () => (
