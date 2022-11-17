@@ -7,7 +7,7 @@ import GlobalVariable from 'services/GlobalVariable';
 import Toast from 'react-native-toast-message';
 import {logout, refreshToken} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
-import {StackID} from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import SocketUtils from 'utils/SocketUtils';
 import Config from 'react-native-config';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
@@ -17,6 +17,73 @@ const METHOD_POST = 'post';
 const METHOD_PUT = 'put';
 const METHOD_DELETE = 'delete';
 const METHOD_PATCH = 'patch';
+
+const sleep = (timeout = 1000) => {
+  return new Promise(resolve => {
+    setTimeout(resolve, timeout);
+  });
+};
+
+const getRequestBody = (data: any) => {
+  try {
+    const body = JSON.parse(data);
+    return body;
+  } catch (error) {
+    return {};
+  }
+};
+
+const fetchWithRetry = (apiUrl: string, fetchOptions = {}, retries = 0) => {
+  return fetch(apiUrl, fetchOptions)
+    .then(res => {
+      return res
+        .json()
+        .then(async data => {
+          if (res.status !== 200) {
+            // alert error
+            if (data.message === 'Network request failed') {
+              if (retries > 0) {
+                await sleep();
+                return fetchWithRetry(apiUrl, fetchOptions, retries - 1);
+              } else {
+                NavigationServices.reset(ScreenID.SplashScreen);
+              }
+            }
+          }
+          if (data.data) {
+            return {...data, statusCode: res.status};
+          }
+          if (data.success || data.message) {
+            return {
+              data: data.data,
+              success: data.success,
+              message: data.message,
+              statusCode: res.status,
+            };
+          }
+          return {data, statusCode: res.status};
+        })
+        .catch(err => {
+          return {message: err, statusCode: res.status};
+        });
+    })
+    .catch(err => {
+      MixpanelAnalytics.trackingError(
+        apiUrl.replace(Config.API_URL, ''),
+        fetchOptions.method.toLowerCase(),
+        err.message || '',
+        err.statusCode,
+        getRequestBody(fetchOptions.body),
+      );
+      const msg = err.message || err;
+      if (!msg.includes('aborted')) {
+        // alert error
+      }
+      return {
+        message: msg,
+      };
+    });
+};
 
 async function requestAPI<T = any>(
   method: string,
@@ -124,47 +191,7 @@ async function requestAPI<T = any>(
     fetchOptions.signal = controller.signal;
   }
   // Run the fetching
-  return fetch(apiUrl, fetchOptions)
-    .then(res => {
-      return res
-        .json()
-        .then(data => {
-          if (res.status !== 200) {
-            // alert error
-          }
-          if (data.data) {
-            return {...data, statusCode: res.status};
-          }
-          if (data.success || data.message) {
-            return {
-              data: data.data,
-              success: data.success,
-              message: data.message,
-              statusCode: res.status,
-            };
-          }
-          return {data, statusCode: res.status};
-        })
-        .catch(err => {
-          return {message: err, statusCode: res.status};
-        });
-    })
-    .catch(err => {
-      MixpanelAnalytics.trackingError(
-        uri,
-        method.toLowerCase(),
-        err.message || '',
-        err.statusCode,
-        body,
-      );
-      const msg = err.message || err;
-      if (!msg.includes('aborted')) {
-        // alert error
-      }
-      return {
-        message: msg,
-      };
-    });
+  return fetchWithRetry(apiUrl, fetchOptions, uri === 'user/refresh' ? 5 : 0);
 }
 
 const ApiCaller = {
