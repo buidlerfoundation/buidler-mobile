@@ -31,6 +31,8 @@ import useCommunityId from 'hook/useCommunityId';
 import AppStyles from 'common/AppStyles';
 import PermissionHelper from 'helpers/PermissionHelper';
 import Video from 'react-native-video';
+import useAppDispatch from 'hook/useAppDispatch';
+import {getMessages, getPinPostMessages} from 'actions/MessageActions';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -107,6 +109,8 @@ type MessageInputProps = {
   inputRef?: React.MutableRefObject<TextInput>;
   autoFocus?: boolean;
   onFocusChanged?: (isFocus: boolean) => void;
+  canMoreAfter?: boolean;
+  scrollDown?: () => void;
 };
 
 const MessageInput = ({
@@ -125,7 +129,10 @@ const MessageInput = ({
   inputRef,
   autoFocus,
   onFocusChanged,
+  canMoreAfter,
+  scrollDown,
 }: MessageInputProps) => {
+  const dispatch = useAppDispatch();
   const [val, setVal] = useState('');
   const [isFocus, setFocus] = useState(true);
   const [cursorPos, setCursorPos] = useState(0);
@@ -256,6 +263,21 @@ const MessageInput = ({
   }, [mentions, teamUserData]);
 
   const submitMessage = useCallback(async () => {
+    if (canMoreAfter) {
+      if (postId) {
+        await dispatch(getPinPostMessages(postId));
+      } else {
+        await dispatch(
+          getMessages(
+            currentChannel.channel_id,
+            'Public',
+            undefined,
+            undefined,
+            true,
+          ),
+        );
+      }
+    }
     const text = normalizeContentMessageSubmit(val);
     const message: any = {
       content: text,
@@ -287,7 +309,9 @@ const MessageInput = ({
     SocketUtils.generateId = null;
     setVal('');
     onClearAttachment?.();
+    scrollDown?.();
   }, [
+    canMoreAfter,
     normalizeContentMessageSubmit,
     val,
     postId,
@@ -297,7 +321,9 @@ const MessageInput = ({
     currentChannel.user,
     messageReply,
     onClearAttachment,
+    dispatch,
     teamId,
+    scrollDown,
   ]);
   const editMessage = useCallback(async () => {
     if (!val && attachments.length === 0) return;

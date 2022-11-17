@@ -24,7 +24,10 @@ export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
     const res = await api.getInitial();
     if (res.statusCode === 200) {
-      ImageHelper.initial(res.data.img_domain, res.data.img_config);
+      ImageHelper.initial(
+        res.data?.imgproxy.domain || '',
+        res.data?.imgproxy?.bucket_name || '',
+      );
       dispatch({type: actionTypes.GET_INITIAL, payload: {data: res.data}});
     } else {
       throw res.message;

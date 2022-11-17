@@ -712,6 +712,8 @@ const ConversationScreen = () => {
             onClearReply={onClearReply}
             inputRef={inputRef}
             onFocusChanged={setFocus}
+            canMoreAfter={messageData?.canMoreAfter}
+            scrollDown={scrollDown}
           />
         </View>
         <ModalBottom

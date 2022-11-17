@@ -1,9 +1,5 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
-import {
-  deleteMessage,
-  getPinPostMessages,
-  setScrollData,
-} from 'actions/MessageActions';
+import {deleteMessage, getPinPostMessages} from 'actions/MessageActions';
 import AppDimension from 'common/AppDimension';
 import SVG from 'common/SVG';
 import PinPostItem from 'components/PinPostItem';
@@ -20,15 +16,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from 'react-native';
+import {StyleSheet, View, Text, FlatList, TextInput} from 'react-native';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import SocketUtils from 'utils/SocketUtils';
@@ -92,10 +80,6 @@ const PinPostDetailScreen = () => {
     [pinPost?.data?.status],
   );
   const {messageData} = useAppSelector(state => state.message);
-  const scrollData = useMemo(
-    () => messageData[postId]?.scrollData,
-    [messageData, postId],
-  );
   const messages = useMemo(
     () => messageData[postId]?.data,
     [messageData, postId],
@@ -191,28 +175,6 @@ const PinPostDetailScreen = () => {
       );
     },
     [dispatch, postId],
-  );
-  const onListScroll = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const {y} = e.nativeEvent.contentOffset;
-      if (y >= AppConfig.showScrollMoreOffset && !scrollData?.showScrollDown) {
-        dispatch(
-          setScrollData(postId, {
-            showScrollDown: true,
-          }),
-        );
-      } else if (
-        y < AppConfig.showScrollMoreOffset &&
-        scrollData?.showScrollDown
-      ) {
-        dispatch(
-          setScrollData(postId, {
-            showScrollDown: false,
-          }),
-        );
-      }
-    },
-    [dispatch, postId, scrollData?.showScrollDown],
   );
   const onScrollToIndexFailed = useCallback(
     (e: {
@@ -440,6 +402,7 @@ const PinPostDetailScreen = () => {
           data={messages}
           onEndReached={onEndReached}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           ListHeaderComponent={<View style={{height: 20}} />}
           ListFooterComponent={
             <View>
@@ -473,7 +436,6 @@ const PinPostDetailScreen = () => {
               contentId={postId}
             />
           )}
-          onScroll={onListScroll}
           onScrollToIndexFailed={onScrollToIndexFailed}
         />
         {!isArchived && (
@@ -490,6 +452,7 @@ const PinPostDetailScreen = () => {
               onSent={onKeyboardShow}
               inputRef={inputRef}
               inputStyle={styles.inputContainer}
+              canMoreAfter={messageData?.[postId]?.canMoreAfter}
             />
           </View>
         )}
