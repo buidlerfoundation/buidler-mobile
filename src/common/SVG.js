@@ -74,6 +74,9 @@ import IconMenuClose from '../assets/images/ic_menu_close.svg';
 import IconMenuSilent from '../assets/images/ic_menu_silent.svg';
 import IconMenuBackup from '../assets/images/ic_menu_backup.svg';
 import IconMenuNotification from '../assets/images/ic_menu_notification.svg';
+import IconNotificationPin from '../assets/images/ic_notification_pin.svg';
+import IconNotificationReply from '../assets/images/ic_notification_reply.svg';
+import IconNotificationMention from '../assets/images/ic_notification_mention.svg';
 
 export default {
   IconExpand,
@@ -152,4 +155,7 @@ export default {
   IconMenuSilent,
   IconMenuBackup,
   IconMenuNotification,
+  IconNotificationPin,
+  IconNotificationReply,
+  IconNotificationMention,
 };

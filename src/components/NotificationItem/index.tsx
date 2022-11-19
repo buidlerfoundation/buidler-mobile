@@ -3,8 +3,10 @@ import {markAsReadNotification} from 'actions/NotificationActions';
 import {setCurrentChannel, setCurrentTeam} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
+import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
 import ChannelIcon from 'components/ChannelIcon';
+import CommunityLogo from 'components/CommunityLogo';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
@@ -37,9 +39,13 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
     switch (item.notification_type) {
       case 'channel_mention':
       case 'post_mention':
-        return 'mentioned you in';
+        return 'Mentioned you';
+      case 'post_reply':
+        return 'Replied your post';
+      case 'channel_reply':
+        return 'Replied your message';
       default:
-        return 'replied you in';
+        return 'Mentioned you';
     }
   }, [item.notification_type]);
   const DestinationNotification = useCallback(() => {
@@ -47,28 +53,36 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
       case 'post_reply':
       case 'post_mention':
         return (
-          <Text
-            style={[AppStyles.TextMed15, {color: colors.text, flex: 1}]}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            [Post]{' '}
-            {(item.post?.content || '').replace(
-              /(<@)(.*?)(-)(.*?)(>)/gim,
-              '@$2',
-            )}
-          </Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
+            <SVG.IconNotificationPin fill={colorByState} />
+            <Text
+              style={[
+                AppStyles.TextMed15,
+                {color: colorByState, marginLeft: 5, flex: 1},
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {(item.post?.content || '').replace(
+                /(<@)(.*?)(-)(.*?)(>)/gim,
+                '@$2',
+              )}
+            </Text>
+          </View>
         );
       default:
         return (
-          <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <ChannelIcon
               channel={item.channel}
               emojiSize={15}
               size={15}
-              color={colors.text}
+              color={colorByState}
             />
             <Text
-              style={[AppStyles.TextMed15, {color: colors.text, marginLeft: 5}]}
+              style={[
+                AppStyles.TextMed15,
+                {color: colorByState, marginLeft: 5},
+              ]}
               numberOfLines={1}
               ellipsizeMode="tail">
               {item.channel?.channel_name}
@@ -76,7 +90,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
           </View>
         );
     }
-  }, [colors.text, item.channel, item.notification_type, item.post?.content]);
+  }, [colorByState, item.channel, item.notification_type, item.post?.content]);
   const onItemPress = useCallback(async () => {
     if (!item.is_read) {
       if (item.post?.task_id) {
@@ -123,52 +137,93 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   const handleLongPress = useCallback(() => {
     onLongPress(item);
   }, [item, onLongPress]);
+  const colorByState = useMemo(
+    () => (item.is_read ? colors.subtext : colors.text),
+    [colors.subtext, colors.text, item.is_read],
+  );
+  const IconNotification = useCallback(() => {
+    switch (item.notification_type) {
+      case 'post_reply':
+      case 'channel_reply':
+        return <SVG.IconNotificationReply fill={colorByState} />;
+      default:
+        return <SVG.IconNotificationMention fill={colorByState} />;
+    }
+  }, [colorByState, item.notification_type]);
   return (
     <Touchable
       style={styles.container}
       useReactNative
       onPress={onItemPress}
       onLongPress={handleLongPress}>
-      <AvatarView user={item.from_user} style={{marginTop: 3}} size={35} />
-      <View style={styles.contentWrap}>
-        <View style={styles.userNameWrap}>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={[AppStyles.TextSemi15, {color: colors.text, flex: 1}]}>
-            {item.from_user?.user_name}
-          </Text>
-          {!item.is_read && (
+      <View>
+        <IconNotification />
+        {!item.is_read && (
+          <View
+            style={[
+              styles.unReadBadgeWrap,
+              {backgroundColor: colors.background},
+            ]}>
             <View
               style={[styles.unReadBadge, {backgroundColor: colors.mention}]}
             />
-          )}
+          </View>
+        )}
+      </View>
+      <View style={styles.contentWrap}>
+        <View style={styles.userNameWrap}>
+          <AvatarView user={item.from_user} size={20} />
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={[
+              AppStyles.TextSemi15,
+              {color: colors.text, marginLeft: 10},
+            ]}>
+            {item.from_user?.user_name}
+          </Text>
+          <Text
+            style={[AppStyles.TextMed13, {color: colorByState, marginLeft: 8}]}>
+            {notificationFromNow(item.createdAt)}
+          </Text>
         </View>
         <View style={styles.contentActionWrap}>
           <Text
             style={[
               AppStyles.TextMed15,
-              {color: colors.subtext, marginRight: 8},
+              {color: colorByState, marginRight: 8},
             ]}>
             {contentAction}
           </Text>
-          <DestinationNotification />
-        </View>
-        <Text
-          style={[AppStyles.TextMed15, {color: colors.text, marginTop: 5}]}
-          numberOfLines={2}
-          ellipsizeMode="tail">
-          {item.content.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2')}
-        </Text>
-        {community && (
           <Text
-            style={[AppStyles.TextMed13, {color: colors.subtext, marginTop: 5}]}
+            style={[AppStyles.TextMed15, {color: colorByState, flex: 1}]}
             numberOfLines={1}
-            ellipsizeMode="middle">
-            {community.team_display_name} •{' '}
-            {notificationFromNow(item.createdAt)}
+            ellipsizeMode="tail">
+            {item.content.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2')}
           </Text>
-        )}
+        </View>
+        <View style={styles.contentDestinationWrap}>
+          <DestinationNotification />
+          {community && (
+            <>
+              <Text
+                style={[
+                  AppStyles.TextMed15,
+                  {color: colorByState, marginHorizontal: 10},
+                ]}>
+                •
+              </Text>
+              <CommunityLogo community={community} size={15} borderRadius={4} />
+              <Text
+                style={[
+                  AppStyles.TextMed15,
+                  {color: colorByState, marginLeft: 8},
+                ]}>
+                {community.team_display_name}
+              </Text>
+            </>
+          )}
+        </View>
       </View>
     </Touchable>
   );
@@ -176,17 +231,27 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 15,
+    paddingTop: 10,
     paddingBottom: 10,
     paddingHorizontal: 20,
     flexDirection: 'row',
   },
   contentWrap: {
-    marginLeft: 10,
+    marginLeft: 12,
     flex: 1,
   },
   userNameWrap: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  unReadBadgeWrap: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   unReadBadge: {
@@ -195,6 +260,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   contentActionWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  contentDestinationWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 5,

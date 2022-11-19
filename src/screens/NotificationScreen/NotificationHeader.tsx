@@ -1,7 +1,6 @@
 import {markAsReadAllNotification} from 'actions/NotificationActions';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
-import SVG from 'common/SVG';
 import MenuNotificationScreen from 'components/MenuNotificationScreen';
 import ModalBottom from 'components/ModalBottom';
 import Touchable from 'components/Touchable';
@@ -15,7 +14,6 @@ const NotificationHeader = () => {
   const [isOpenMenu, setOpenMenu] = useState(false);
   const {colors} = useThemeColor();
   const onCloseMenu = useCallback(() => setOpenMenu(false), []);
-  const onPressMenu = useCallback(() => setOpenMenu(true), []);
   const onMarkRead = useCallback(() => {
     dispatch(markAsReadAllNotification());
     onCloseMenu();
@@ -26,8 +24,10 @@ const NotificationHeader = () => {
       <Text style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}>
         Notification
       </Text>
-      <Touchable onPress={onPressMenu}>
-        <SVG.IconMore fill={colors.text} />
+      <Touchable onPress={onMarkRead}>
+        <Text style={[AppStyles.TextSemi16, {color: colors.mention}]}>
+          Mark all as read
+        </Text>
       </Touchable>
       <ModalBottom
         isVisible={isOpenMenu}
