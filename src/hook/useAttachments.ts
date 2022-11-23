@@ -16,14 +16,12 @@ const useAttachments = (contentId?: string) => {
       const message = messages[index];
       res.push(
         ...(message.message_attachments
-          ?.filter(el => el.mimetype?.includes('image'))
+          ?.filter(
+            el =>
+              el.mimetype?.includes('image') || el.mimetype?.includes('video'),
+          )
           ?.map(el => ({
-            url: ImageHelper.normalizeImage(
-              el.file_url,
-              communityId,
-              undefined,
-              true,
-            ),
+            url: ImageHelper.normalizeImage(el.file_url, communityId),
           })) || []),
       );
     }

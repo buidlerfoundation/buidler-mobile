@@ -131,6 +131,15 @@ const PinPostItem = ({
     () => !!pinPost.uploadingIPFS,
     [pinPost.uploadingIPFS],
   );
+  const viewPostLabel = useMemo(() => {
+    if (`${pinPost?.total_messages}` === '1') {
+      return 'View 1 reply';
+    }
+    if (`${pinPost?.total_messages}` >= '2') {
+      return `View ${pinPost?.total_messages} replies`;
+    }
+    return 'View post';
+  }, [pinPost?.total_messages]);
   const toggleIPFSDescription = useCallback(
     () => setIPFSCollapsed(current => !current),
     [],
@@ -391,7 +400,7 @@ const PinPostItem = ({
             AppStyles.TextSemi15,
             {color: colors.mention},
           ]}>
-          View post
+          {viewPostLabel}
         </Text>
       )}
     </Touchable>

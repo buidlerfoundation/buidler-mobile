@@ -6,7 +6,6 @@ import ImageHelper from 'helpers/ImageHelper';
 import {AttachmentData} from 'models';
 import React, {memo, useCallback, useMemo} from 'react';
 import {View, StyleSheet, Text, Linking, ViewStyle} from 'react-native';
-import Video from 'react-native-video';
 import useThemeColor from 'hook/useThemeColor';
 import FastImage from 'react-native-fast-image';
 
@@ -32,7 +31,6 @@ const AttachmentItem = ({
   style,
   stackAttachment,
   onLongPress,
-  isPinPost,
   disabled,
   contentId,
   allAttachments,
@@ -52,38 +50,6 @@ const AttachmentItem = ({
           },
         ]}
       />
-    );
-  }
-  if (att?.mimetype?.includes('video')) {
-    return (
-      <View
-        style={[styles.photoItem, {backgroundColor: colors.backgroundHeader}]}
-        key={att.file_id}>
-        <Touchable useReactNative onLongPress={onLongPress} disabled={disabled}>
-          <Video
-            source={{uri: ImageHelper.normalizeImage(att.file_url, teamId)}}
-            style={
-              isPinPost
-                ? {width: '100%', aspectRatio: 1.667}
-                : {
-                    width: imageWidth,
-                    height: Math.round(imageWidth / 1.667),
-                  }
-            }
-            paused
-            controls
-            resizeMode="contain"
-            key={att.file_id}
-          />
-        </Touchable>
-        {stackAttachment > 0 && (
-          <View style={styles.stackView}>
-            <Text style={[styles.stackCount, {color: colors.text}]}>
-              +{stackAttachment}
-            </Text>
-          </View>
-        )}
-      </View>
     );
   }
   if (att?.mimetype?.includes('application')) {
@@ -124,23 +90,38 @@ const AttachmentItem = ({
         {backgroundColor: colors.backgroundHeader},
       ]}>
       <ImageLightBox
-        originUrl={ImageHelper.normalizeImage(
-          att.file_url,
-          teamId,
-          undefined,
-          true,
-        )}
+        originUrl={ImageHelper.normalizeImage(att.file_url, teamId)}
         onLongPress={onLongPress}
         disabled={disabled}
         contentId={contentId}
         allAttachments={allAttachments}>
-        <FastImage
-          source={{
-            uri: ImageHelper.normalizeImage(att.file_url, teamId, {h: 90}),
-          }}
-          style={{width: imageWidth, aspectRatio: 1.667}}
-          resizeMode="contain"
-        />
+        <View>
+          <FastImage
+            source={{
+              uri: att?.mimetype?.includes('video')
+                ? ImageHelper.normalizeImage(
+                    att.file_url.replace(/\..*$/g, '_thumbnail.png'),
+                    teamId,
+                  )
+                : ImageHelper.normalizeImage(att.file_url, teamId, {h: 90}),
+            }}
+            style={{width: imageWidth, aspectRatio: 1.667}}
+            resizeMode="contain"
+          />
+          {att?.mimetype?.includes('video') && (
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingTop: 10,
+                },
+              ]}>
+              <SVG.IconVideoPlay />
+            </View>
+          )}
+        </View>
       </ImageLightBox>
       {stackAttachment > 0 && (
         <View style={styles.stackView}>
@@ -219,7 +200,11 @@ const MessagePhoto = ({
               contentId
                 ? undefined
                 : attachments
-                    .filter(el => el.mimetype?.includes('image'))
+                    .filter(
+                      el =>
+                        el.mimetype?.includes('image') ||
+                        el.mimetype?.includes('video'),
+                    )
                     .map(el => ({
                       url: ImageHelper.normalizeImage(el.file_url, teamId),
                     }))

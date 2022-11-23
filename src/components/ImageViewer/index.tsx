@@ -6,13 +6,15 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
-import ImgViewer from 'react-native-image-zoom-viewer';
+import ImgViewer from '../react-native-zoom-viewer';
 import {View} from 'react-native-animatable';
 import {connect} from 'react-redux';
 import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import {ThemeType} from 'models';
 import FastImage from 'react-native-fast-image';
+import ImageHelper from 'helpers/ImageHelper';
+import VideoPlayer from 'components/VideoPlayer';
 
 type ImageViewerState = {
   images: Array<any>;
@@ -27,12 +29,14 @@ type ImageViewerProps = {
 class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
   static propTypes = {};
   static defaultProps = {};
+  private videoRefs: any[] = [];
   constructor(props: ImageViewerProps) {
     super(props);
     this.state = {
       images: [],
       visible: false,
       index: 0,
+      currentIndex: 0,
     };
   }
 
@@ -41,7 +45,14 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
       visible: true,
       images,
       index,
+      currentIndex: index,
     });
+  };
+
+  onChange = idx => {
+    this.videoRefs?.[idx]?.play?.();
+    this.videoRefs?.[this.state.currentIndex]?.pause?.();
+    this.setState({currentIndex: idx});
   };
 
   close = () => {
@@ -64,6 +75,7 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
         }}>
         <View style={styles.container}>
           <ImgViewer
+            onChange={this.onChange}
             renderIndicator={() => null}
             loadingRender={() => <ActivityIndicator />}
             enableSwipeDown
@@ -72,7 +84,27 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
             saveToLocalByLongPress={false}
             onCancel={this.close}
             swipeDownThreshold={10}
-            renderImage={props => <FastImage {...props} />}
+            renderImage={props => {
+              if (ImageHelper.isVideo(props.source.uri)) {
+                return (
+                  <View
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <VideoPlayer
+                      uri={props.source.uri}
+                      style={{width: '100%', aspectRatio: 1.667}}
+                      paused={false}
+                      ref={ref => (this.videoRefs[index] = ref)}
+                    />
+                  </View>
+                );
+              }
+              return <FastImage {...props} />;
+            }}
           />
 
           <TouchableOpacity style={styles.button} onPress={this.close}>
