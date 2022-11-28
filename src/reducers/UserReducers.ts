@@ -583,11 +583,11 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
       } = payload;
       let channel: Channel = defaultChannel;
       let directChannel: Channel = defaultChannel;
-      if (resDirectChannel?.data?.length > 0) {
+      const directChannels = resDirectChannel?.data || state.directChannel;
+      if (directChannels?.length > 0) {
         directChannel =
-          resDirectChannel.data?.find(
-            el => el.channel_id === lastDirectChannelId,
-          ) || resDirectChannel.data[0];
+          directChannels?.find(el => el.channel_id === lastDirectChannelId) ||
+          directChannels[0];
       }
       if (resChannel?.data?.length > 0) {
         channel =

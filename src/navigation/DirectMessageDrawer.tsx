@@ -36,7 +36,8 @@ const DirectMessageDrawer = () => {
       id={DrawerID.DirectMessageDrawer}
       initialRouteName={ScreenID.DirectMessageScreen}
       drawerContent={drawerContent}
-      screenOptions={screenOptions}>
+      screenOptions={screenOptions}
+      defaultStatus="closed">
       <Drawer.Screen
         name={ScreenID.DirectMessageScreen}
         component={DirectMessageScreen}

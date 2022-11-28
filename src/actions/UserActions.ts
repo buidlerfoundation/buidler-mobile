@@ -259,9 +259,10 @@ const actionSetCurrentTeam = async (
   });
   try {
     let lastChannelId: any = null;
-    const [resSpace, resChannel] = await Promise.all([
+    const [resSpace, resChannel, teamUsersRes] = await Promise.all([
       api.getSpaceChannel(team.team_id, controller),
       api.findChannel(team.team_id, controller),
+      api.getTeamUsers(team.team_id, controller),
     ]);
     const lastChannel = getState?.().user?.lastChannel?.[team.team_id];
     if (channelId) {
@@ -276,18 +277,19 @@ const actionSetCurrentTeam = async (
     if (lastChannelId) {
       await AsyncStorage.setItem(AsyncKey.lastChannelId, lastChannelId);
     }
-    api.getTeamUsers(team.team_id, controller).then(teamUsersRes => {
-      if (teamUsersRes.statusCode === 200) {
-        dispatch({
-          type: actionTypes.GET_TEAM_USER,
-          payload: {teamUsers: teamUsersRes, teamId: team.team_id},
-        });
-      }
-    });
+    const lastDirectChannelId = await AsyncStorage.getItem(
+      AsyncKey.lastDirectChannelId,
+    );
+    if (teamUsersRes.statusCode === 200) {
+      dispatch({
+        type: actionTypes.GET_TEAM_USER,
+        payload: {teamUsers: teamUsersRes, teamId: team.team_id},
+      });
+    }
     SocketUtils.changeTeam();
     dispatch({
       type: actionTypes.CURRENT_TEAM_SUCCESS,
-      payload: {team, resChannel, lastChannelId, resSpace},
+      payload: {team, resChannel, lastChannelId, resSpace, lastDirectChannelId},
     });
     AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
   } catch (error) {

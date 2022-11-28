@@ -15,7 +15,7 @@ const DirectChannelTitle = () => {
         style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}
         ellipsizeMode="tail"
         numberOfLines={1}>
-        {otherUser.user_name}
+        {otherUser?.user_name}
       </Text>
     </View>
   );
