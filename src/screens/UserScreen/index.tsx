@@ -77,7 +77,6 @@ const UserScreen = () => {
         body,
       );
       directChannelId = res.data?.channel_id;
-      console.log('XXX: ', res);
     }
     if (directChannelId) {
       dispatch(setCurrentDirectChannel({channel_id: directChannelId}));

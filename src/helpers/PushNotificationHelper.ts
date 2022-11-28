@@ -51,7 +51,6 @@ class PushNotificationHelper {
   }
 
   notificationTapped = async ({data, type}: NotificationPayload) => {
-    console.log('XXX: ', data, type);
     if (type === 'message') {
       const {
         currentTeamId,
