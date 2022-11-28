@@ -66,6 +66,12 @@ const HomeStack = () => {
   );
   const tabBarIconChat = useCallback(
     ({color}: {focused: boolean; color: string}) => {
+      return <SVG.IconPublicChannel fill={color} width={28} height={28} />;
+    },
+    [],
+  );
+  const tabBarIconDirect = useCallback(
+    ({color}: {focused: boolean; color: string}) => {
       return <SVG.IconTabChat fill={color} />;
     },
     [],
@@ -161,6 +167,24 @@ const HomeStack = () => {
     },
     [colors.background, colors.border, tabBarIconChat],
   );
+  const directOptions = useCallback(
+    ({navigation}) => {
+      const currentRoute = getCurrentRoute(navigation.getState());
+      return {
+        tabBarIcon: tabBarIconDirect,
+        tabBarStyle: {
+          borderTopColor:
+            currentRoute.name === ScreenID.PinPostScreen ||
+            currentRoute.name === ScreenID.SpaceDetailScreen ||
+            currentRoute.params?.drawerStatus === 'open'
+              ? colors.border
+              : colors.background,
+          backgroundColor: colors.background,
+        },
+      };
+    },
+    [colors.background, colors.border, tabBarIconDirect],
+  );
   return (
     <>
       <Tab.Navigator
@@ -182,7 +206,7 @@ const HomeStack = () => {
           initialParams={route.params}
         />
         <Tab.Screen
-          options={conversationOptions}
+          options={directOptions}
           name={StackID.DirectMessageStack}
           component={
             directChannels.length > 0 ? DirectMessageStack : DirectEmpty
