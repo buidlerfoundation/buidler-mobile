@@ -9,7 +9,7 @@ import SocketUtils from 'utils/SocketUtils';
 import {actionTypes} from './actionTypes';
 
 export const getAroundMessage =
-  (messageId: string, channelId: string) =>
+  (messageId: string, channelId: string, channelType: string) =>
   async (dispatch: Dispatch, getState: AppGetState) => {
     const {apiController} = getState().message;
     apiController?.abort?.();
@@ -19,12 +19,15 @@ export const getAroundMessage =
       type: actionTypes.MESSAGE_REQUEST,
       payload: {messageId, channelId, controller},
     });
+    const isPrivate = channelType === 'Private' || channelType === 'Direct';
     try {
       const messageRes = await api.getAroundMessageById(messageId);
-      const messageData = normalizePublicMessageData(
-        messageRes.data || [],
-        messageRes.metadata?.encrypt_message_key,
-      );
+      const messageData = isPrivate
+        ? await normalizeMessageData(messageRes.data || [], channelId)
+        : normalizePublicMessageData(
+            messageRes.data || [],
+            messageRes.metadata?.encrypt_message_key,
+          );
       if (messageRes.statusCode === 200) {
         dispatch({
           type: actionTypes.MESSAGE_SUCCESS,

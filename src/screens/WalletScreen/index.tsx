@@ -17,6 +17,8 @@ const WalletScreen = () => {
           backgroundColor: colors.background,
           paddingHorizontal: 10,
           marginTop: 40,
+          shadowOffset: {width: 0, height: 0},
+          elevation: 0,
         },
         tabBarLabelStyle: [AppStyles.TextSemi16, {textTransform: 'none'}],
         tabBarInactiveTintColor: colors.subtext,

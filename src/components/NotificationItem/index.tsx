@@ -1,8 +1,12 @@
 import {useNavigation} from '@react-navigation/native';
 import {markAsReadNotification} from 'actions/NotificationActions';
-import {setCurrentChannel, setCurrentTeam} from 'actions/UserActions';
+import {
+  setCurrentChannel,
+  setCurrentDirectChannel,
+  setCurrentTeam,
+} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
-import ScreenID from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
 import ChannelIcon from 'components/ChannelIcon';
@@ -12,6 +16,7 @@ import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useChannelId from 'hook/useChannelId';
 import useCommunityId from 'hook/useCommunityId';
+import useDirectChannelId from 'hook/useDirectChannelId';
 import useThemeColor from 'hook/useThemeColor';
 import {NotificationData} from 'models';
 import React, {memo, useCallback, useMemo} from 'react';
@@ -28,6 +33,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   const dispatch = useAppDispatch();
   const communityId = useCommunityId();
   const channelId = useChannelId();
+  const directChannelId = useDirectChannelId();
   const navigation = useNavigation();
   const {colors} = useThemeColor();
   const communities = useAppSelector(state => state.user.team);
@@ -101,8 +107,16 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
     if (communityId !== item.team_id && community) {
       await dispatch(setCurrentTeam(community, item.channel?.channel_id));
     }
-    if (item.channel && channelId !== item.channel?.channel_id) {
-      await dispatch(setCurrentChannel(item.channel));
+    if (item.channel) {
+      if (item.channel?.channel_type === 'Direct') {
+        if (item.channel?.channel_id !== directChannelId) {
+          await dispatch(setCurrentDirectChannel(item.channel));
+        }
+      } else {
+        if (item.channel?.channel_id !== channelId) {
+          await dispatch(setCurrentChannel(item.channel));
+        }
+      }
     }
     switch (item.notification_type) {
       case 'post_mention':
@@ -113,9 +127,15 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
         });
         break;
       case 'channel_mention':
-        navigation.navigate(ScreenID.ConversationScreen, {
-          jumpMessageId: `${item?.message_id}:${Math.random()}`,
-        });
+        if (item.channel?.channel_type === 'Direct') {
+          navigation.navigate(StackID.DirectMessageStack, {
+            jumpMessageId: `${item?.message_id}:${Math.random()}`,
+          });
+        } else {
+          navigation.navigate(ScreenID.ConversationScreen, {
+            jumpMessageId: `${item?.message_id}:${Math.random()}`,
+          });
+        }
         break;
       default:
         break;
@@ -124,6 +144,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
     channelId,
     community,
     communityId,
+    directChannelId,
     dispatch,
     item.channel,
     item.is_read,

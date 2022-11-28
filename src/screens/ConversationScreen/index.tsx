@@ -163,11 +163,19 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       if (findMessageById(messageId)) {
         scrollToMessageId(messageId);
       } else {
-        await dispatch(getAroundMessage(messageId, currentChannelId));
+        await dispatch(
+          getAroundMessage(messageId, currentChannelId, channelType),
+        );
         scrollToMessageId(messageId);
       }
     },
-    [currentChannelId, dispatch, findMessageById, scrollToMessageId],
+    [
+      channelType,
+      currentChannelId,
+      dispatch,
+      findMessageById,
+      scrollToMessageId,
+    ],
   );
   useEffect(() => {
     if (route.params?.jumpMessageId) {
@@ -253,7 +261,11 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         onScrollToMessage(replyMessage);
       } else {
         const res: Array<MessageData> = await dispatch(
-          getAroundMessage(replyMessage.message_id, currentChannelId),
+          getAroundMessage(
+            replyMessage.message_id,
+            currentChannelId,
+            channelType,
+          ),
         );
         if (res.length > 0) {
           setTimeout(() => {
@@ -262,7 +274,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         }
       }
     },
-    [messages, onScrollToMessage, dispatch, currentChannelId],
+    [messages, onScrollToMessage, dispatch, currentChannelId, channelType],
   );
   const renderItem = useCallback(
     ({item}: {item: MessageData}) => {
