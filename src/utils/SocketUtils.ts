@@ -846,12 +846,12 @@ class SocketUtil {
       }
       let res = message_data;
       if (direct) {
-        const keys = channelPrivateKey?.[currentChannel.channel_id] || [];
+        const keys = channelPrivateKey?.[res.entity_id] || [];
         res = await normalizeMessageItem(
           res,
           findKey(keys, Math.round(new Date(res.createdAt).getTime() / 1000))
             .key,
-          currentChannel.channel_id,
+          res.entity_id,
         );
       }
       if (res) {
