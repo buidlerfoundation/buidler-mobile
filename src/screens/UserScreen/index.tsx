@@ -72,15 +72,18 @@ const UserScreen = () => {
         channel_type: 'Direct',
         channel_member_data: channelMemberData.res,
       };
-      const res = await api.createDirectChannel(communityId, body);
+      const res = await api.createDirectChannel(
+        AppConfig.directCommunityId,
+        body,
+      );
       directChannelId = res.data?.channel_id;
+      console.log('XXX: ', res);
     }
     if (directChannelId) {
       dispatch(setCurrentDirectChannel({channel_id: directChannelId}));
       navigation.navigate(StackID.DirectMessageStack);
     }
   }, [
-    communityId,
     directUser?.direct_channel_id,
     dispatch,
     navigation,

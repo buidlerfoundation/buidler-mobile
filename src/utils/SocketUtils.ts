@@ -809,7 +809,7 @@ class SocketUtil {
       const user = store.getState()?.user;
       const {channelPrivateKey} = store.getState()?.configs || {};
       const {userData} = user;
-      const direct = notification_data.subtitle === '#Direct';
+      const direct = notification_data.channel_type === 'Direct';
       const currentChannel = getCurrentChannel(direct);
       if (!currentChannel) return;
 

@@ -448,14 +448,17 @@ export const accessToHome =
     ) {
       const channels = channelMap?.[currentTeamId];
       const {data, type} = PushNotificationHelper.initNotificationData;
-      const {team_id} = data.notification_data;
+      const {team_id, channel_type} = data.notification_data;
       const {entity_id, entity_type} = data.message_data;
-      params = {type, entity_id, entity_type};
+      const direct = channel_type === 'Direct';
+      params = {type, entity_id, entity_type, direct};
       const teamNotification = team?.find?.(t => t.team_id === team_id);
       const channelNotification = channels.find(
         el => el.channel_id === entity_id,
       );
-      if (currentTeamId === team_id) {
+      if (direct) {
+        await dispatch(setCurrentDirectChannel({channel_id: entity_id}));
+      } else if (currentTeamId === team_id) {
         if (channelNotification) {
           await dispatch(setCurrentChannel(channelNotification));
         }

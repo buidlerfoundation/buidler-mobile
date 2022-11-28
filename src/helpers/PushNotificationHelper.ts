@@ -6,7 +6,7 @@ import notifee from '@notifee/react-native';
 import {actionTypes} from 'actions/actionTypes';
 import store from '../store';
 import NavigationServices from 'services/NavigationServices';
-import ScreenID from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import {setCurrentTeam} from 'actions/UserActions';
 import {getMessages} from 'actions/MessageActions';
 
@@ -51,40 +51,66 @@ class PushNotificationHelper {
   }
 
   notificationTapped = async ({data, type}: NotificationPayload) => {
+    console.log('XXX: ', data, type);
     if (type === 'message') {
-      const {currentTeamId, currentChannelId, team, channelMap} =
-        store.getState()?.user;
+      const {
+        currentTeamId,
+        currentChannelId,
+        currentDirectChannelId,
+        team,
+        channelMap,
+      } = store.getState()?.user;
       const channel = channelMap?.[currentTeamId];
-      const {team_id} = data.notification_data;
+      const {team_id, channel_type} = data.notification_data;
       const {entity_id, entity_type} = data.message_data;
-
+      const direct = channel_type === 'Direct';
+      const channelId = direct ? currentDirectChannelId : currentChannelId;
       const teamNotification = team.find(t => t.team_id === team_id);
       const channelNotification = channel.find(c => c.channel_id === entity_id);
       if (entity_type === 'channel') {
         await store.dispatch(
-          getMessages(entity_id, 'Public', undefined, undefined, true),
+          getMessages(
+            entity_id,
+            direct ? 'Private' : 'Public',
+            undefined,
+            undefined,
+            true,
+          ),
         );
       }
-      if (currentChannelId === entity_id) {
-        // Do nothing
-      } else if (currentTeamId === team_id) {
-        if (channelNotification) {
-          store.dispatch({
-            type: actionTypes.SET_CURRENT_CHANNEL,
-            payload: {channel: channelNotification},
-          });
+      if (direct) {
+        store.dispatch({
+          type: actionTypes.SET_CURRENT_DIRECT_CHANNEL,
+          payload: {directChannel: {channel_id: entity_id}},
+        });
+      } else {
+        if (channelId === entity_id) {
+          // Do nothing
+        } else if (currentTeamId === team_id) {
+          if (channelNotification) {
+            store.dispatch({
+              type: actionTypes.SET_CURRENT_CHANNEL,
+              payload: {channel: channelNotification},
+            });
+          }
+        } else if (teamNotification && !direct) {
+          await store.dispatch(setCurrentTeam(teamNotification, entity_id));
         }
-      } else if (teamNotification) {
-        await store.dispatch(setCurrentTeam(teamNotification, entity_id));
       }
       if (entity_type === 'post') {
         NavigationServices.pushToScreen(ScreenID.PinPostDetailScreen, {
           postId: entity_id,
         });
       } else {
-        NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
-          fromNotification: true,
-        });
+        if (direct) {
+          NavigationServices.pushToScreen(StackID.DirectMessageStack, {
+            fromNotification: true,
+          });
+        } else {
+          NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+            fromNotification: true,
+          });
+        }
       }
     }
   };

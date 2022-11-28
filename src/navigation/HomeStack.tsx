@@ -164,7 +164,11 @@ const HomeStack = () => {
   return (
     <>
       <Tab.Navigator
-        initialRouteName={StackID.ConversationStack}
+        initialRouteName={
+          route.params?.direct
+            ? StackID.DirectMessageStack
+            : StackID.ConversationStack
+        }
         screenOptions={screenOptions}>
         <Tab.Screen
           options={{tabBarIcon: tabBarIconHome}}
