@@ -29,6 +29,7 @@ import useUserData from 'hook/useUserData';
 import {addReact, removeReact} from 'actions/ReactActions';
 import {useNavigation} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
+import useCommunityId from 'hook/useCommunityId';
 
 type ReplyMessageProps = {
   replyMessage?: MessageData;
@@ -196,6 +197,7 @@ type MessageItemProps = {
   embeds?: boolean;
   contentId?: string;
   openReactView?: (message: MessageData) => void;
+  direct?: boolean;
 };
 
 const MessageItem = ({
@@ -205,13 +207,14 @@ const MessageItem = ({
   style,
   embeds,
   contentId,
+  direct,
   openReactView,
 }: MessageItemProps) => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const {width} = useWindowDimensions();
-  const teamId = useAppSelector(state => state.user.currentTeamId);
+  const teamId = useCommunityId(direct);
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userData = useUserData();
   const highlightMessageId = useAppSelector(

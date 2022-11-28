@@ -195,12 +195,22 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
             ]}>
             {contentAction}
           </Text>
-          <Text
-            style={[AppStyles.TextMed15, {color: colorByState, flex: 1}]}
-            numberOfLines={1}
-            ellipsizeMode="tail">
-            {item.content.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2')}
-          </Text>
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              flexDirection: 'row',
+              flex: 1,
+              paddingRight: 10,
+            }}>
+            <Text style={[AppStyles.TextMed15, {color: colorByState}]}>"</Text>
+            <Text
+              style={[AppStyles.TextMed15, {color: colorByState}]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {item.content.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2')}
+            </Text>
+            <Text style={[AppStyles.TextMed15, {color: colorByState}]}>"</Text>
+          </View>
         </View>
         <View style={styles.contentDestinationWrap}>
           <DestinationNotification />

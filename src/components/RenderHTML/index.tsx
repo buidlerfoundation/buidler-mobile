@@ -10,7 +10,10 @@ import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo, useCallback, useMemo} from 'react';
 import {useWindowDimensions, Linking, TextProps} from 'react-native';
-import Html, {defaultSystemFonts} from 'react-native-render-html';
+import Html, {
+  defaultSystemFonts,
+  defaultHTMLElementModels,
+} from 'react-native-render-html';
 
 type RenderHTMLProps = {
   html: string;
@@ -180,6 +183,10 @@ const RenderHTML = ({
       defaultTextProps={{...defaultTextProps, allowFontScaling: false}}
       renderersProps={renderersProps}
       classesStyles={classesStyles}
+      ignoredDomTags={['t']}
+      customHTMLElementModels={{
+        title: defaultHTMLElementModels.span,
+      }}
     />
   );
 };

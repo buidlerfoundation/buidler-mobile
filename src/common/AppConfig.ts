@@ -5,6 +5,7 @@ const AppConfig = {
   maximumFileSize: 100000000,
   showScrollMoreOffset: 275,
   timeoutCloseBottomSheet: 400,
+  directCommunityId: 'b796712f-eea4-4ba1-abc6-ca76e9af24bc',
 };
 
 export const whiteListRefreshTokenApis = [

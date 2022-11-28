@@ -19,14 +19,17 @@ export default {
   CommunityDetailScreen: 'CommunityDetailScreen',
   NotificationScreen: 'NotificationScreen',
   SpaceDetailScreen: 'SpaceDetailScreen',
+  DirectMessageScreen: 'DirectMessageScreen',
 };
 
 export const StackID = {
   HomeStack: 'HomeStack',
   AuthStack: 'AuthStack',
   ConversationStack: 'ConversationStack',
+  DirectMessageStack: 'DirectMessageStack',
 };
 
 export const DrawerID = {
   ChannelDrawer: 'ChannelDrawer',
+  DirectMessageDrawer: 'DirectMessageDrawer',
 };

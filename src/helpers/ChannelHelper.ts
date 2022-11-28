@@ -1,16 +1,22 @@
-import {ethers, utils} from 'ethers';
 import EthCrypto from 'eth-crypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import store from '../store';
 import {uniqBy} from 'lodash';
-import {decrypt} from 'eciesjs';
+import {decrypt, encrypt} from 'eciesjs';
 import CryptoJS from 'crypto-js';
+import {UserData} from 'models';
+import {getUniqueId} from './GenerateUUID';
+import api from 'services/api';
 
-export const encryptMessage = async (str: string, key: string) => {
-  const pubKey = utils.computePublicKey(key, true);
-  const res = await EthCrypto.encryptWithPublicKey(pubKey.slice(2), str);
-  return JSON.stringify(res);
+export const encryptMessage = (str: string, channelId: string) => {
+  const configs = store.getState()?.configs;
+  const {channelPrivateKey} = configs;
+  const keys = channelPrivateKey?.[channelId];
+  const lastKey = keys?.[keys.length - 1]?.key;
+  if (!lastKey) return '';
+  const encrypted = CryptoJS.AES.encrypt(str, lastKey).toString();
+  return encrypted;
 };
 
 export const decryptMessage = async (str: string, key: string) => {
@@ -22,38 +28,35 @@ export const decryptMessage = async (str: string, key: string) => {
   }
 };
 
-const memberData = async (
-  member: any,
-  privateKey: string,
-  timestamp: number,
-) => {
-  const key = await EthCrypto.encryptWithPublicKey(
-    member.user_id.slice(2),
-    privateKey,
+const memberData = async (member: UserData, key: string, timestamp: number) => {
+  // eslint-disable-next-line no-undef
+  const encryptedKey = encrypt(member.user_id, Buffer.from(key)).toString(
+    'hex',
   );
   return {
-    key: JSON.stringify(key),
+    key: encryptedKey,
     timestamp,
     user_id: member.user_id,
   };
 };
 
-export const createMemberChannelData = async (members: Array<any>) => {
-  const {privateKey} = ethers.Wallet.createRandom();
-  const timestamp = new Date().getTime();
-  const req = members.map(el => memberData(el, privateKey, timestamp));
+export const createMemberChannelData = async (members: Array<UserData>) => {
+  const uuid = getUniqueId();
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const req = members.map(el => memberData(el, uuid, timestamp));
   const res = await Promise.all(req);
-  return {res, privateKey};
+  return {res, uuid};
 };
 
 export const getChannelPrivateKey = async (
   encrypted: string,
   privateKey: string,
 ) => {
-  const res = await EthCrypto.decryptWithPrivateKey(
+  const res = decrypt(
     privateKey,
-    JSON.parse(encrypted),
-  );
+    // eslint-disable-next-line no-undef
+    Buffer.from(encrypted, 'hex'),
+  ).toString();
   return res;
 };
 
@@ -75,11 +78,16 @@ export const storePrivateChannel = async (
 };
 
 const decryptPrivateChannel = async (item: any, privateKey: string) => {
-  const key = await getChannelPrivateKey(item.key, privateKey);
+  const {channelId, key, timestamp} = item;
+  const decryptedKey = decrypt(
+    privateKey,
+    // eslint-disable-next-line no-undef
+    Buffer.from(key || '', 'hex'),
+  );
   return {
-    key,
-    timestamp: item.timestamp,
-    channelId: item.channelId,
+    key: decryptedKey.toString(),
+    timestamp: timestamp,
+    channelId: channelId,
   };
 };
 
@@ -93,22 +101,28 @@ export const getRawPrivateChannel = async () => {
 };
 
 export const getPrivateChannel = async (privateKey: string) => {
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const lastSyncChannelKey = await AsyncStorage.getItem(
+    AsyncKey.lastSyncChannelKey,
+  );
+  const channelKeyRes = await api.getChannelKey(lastSyncChannelKey || 0);
+  const syncChannelKey = channelKeyRes.data?.map(el => ({
+    channelId: el.channel_id,
+    key: el.key,
+    timestamp: el.timestamp,
+  }));
   const current = await AsyncStorage.getItem(AsyncKey.channelPrivateKey);
-  // const current = JSON.stringify(testData);
-  let dataLocal: any = {};
+  let dataLocal: any = {data: []};
   if (typeof current === 'string') {
     dataLocal = JSON.parse(current);
-  } else {
-    return {};
   }
-  let req: Array<any> = [];
-  Object.keys(dataLocal).forEach(k => {
-    req = [
-      ...req,
-      ...(dataLocal?.[k]?.map?.((el: any) => ({channelId: k, ...el})) || []),
-    ];
-  });
-  req = req.map(el => decryptPrivateChannel(el, privateKey));
+  dataLocal = uniqBy([...dataLocal.data, ...syncChannelKey], 'key');
+  await AsyncStorage.setItem(
+    AsyncKey.channelPrivateKey,
+    JSON.stringify({data: dataLocal}),
+  );
+  await AsyncStorage.setItem(AsyncKey.lastSyncChannelKey, timestamp.toString());
+  const req = dataLocal.map(el => decryptPrivateChannel(el, privateKey));
   const res = await Promise.all(req);
   return res.reduce((result, val) => {
     const {channelId, key, timestamp} = val;
@@ -128,8 +142,9 @@ export const normalizeMessageItem = async (
   key: string,
   channelId: string,
 ) => {
-  const content = await decryptMessage(item.content, key);
-  const plain_text = await decryptMessage(item.plain_text, key);
+  const content = item.content
+    ? CryptoJS.AES.decrypt(item.content, key).toString(CryptoJS.enc.Utf8)
+    : '';
   if (item?.conversation_data) {
     item.conversation_data = await normalizeMessageItem(
       item.conversation_data,
@@ -140,7 +155,6 @@ export const normalizeMessageItem = async (
   return {
     ...item,
     content,
-    plain_text,
   };
 };
 
@@ -182,22 +196,22 @@ export const normalizeMessageData = async (
   messages: Array<any>,
   channelId: string,
 ) => {
-  const configs: any = store.getState()?.configs;
+  const configs = store.getState()?.configs;
   const {channelPrivateKey} = configs;
   const keys = channelPrivateKey?.[channelId] || [];
   if (keys.length === 0) return [];
   const req = messages.map(el =>
     normalizeMessageItem(
       el,
-      findKey(keys, new Date(el.createdAt).getTime()).key,
+      findKey(keys, Math.round(new Date(el.createdAt).getTime() / 1000)).key,
       channelId,
     ),
   );
   const res = await Promise.all(req);
-  return res.filter(el => !!el.content);
+  return res.filter(el => !!el.content || el?.message_attachments?.length > 0);
 };
 
-const findKey = (keys: Array<any>, created: number) => {
+export const findKey = (keys: Array<any>, created: number) => {
   return keys.find(el => {
     if (el.expire) {
       return el.timestamp <= created && el.expire >= created;

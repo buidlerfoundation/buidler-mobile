@@ -58,7 +58,6 @@ import useCommunityId from 'hook/useCommunityId';
 import useChannelId from 'hook/useChannelId';
 import {useDrawerStatus} from '@react-navigation/drawer';
 import AppConfig from 'common/AppConfig';
-import ChannelTitle from 'components/ChannelTitle';
 import AppStyles from 'common/AppStyles';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
@@ -67,12 +66,18 @@ import ModalBottom from 'components/ModalBottom';
 import ViewAllButton from 'components/ViewAllButton';
 import {launchImageLibrary} from 'react-native-image-picker';
 import MenuConfirmPin from 'components/MenuConfirmPin';
+import useDirectChannelId from 'hook/useDirectChannelId';
+import Header from './Header';
 
-const ConversationScreen = () => {
+type ConversationScreenProps = {
+  direct?: boolean;
+};
+
+const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const listRef = useRef<FlatList>();
   const navigation = useNavigation();
   const route = useRoute();
-  const messageData = useMessageData();
+  const messageData = useMessageData(direct);
   const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
@@ -94,8 +99,14 @@ const ConversationScreen = () => {
   );
   const userData = useAppSelector(state => state.user.userData);
   const userRole = useUserRole();
-  const currentTeamId = useCommunityId();
-  const currentChannelId = useChannelId();
+  const currentTeamId = useCommunityId(direct);
+  const currentPublicChannelId = useChannelId();
+  const currentDirectChannelId = useDirectChannelId();
+  const currentChannelId = useMemo(
+    () => (direct ? currentDirectChannelId : currentPublicChannelId),
+    [currentDirectChannelId, currentPublicChannelId, direct],
+  );
+  const channelType = useMemo(() => (direct ? 'Private' : 'Public'), [direct]);
   const [isFocus, setFocus] = useState(false);
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
@@ -128,10 +139,10 @@ const ConversationScreen = () => {
   const handleGetLatestMessage = useCallback(async () => {
     if (currentChannelId) {
       await dispatch(
-        getMessages(currentChannelId, 'Public', undefined, undefined, true),
+        getMessages(currentChannelId, channelType, undefined, undefined, true),
       );
     }
-  }, [currentChannelId, dispatch]);
+  }, [channelType, currentChannelId, dispatch]);
   const findMessageById = useCallback((messageId: string) => {
     return listRef.current.props.data?.find(el => el.message_id === messageId);
   }, []);
@@ -273,6 +284,7 @@ const ConversationScreen = () => {
           onPressMessageReply={onPressMessageReply}
           contentId={currentChannelId}
           openReactView={openReactView}
+          direct={direct}
         />
       );
     },
@@ -280,6 +292,7 @@ const ConversationScreen = () => {
       colors.secondary,
       colors.separator,
       currentChannelId,
+      direct,
       onPressMessageReply,
       openMenuMessage,
       openReactView,
@@ -289,10 +302,15 @@ const ConversationScreen = () => {
     async (message: MessageData) => {
       if (!message.createdAt) return;
       await dispatch(
-        getMessages(currentChannelId, 'Public', undefined, message.createdAt),
+        getMessages(
+          currentChannelId,
+          channelType,
+          undefined,
+          message.createdAt,
+        ),
       );
     },
-    [currentChannelId, dispatch],
+    [channelType, currentChannelId, dispatch],
   );
   const onListScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -361,8 +379,15 @@ const ConversationScreen = () => {
     if (!messageCanMore || loadMoreMessage) return;
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
-    dispatch(getMessages(currentChannelId, 'Public', lastMsg.createdAt));
-  }, [currentChannelId, dispatch, loadMoreMessage, messageCanMore, messages]);
+    dispatch(getMessages(currentChannelId, channelType, lastMsg.createdAt));
+  }, [
+    channelType,
+    currentChannelId,
+    dispatch,
+    loadMoreMessage,
+    messageCanMore,
+    messages,
+  ]);
   const onSelectPhoto = useCallback(
     async (items: Array<any>) => {
       if (messageEdit) {
@@ -575,12 +600,6 @@ const ConversationScreen = () => {
       inputRef.current?.focus();
     }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, selectedMessage]);
-  const openSideMenu = useCallback(() => {
-    navigation.openDrawer();
-  }, [navigation]);
-  const onPinPress = useCallback(() => {
-    navigation.navigate(ScreenID.PinPostScreen);
-  }, [navigation]);
   const openMenuReport = useCallback(() => {
     onCloseMenuMessage();
     onCloseMenuPinPost();
@@ -647,15 +666,7 @@ const ConversationScreen = () => {
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Touchable onPress={openSideMenu}>
-            <SVG.IconSideMenu fill={colors.text} />
-          </Touchable>
-          <ChannelTitle />
-          <Touchable onPress={onPinPress}>
-            <SVG.IconPin fill={colors.text} />
-          </Touchable>
-        </View>
+        <Header direct={direct} />
         <FlatList
           data={uniqMessages}
           ref={listRef}
@@ -723,6 +734,7 @@ const ConversationScreen = () => {
             onFocusChanged={setFocus}
             canMoreAfter={messageData?.canMoreAfter}
             scrollDown={scrollDown}
+            direct={direct}
           />
         </View>
         <ModalBottom
@@ -738,7 +750,7 @@ const ConversationScreen = () => {
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={selectedMessage?.sender_id === userData.user_id}
             canReport={selectedMessage?.sender_id !== userData.user_id}
-            canPin={userRole === 'Admin' || userRole === 'Owner'}
+            canPin={(userRole === 'Admin' || userRole === 'Owner') && !direct}
             openModalEmoji={openModalEmoji}
             onEmojiSelected={onEmojiSelected}
             onReport={openMenuReport}
@@ -844,13 +856,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 10,
     height: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    height: AppDimension.headerHeight,
   },
   body: {
     flex: 1,

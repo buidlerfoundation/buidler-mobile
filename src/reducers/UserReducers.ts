@@ -20,6 +20,7 @@ interface UserReducerState {
   spaceChannelMap: {[key: string]: Array<Space>};
   currentTeamId: string;
   currentChannelId: string;
+  currentDirectChannelId: string;
   imgDomain: string;
   imgBucket: string;
   imgConfig: any;
@@ -29,6 +30,7 @@ interface UserReducerState {
       total: number;
     };
   };
+  directChannelUsers: UserData[];
   lastChannel: {[key: string]: Channel};
   spaceMembers: Array<UserData>;
   walletBalance?: BalanceApiData | null;
@@ -43,7 +45,6 @@ interface UserReducerState {
 
 const defaultChannel: Channel = {
   channel_id: '',
-  channel_member: [],
   channel_name: '',
   channel_type: 'Public',
   notification_type: '',
@@ -62,12 +63,14 @@ const initialState: UserReducerState = {
   spaceChannelMap: {},
   currentTeamId: '',
   currentChannelId: '',
+  currentDirectChannelId: '',
   imgDomain: '',
   imgBucket: '',
   imgConfig: {},
   teamUserMap: {},
   lastChannel: {},
   spaceMembers: [],
+  directChannelUsers: [],
   walletBalance: null,
   memberData: {
     admin: {
@@ -296,6 +299,12 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         },
       };
     }
+    case actionTypes.NEW_DIRECT_USER: {
+      return {
+        ...state,
+        directChannelUsers: [...state.directChannelUsers, ...payload],
+      };
+    }
     case actionTypes.NEW_USER: {
       return {
         ...state,
@@ -309,26 +318,15 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
       };
     }
     case actionTypes.NEW_CHANNEL: {
-      let newTeamUserData = teamUserMap[currentTeamId]?.data;
-      if (payload.channel_type === 'Direct' && !!newTeamUserData) {
-        newTeamUserData = newTeamUserData.map(el => {
-          if (
-            !!payload.channel_member.find(id => id === el.user_id) &&
-            (el.user_id !== userData.user_id ||
-              payload.channel_member.length === 1)
-          ) {
-            el.direct_channel = payload.channel_id;
-          }
-          return el;
-        });
-        if (
-          payload.channel_member.find(el => el === currentChannel.user?.user_id)
-        ) {
-          currentChannel.channel_id = payload.channel_id;
-        }
+      const newDirectChannel = [...state.directChannel];
+      if (payload.channel_type === 'Direct') {
+        newDirectChannel.push(payload);
       }
       const newChannels = channelMap[currentTeamId] || [];
-      if (payload.channel_type !== 'Direct') {
+      if (
+        payload.channel_type !== 'Direct' &&
+        payload.team_id === currentTeamId
+      ) {
         newChannels.push(payload);
       }
       return {
@@ -340,17 +338,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
                 ...channelMap,
                 [currentTeamId]: newChannels,
               },
-        directChannel:
-          payload.channel_type === 'Direct'
-            ? [...directChannel, payload]
-            : directChannel,
-        teamUserMap: {
-          ...teamUserMap,
-          [currentTeamId]: {
-            ...teamUserMap[currentTeamId],
-            data: newTeamUserData,
-          },
-        },
+        directChannel: newDirectChannel,
         spaceChannelMap: {
           ...spaceChannelMap,
           [currentTeamId]: spaceChannelMap[currentTeamId].map(el => {
@@ -585,25 +573,23 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
       };
     }
     case actionTypes.CURRENT_TEAM_SUCCESS: {
-      const {lastChannelId, resChannel, directChannelUser, resSpace} = payload;
+      const {
+        lastChannelId,
+        resChannel,
+        resDirectChannel,
+        resSpace,
+        directChannelUsersRes,
+        lastDirectChannelId,
+      } = payload;
       let channel: Channel = defaultChannel;
-      if (directChannelUser && lastChannelId) {
-        const directChannelData = resChannel.data.find(
-          c => c?.channel_id === directChannelUser.direct_channel,
-        );
-        channel = {
-          channel_id: lastChannelId,
-          channel_name: '',
-          channel_type: 'Direct',
-          seen: true,
-          user: directChannelUser,
-          channel_member: directChannelData?.channel_member || [],
-          notification_type:
-            resChannel.data.find(
-              c => c?.channel_id === directChannelUser.direct_channel,
-            )?.notification_type || 'Alert',
-        };
-      } else if (resChannel?.data?.length > 0) {
+      let directChannel: Channel = defaultChannel;
+      if (resDirectChannel?.data?.length > 0) {
+        directChannel =
+          resDirectChannel.data?.find(
+            el => el.channel_id === lastDirectChannelId,
+          ) || resDirectChannel.data[0];
+      }
+      if (resChannel?.data?.length > 0) {
         channel =
           resChannel.data.find(c => c.channel_id === lastChannelId) ||
           resChannel.data.find(
@@ -617,9 +603,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         ...state,
         channelMap: {
           ...channelMap,
-          [payload.team.team_id]: resChannel.data.filter(
-            el => el.channel_type !== 'Direct',
-          ),
+          [payload.team.team_id]: resChannel.data,
         },
         spaceChannelMap: {
           ...spaceChannelMap,
@@ -630,11 +614,10 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
             return el;
           }),
         },
-        directChannel: resChannel.data.filter(
-          el => el.channel_type === 'Direct',
-        ),
+        directChannel: resDirectChannel?.data || state.directChannel,
         currentTeamId: payload.team.team_id,
         currentChannelId: channel.channel_id,
+        currentDirectChannelId: directChannel?.channel_id,
         lastChannel: {
           ...lastChannel,
           [payload.team.team_id]: channel,
@@ -660,6 +643,8 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
           },
         },
         apiTeamController: null,
+        directChannelUsers:
+          directChannelUsersRes?.data || state.directChannelUsers,
       };
     }
     case actionTypes.CREATE_TEAM_SUCCESS: {
@@ -678,6 +663,12 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         ...state,
         currentChannelId: payload.channel.channel_id,
         lastChannel,
+      };
+    }
+    case actionTypes.SET_CURRENT_DIRECT_CHANNEL: {
+      return {
+        ...state,
+        currentDirectChannelId: payload.directChannel.channel_id,
       };
     }
     case actionTypes.UPDATE_GROUP_CHANNEL: {
@@ -715,6 +706,15 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
           return el;
         }),
       };
+      state.directChannel = state.directChannel.map(el => {
+        if (el.channel_id === channel_id) {
+          return {
+            ...el,
+            seen: true,
+          };
+        }
+        return el;
+      });
       return state;
     }
     case actionTypes.MARK_UN_SEEN_CHANNEL: {

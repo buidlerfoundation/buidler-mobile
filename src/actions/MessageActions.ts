@@ -181,12 +181,12 @@ export const getMessages: ActionCreator<any> =
     } else if (isFresh) {
       dispatch({
         type: actionTypes.MESSAGE_FRESH,
-        payload: {channelId, controller},
+        payload: {channelId, channelType, controller},
       });
     } else {
       dispatch({
         type: actionTypes.MESSAGE_REQUEST,
-        payload: {channelId, controller, after},
+        payload: {channelId, channelType, controller, after},
       });
     }
     try {

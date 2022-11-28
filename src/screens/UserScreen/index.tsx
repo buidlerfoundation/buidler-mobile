@@ -1,7 +1,9 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {setCurrentDirectChannel} from 'actions/UserActions';
 import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
+import {StackID} from 'common/ScreenID';
 import SVG from 'common/SVG';
 import MenuConfirm from 'components/MenuConfirm';
 import MenuUser from 'components/MenuUser';
@@ -9,7 +11,10 @@ import ModalBottom from 'components/ModalBottom';
 import Spinner from 'components/Spinner';
 import Touchable from 'components/Touchable';
 import UserInfo from 'components/UserInfo';
+import {createMemberChannelData} from 'helpers/ChannelHelper';
+import useAppDispatch from 'hook/useAppDispatch';
 import useCommunityId from 'hook/useCommunityId';
+import useDirectUser from 'hook/useDirectUser';
 import useThemeColor from 'hook/useThemeColor';
 import useUserData from 'hook/useUserData';
 import {NFTCollection, UserData} from 'models';
@@ -37,6 +42,7 @@ const VerifyItem = memo(({item}: VerifyItemProps) => {
 
 const UserScreen = () => {
   const navigation = useNavigation();
+  const dispatch = useAppDispatch();
   const userData = useUserData();
   const [userProfile, setUserProfile] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -47,6 +53,7 @@ const UserScreen = () => {
     [userData.user_id, userProfile?.user_id],
   );
   const route = useRoute();
+  const directUser = useDirectUser(route.params?.userId);
   const {colors} = useThemeColor();
   const [isOpenMenu, setOpenMenu] = useState(false);
   const [isOpenConfirmBlock, setOpenConfirmBlock] = useState(false);
@@ -54,9 +61,32 @@ const UserScreen = () => {
   const onPressMenu = useCallback(() => {
     setOpenMenu(true);
   }, []);
-  const onDirectMessage = useCallback(() => {
-    Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
-  }, []);
+  const onDirectMessage = useCallback(async () => {
+    let directChannelId = directUser?.direct_channel_id;
+    if (!directChannelId) {
+      const channelMemberData = await createMemberChannelData([
+        userData,
+        userProfile,
+      ]);
+      const body = {
+        channel_type: 'Direct',
+        channel_member_data: channelMemberData.res,
+      };
+      const res = await api.createDirectChannel(communityId, body);
+      directChannelId = res.data?.channel_id;
+    }
+    if (directChannelId) {
+      dispatch(setCurrentDirectChannel({channel_id: directChannelId}));
+      navigation.navigate(StackID.DirectMessageStack);
+    }
+  }, [
+    communityId,
+    directUser?.direct_channel_id,
+    dispatch,
+    navigation,
+    userData,
+    userProfile,
+  ]);
   const onSendCrypto = useCallback(() => {
     Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
   }, []);

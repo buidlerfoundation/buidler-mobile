@@ -19,6 +19,8 @@ import Toast from 'react-native-toast-message';
 import {getDeviceCode} from 'helpers/GenerateUUID';
 import {UserRole} from 'common/AppConfig';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
+import {Channel} from 'models';
+import {getPrivateChannel} from 'helpers/ChannelHelper';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -140,12 +142,26 @@ export const findTeamAndChannel =
           communities.find((t: Community) => t.team_id === lastTeamId) ||
           communities[0];
         const teamId = currentTeam.team_id;
-        const resSpace = await api.getSpaceChannel(teamId);
-        const resChannel = await api.findChannel(teamId);
         const lastChannelId = await AsyncStorage.getItem(
           AsyncKey.lastChannelId,
         );
-        const teamUsersRes = await api.getTeamUsers(currentTeam.team_id);
+        const lastDirectChannelId = await AsyncStorage.getItem(
+          AsyncKey.lastDirectChannelId,
+        );
+        const [
+          resSpace,
+          resChannel,
+          resDirectChannel,
+          teamUsersRes,
+          directChannelUsersRes,
+        ] = await Promise.all([
+          api.getSpaceChannel(teamId),
+          api.findChannel(teamId),
+          api.findDirectChannel(),
+          api.getTeamUsers(currentTeam.team_id),
+          api.getDirectChannelUsers(),
+        ]);
+
         if (teamUsersRes.statusCode === 200) {
           dispatch({
             type: actionTypes.GET_TEAM_USER,
@@ -156,18 +172,17 @@ export const findTeamAndChannel =
           });
         }
         SocketUtils.init();
-        const directChannelUser = teamUsersRes?.data?.find(
-          (u: UserData) => u.direct_channel === lastChannelId,
-        );
         dispatch({
           type: actionTypes.CURRENT_TEAM_SUCCESS,
           payload: {
             team: currentTeam,
             lastChannelId,
-            directChannelUser,
             resChannel,
             teamUsersRes,
             resSpace,
+            resDirectChannel,
+            directChannelUsersRes,
+            lastDirectChannelId,
           },
         });
       } else {
@@ -189,6 +204,18 @@ export const setCurrentChannel = (channel: any) => (dispatch: Dispatch) => {
     payload: {channel},
   });
 };
+
+export const setCurrentDirectChannel =
+  (directChannel: Channel) => (dispatch: Dispatch) => {
+    AsyncStorage.setItem(
+      AsyncKey.lastDirectChannelId,
+      directChannel.channel_id,
+    );
+    dispatch({
+      type: actionTypes.SET_CURRENT_DIRECT_CHANNEL,
+      payload: {directChannel},
+    });
+  };
 
 export const createNewChannel =
   (teamId: string, body: any, groupName: string) =>
@@ -295,6 +322,11 @@ export const accessApp =
         ).private_key;
       }
       dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: private_key});
+      const privateKeyChannel = await getPrivateChannel(private_key);
+      dispatch({
+        type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
+        payload: privateKeyChannel,
+      });
       const publicKey = utils.computePublicKey(`0x${private_key}`, true);
       if (isLater) {
         const dataSeed = {[publicKey]: seed};

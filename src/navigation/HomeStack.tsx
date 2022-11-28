@@ -18,6 +18,8 @@ import {acceptInvitation} from 'actions/UserActions';
 import WalletHeader from 'screens/WalletScreen/WalletHeader';
 import NotificationScreen from 'screens/NotificationScreen';
 import NotificationHeader from 'screens/NotificationScreen/NotificationHeader';
+import DirectMessageStack from './DirectMessageStack';
+import DirectEmpty from 'screens/DirectEmpty';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,6 +31,7 @@ const HomeStack = () => {
   const {colors} = useThemeColor();
   const openOTP = useAppSelector(state => state.configs.openOTP);
   const requestOtpCode = useAppSelector(state => state.configs.requestOtpCode);
+  const directChannels = useAppSelector(state => state.user.directChannel);
   const handleOpenURL = useCallback(
     async (e: {url: string}) => {
       const {url} = e;
@@ -172,6 +175,14 @@ const HomeStack = () => {
           options={conversationOptions}
           name={StackID.ConversationStack}
           component={ConversationStack}
+          initialParams={route.params}
+        />
+        <Tab.Screen
+          options={conversationOptions}
+          name={StackID.DirectMessageStack}
+          component={
+            directChannels.length > 0 ? DirectMessageStack : DirectEmpty
+          }
           initialParams={route.params}
         />
         <Tab.Screen

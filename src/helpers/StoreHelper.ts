@@ -3,7 +3,6 @@ import store from 'store';
 
 const defaultChannel: Channel = {
   channel_id: '',
-  channel_member: [],
   channel_name: '',
   channel_type: 'Public',
   notification_type: '',
@@ -20,6 +19,11 @@ export const getChannelId = () => {
   return store.getState()?.user?.currentChannelId || '';
 };
 
+export const getDirectChannelId = () => {
+  if (!store) return '';
+  return store.getState()?.user?.currentDirectChannelId || '';
+};
+
 export const getCurrentCommunity = () => {
   if (!store) return null;
   let communityId = getCommunityId();
@@ -30,11 +34,12 @@ export const getCurrentCommunity = () => {
   return team?.find(el => el.team_id === communityId);
 };
 
-export const getCurrentChannel = () => {
+export const getCurrentChannel = (direct?: boolean) => {
   if (!store) return defaultChannel;
   const communityId = getCommunityId();
-  const channelId = getChannelId();
-  const {channelMap} = store.getState().user;
+  const channelId = direct ? getDirectChannelId() : getChannelId();
+  const {channelMap, directChannel} = store.getState().user;
+  if (direct) return directChannel.find(el => el.channel_id === channelId);
   const channels = channelMap?.[communityId];
   return channels?.find(el => el.channel_id === channelId) || defaultChannel;
 };

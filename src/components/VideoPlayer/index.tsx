@@ -19,7 +19,6 @@ const VideoPlayer = forwardRef(
     const [isPaused, setPaused] = useState(paused);
     const pause = useCallback(() => setPaused(true), []);
     const play = useCallback(() => setPaused(false), []);
-    console.log('XXX: ', uri, isPaused);
     useImperativeHandle(ref, () => {
       return {
         pause,

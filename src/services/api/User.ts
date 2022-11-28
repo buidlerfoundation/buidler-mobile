@@ -3,6 +3,7 @@ import {
   Channel,
   CollectibleDataApi,
   Community,
+  ENSAsset,
   InitialApiData,
   NFTCollectionDataApi,
   NotificationData,
@@ -29,6 +30,18 @@ export const getSpaceChannel = (teamId: string, controller?: AbortController) =>
 
 export const findChannel = (teamId: string, controller?: AbortController) =>
   ApiCaller.get<Array<Channel>>(`channel/${teamId}`, undefined, controller);
+
+export const findDirectChannel = (
+  status?: 'pending' | 'blocked' | 'accepted' = 'accepted',
+  controller?: AbortController,
+) => {
+  let uri =
+    'direct-channel?channel_types[]=Direct&channel_types[]=Multiple Direct';
+  if (status) {
+    uri += `&status=${status}`;
+  }
+  return ApiCaller.get<Array<Channel>>(uri, undefined, controller);
+};
 
 export const getInitial = () => ApiCaller.get<InitialApiData>('initial');
 
@@ -97,7 +110,9 @@ export const fetchTransaction = (params: {page?: number; limit?: number}) => {
 };
 
 export const fetchNFTCollection = () =>
-  ApiCaller.get<Array<NFTCollectionDataApi>>('user/nft-collection/group');
+  ApiCaller.get<{nft_assets: NFTCollectionDataApi[]; ens_assets: ENSAsset[]}>(
+    'user/nft-collection/group',
+  );
 
 export const getUserDetail = (userId: string, teamId: string) =>
   ApiCaller.get<UserData>(`user/${userId}/team/${teamId}`);

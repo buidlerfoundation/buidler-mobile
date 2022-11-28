@@ -33,6 +33,11 @@ import PermissionHelper from 'helpers/PermissionHelper';
 import Video from 'react-native-video';
 import useAppDispatch from 'hook/useAppDispatch';
 import {getMessages, getPinPostMessages} from 'actions/MessageActions';
+import useDirectChannelUser from 'hook/useDirectChannelUser';
+import useChannelId from 'hook/useChannelId';
+import useDirectChannelId from 'hook/useDirectChannelId';
+import {encryptMessage} from 'helpers/ChannelHelper';
+import useUserData from 'hook/useUserData';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -111,6 +116,7 @@ type MessageInputProps = {
   onFocusChanged?: (isFocus: boolean) => void;
   canMoreAfter?: boolean;
   scrollDown?: () => void;
+  direct?: boolean;
 };
 
 const MessageInput = ({
@@ -131,6 +137,7 @@ const MessageInput = ({
   onFocusChanged,
   canMoreAfter,
   scrollDown,
+  direct,
 }: MessageInputProps) => {
   const dispatch = useAppDispatch();
   const [val, setVal] = useState('');
@@ -140,9 +147,22 @@ const MessageInput = ({
   const [mentions, setMentions] = useState([]);
   const [isOpenPopupMention, setOpenPopupMention] = useState(false);
   const currentChannel = useCurrentChannel();
-  const teamId = useCommunityId();
-  const teamUserData = useTeamUserData();
+  const currentPublicChannelId = useChannelId();
+  const currentDirectChannelId = useDirectChannelId();
+  const currentChannelId = useMemo(
+    () => (direct ? currentDirectChannelId : currentPublicChannelId),
+    [currentDirectChannelId, currentPublicChannelId, direct],
+  );
+  const directChannelUser = useDirectChannelUser();
+  const userData = useUserData();
+  const teamId = useCommunityId(direct);
+  const publicTeamUserData = useTeamUserData();
+  const teamUserData = useMemo(
+    () => (direct ? [userData, directChannelUser] : publicTeamUserData),
+    [direct, directChannelUser, publicTeamUserData, userData],
+  );
   const {colors} = useThemeColor();
+  const channelType = useMemo(() => (direct ? 'Private' : 'Public'), [direct]);
   useEffect(() => {
     const startMention = val.substring(0, cursorPos).lastIndexOf('@');
     const beforeMention = val?.[startMention - 1];
@@ -193,11 +213,11 @@ const MessageInput = ({
   }, [messageEdit, normalizeMessageEdit]);
 
   useEffect(() => {
-    if (currentChannel.channel_id) {
+    if (currentChannelId) {
       setVal('');
       onClearAttachment?.();
     }
-  }, [currentChannel.channel_id, onClearAttachment]);
+  }, [currentChannelId, onClearAttachment]);
 
   useEffect(() => {
     if (postId) {
@@ -269,8 +289,8 @@ const MessageInput = ({
       } else {
         await dispatch(
           getMessages(
-            currentChannel.channel_id,
-            'Public',
+            currentChannelId,
+            channelType,
             undefined,
             undefined,
             true,
@@ -280,8 +300,7 @@ const MessageInput = ({
     }
     const text = normalizeContentMessageSubmit(val);
     const message: any = {
-      content: text,
-      plain_text: val,
+      content: direct ? encryptMessage(text, currentChannelId) : text,
       text,
       entity_type: postId ? 'post' : 'channel',
       mentions: getMentionData(),
@@ -291,10 +310,11 @@ const MessageInput = ({
     }
     if (postId) {
       message.entity_id = postId;
-    } else if (currentChannel.channel_id) {
-      message.entity_id = currentChannel.channel_id;
-    } else if (currentChannel.user) {
-      message.other_user_id = currentChannel?.user?.user_id;
+    } else if (currentChannelId) {
+      message.entity_id = currentChannelId;
+    }
+    if (direct && directChannelUser) {
+      message.other_user_id = directChannelUser.user_id;
       message.team_id = teamId;
     }
     if (messageReply) {
@@ -317,13 +337,15 @@ const MessageInput = ({
     postId,
     getMentionData,
     attachments,
-    currentChannel.channel_id,
-    currentChannel.user,
+    currentChannelId,
+    direct,
+    directChannelUser,
     messageReply,
     onClearAttachment,
-    dispatch,
-    teamId,
     scrollDown,
+    dispatch,
+    channelType,
+    teamId,
   ]);
   const editMessage = useCallback(async () => {
     if (!val && attachments.length === 0) return;
@@ -539,8 +561,8 @@ const MessageInput = ({
               placeholder={
                 placeholder ||
                 `message to ${
-                  currentChannel?.user?.user_name
-                    ? normalizeUserName(currentChannel?.user?.user_name)
+                  direct
+                    ? `@ ${normalizeUserName(directChannelUser.user_name)}`
                     : `# ${currentChannel?.channel_name}`
                 }`
               }

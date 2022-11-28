@@ -10,7 +10,7 @@ export const getCollectibles: ActionCreator<any> =
       dispatch({
         type: actionTypes.COLLECTIBLE_SUCCESS,
         payload: {
-          data: res.data?.map(el => {
+          data: res.data?.nft_assets?.map(el => {
             return {
               ...el,
               nft: el.nft.map(nftItem => ({

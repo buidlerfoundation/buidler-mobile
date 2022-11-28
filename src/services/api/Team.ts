@@ -7,3 +7,8 @@ export const getTeamUsers = (teamId: string, controller?: AbortController) =>
     undefined,
     controller,
   );
+
+export const getDirectChannelUsers = () =>
+  ApiCaller.get<UserData[]>(
+    'direct-channel/members?channel_types[]=Direct&channel_types[]=Multiple Direct',
+  );
