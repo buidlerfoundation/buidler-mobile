@@ -38,7 +38,7 @@ export const getInitial: ActionCreator<any> =
 
 export const logout: ActionCreator<any> = () => async (dispatch: Dispatch) => {
   const deviceCode = await getDeviceCode();
-  await api.removeDevice({
+  api.removeDevice({
     device_code: deviceCode,
   });
   await AsyncStorage.clear();
