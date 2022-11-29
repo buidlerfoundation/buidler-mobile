@@ -324,11 +324,6 @@ export const accessApp =
         ).private_key;
       }
       dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: private_key});
-      const privateKeyChannel = await getPrivateChannel(private_key);
-      dispatch({
-        type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
-        payload: privateKeyChannel,
-      });
       const publicKey = utils.computePublicKey(`0x${private_key}`, true);
       if (isLater) {
         const dataSeed = {[publicKey]: seed};
@@ -369,6 +364,11 @@ export const accessApp =
             AsyncKey.refreshTokenExpire,
             res.refresh_token_expire_at?.toString(),
           );
+          const privateKeyChannel = await getPrivateChannel(private_key);
+          dispatch({
+            type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
+            payload: privateKeyChannel,
+          });
           NavigationServices.reset(ScreenID.SplashScreen);
         } else {
           err = res.message;
