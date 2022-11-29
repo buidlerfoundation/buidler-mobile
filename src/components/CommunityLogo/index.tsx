@@ -14,7 +14,7 @@ type CommunityLogoProps = {
 const CommunityLogo = ({
   community,
   size = 40,
-  borderRadius = 12,
+  borderRadius = 10,
 }: CommunityLogoProps) => {
   return community.team_icon ? (
     <FastImage

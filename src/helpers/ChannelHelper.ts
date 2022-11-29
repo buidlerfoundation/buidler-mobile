@@ -5,7 +5,7 @@ import store from '../store';
 import {uniqBy} from 'lodash';
 import {decrypt, encrypt} from 'eciesjs';
 import CryptoJS from 'crypto-js';
-import {UserData} from 'models';
+import {Channel, UserData} from 'models';
 import {getUniqueId} from './GenerateUUID';
 import api from 'services/api';
 
@@ -244,4 +244,10 @@ export const spaceNameToAvatar = (name: string, size?: number = 1) => {
     res += split[index].charAt(0);
   }
   return res;
+};
+
+export const sortChannel = (v1: Channel, v2: Channel) => {
+  if ((v1.updatedAt || '') > (v2.updatedAt || '')) return -1;
+  if ((v1.updatedAt || '') < (v2.updatedAt || '')) return 1;
+  return 0;
 };

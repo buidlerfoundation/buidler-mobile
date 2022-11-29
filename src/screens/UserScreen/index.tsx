@@ -1,4 +1,5 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {actionTypes} from 'actions/actionTypes';
 import {setCurrentDirectChannel} from 'actions/UserActions';
 import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
@@ -23,6 +24,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Toast from 'react-native-toast-message';
 import api from 'services/api';
+import SocketUtils from 'utils/SocketUtils';
 
 type VerifyItemProps = {
   item: NFTCollection;
@@ -76,7 +78,27 @@ const UserScreen = () => {
         AppConfig.directCommunityId,
         body,
       );
-      directChannelId = res.data?.channel_id;
+      if (res.statusCode === 200) {
+        directChannelId = res.data?.channel_id;
+        const myKey = channelMemberData.res.find(
+          el => el.user_id === userData.user_id,
+        );
+        if (myKey) {
+          await SocketUtils.handleChannelPrivateKey(
+            directChannelId,
+            myKey.key,
+            myKey.timestamp,
+          );
+        }
+        dispatch({
+          type: actionTypes.NEW_DIRECT_USER,
+          payload: [{...userProfile, direct_channel_id: directChannelId}],
+        });
+        dispatch({
+          type: actionTypes.NEW_CHANNEL,
+          payload: res.data,
+        });
+      }
     }
     if (directChannelId) {
       dispatch(setCurrentDirectChannel({channel_id: directChannelId}));

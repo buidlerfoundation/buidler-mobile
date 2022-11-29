@@ -1,5 +1,6 @@
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
+import {sortChannel} from 'helpers/ChannelHelper';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
 import {Channel} from 'models';
@@ -22,10 +23,10 @@ const DirectChannelScreen = () => {
           AppStyles.TextBold20,
           {color: colors.text, marginVertical: 18, marginLeft: 15},
         ]}>
-        Direct Message
+        Direct Messages
       </Text>
       <FlatList
-        data={directChannels}
+        data={directChannels.sort(sortChannel)}
         keyExtractor={item => item.channel_id}
         renderItem={renderItem}
       />

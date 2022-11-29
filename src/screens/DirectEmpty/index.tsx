@@ -13,7 +13,7 @@ const DirectEmpty = () => {
           AppStyles.TextBold17,
           {color: colors.lightText, marginTop: 120},
         ]}>
-        Direct Message
+        Direct Messages
       </Text>
       <Text
         style={[

@@ -7,7 +7,11 @@ import {actionTypes} from 'actions/actionTypes';
 import store from '../store';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID, {StackID} from 'common/ScreenID';
-import {setCurrentTeam} from 'actions/UserActions';
+import {
+  setCurrentDirectChannel,
+  setCurrentTeam,
+  syncDirectChannelData,
+} from 'actions/UserActions';
 import {getMessages} from 'actions/MessageActions';
 
 type NotificationPayload = {data: any; type: string};
@@ -58,6 +62,7 @@ class PushNotificationHelper {
         currentDirectChannelId,
         team,
         channelMap,
+        directChannel,
       } = store.getState()?.user;
       const channel = channelMap?.[currentTeamId];
       const {team_id, channel_type} = data.notification_data;
@@ -78,10 +83,13 @@ class PushNotificationHelper {
         );
       }
       if (direct) {
-        store.dispatch({
-          type: actionTypes.SET_CURRENT_DIRECT_CHANNEL,
-          payload: {directChannel: {channel_id: entity_id}},
-        });
+        if (!directChannel.find(el => el.channel_id === channelId)) {
+          const success = await store.dispatch(syncDirectChannelData());
+          if (!success) {
+            return;
+          }
+        }
+        store.dispatch(setCurrentDirectChannel({channel_id: entity_id}));
       } else {
         if (channelId === entity_id) {
           // Do nothing

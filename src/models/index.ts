@@ -86,6 +86,7 @@ export interface Channel {
   user?: UserData;
   group_channel_id?: string;
   attachment?: any;
+  updatedAt?: string;
 }
 
 export interface Space {
@@ -116,6 +117,7 @@ export interface Community {
   team_description?: string;
   is_verified?: boolean;
   team_cover?: string;
+  seen?: boolean;
 }
 
 export interface NFTCollection {

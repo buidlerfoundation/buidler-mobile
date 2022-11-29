@@ -515,3 +515,18 @@ export const getMemberData =
       });
     }
   };
+
+export const syncDirectChannelData = () => async (dispatch: Dispatch) => {
+  const [resDirectChannel, directChannelUsersRes] = await Promise.all([
+    api.findDirectChannel(),
+    api.getDirectChannelUsers(),
+  ]);
+  dispatch({
+    type: actionTypes.SYNC_DIRECT_CHANNEL_DATA,
+    payload: {resDirectChannel, directChannelUsersRes},
+  });
+  return (
+    resDirectChannel.statusCode === 200 &&
+    directChannelUsersRes.statusCode === 200
+  );
+};

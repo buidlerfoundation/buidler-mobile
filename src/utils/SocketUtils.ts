@@ -337,10 +337,13 @@ class SocketUtil {
       type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
       payload: {
         ...channelPrivateKey,
-        [channel_id]: [
-          ...(channelPrivateKey?.[channel_id] || []),
-          {key: decrypted, timestamp},
-        ],
+        [channel_id]: uniqBy(
+          [
+            ...(channelPrivateKey?.[channel_id] || []),
+            {key: decrypted, timestamp},
+          ],
+          'key',
+        ),
       },
     });
   };
@@ -824,6 +827,7 @@ class SocketUtil {
               type: actionTypes.MARK_UN_SEEN_CHANNEL,
               payload: {
                 channelId: message_data.entity_id,
+                communityId: notification_data.team_id,
               },
             });
           }
@@ -857,7 +861,11 @@ class SocketUtil {
       if (res) {
         store.dispatch({
           type: actionTypes.RECEIVE_MESSAGE,
-          payload: {data: res, currentChannelId: currentChannel.channel_id},
+          payload: {
+            data: res,
+            currentChannelId: currentChannel.channel_id,
+            direct,
+          },
         });
       }
     });

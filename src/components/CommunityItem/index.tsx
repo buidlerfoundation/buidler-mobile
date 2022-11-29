@@ -5,8 +5,8 @@ import Touchable from 'components/Touchable';
 import useCommunityId from 'hook/useCommunityId';
 import useThemeColor from 'hook/useThemeColor';
 import {Community} from 'models';
-import React, {memo, useCallback} from 'react';
-import {StyleSheet, Text} from 'react-native';
+import React, {memo, useCallback, useMemo} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 
 type CommunityItemProps = {
   community: Community;
@@ -29,24 +29,39 @@ const CommunityItem = ({
     [community, onPressMenu],
   );
   const communityId = useCommunityId();
+  const isActive = useMemo(
+    () => communityId === community.team_id,
+    [community.team_id, communityId],
+  );
+  const isUnseen = useMemo(() => !community.seen, [community.seen]);
   return (
     <Touchable
       style={[
         styles.container,
         {
-          backgroundColor:
-            communityId === community.team_id
-              ? colors.border
-              : colors.background,
+          backgroundColor: isActive ? colors.border : colors.background,
         },
       ]}
       onPress={handlePress}>
-      <CommunityLogo community={community} />
+      <View>
+        <CommunityLogo community={community} />
+        {isUnseen && (
+          <View
+            style={[
+              styles.unseenBadgeWrap,
+              {backgroundColor: colors.background},
+            ]}>
+            <View
+              style={[styles.unseenBadge, {backgroundColor: colors.mention}]}
+            />
+          </View>
+        )}
+      </View>
       <Text
         style={[
           styles.communityName,
           AppStyles.TextSemi15,
-          {color: colors.text},
+          {color: isUnseen || isActive ? colors.text : colors.subtext},
         ]}
         ellipsizeMode="tail"
         numberOfLines={1}>
@@ -71,6 +86,21 @@ const styles = StyleSheet.create({
   communityName: {
     marginHorizontal: 15,
     flex: 1,
+  },
+  unseenBadgeWrap: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -5,
+    right: -5,
+  },
+  unseenBadge: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
 });
 

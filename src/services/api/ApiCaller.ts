@@ -33,12 +33,30 @@ const getRequestBody = (data: any) => {
   }
 };
 
+const logger = (...arg) => {
+  if (__DEV__) {
+    console.log(...arg);
+  }
+};
+
 const fetchWithRetry = (apiUrl: string, fetchOptions = {}, retries = 0) => {
+  const reqTime = new Date().getTime();
+  logger('Request: ', {
+    apiUrl,
+    reqTime,
+  });
   return fetch(apiUrl, fetchOptions)
     .then(res => {
       return res
         .json()
         .then(async data => {
+          const resTime = new Date().getTime();
+          logger('Response: ', {
+            apiUrl,
+            data,
+            resTime,
+            time: resTime - reqTime,
+          });
           if (res.status !== 200) {
             // alert error
             if (data.message === 'Network request failed') {
