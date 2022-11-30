@@ -124,11 +124,18 @@ type MessageAvatarProps = {
   showAvatar?: boolean;
   onUserPress: () => void;
   embeds?: boolean;
+  direct?: boolean;
 };
 
 const MessageAvatar = memo(
-  ({sender_id, showAvatar, onUserPress, embeds}: MessageAvatarProps) => {
-    const teamUserData = useTeamUserData();
+  ({
+    sender_id,
+    showAvatar,
+    onUserPress,
+    embeds,
+    direct,
+  }: MessageAvatarProps) => {
+    const teamUserData = useTeamUserData(direct);
     const sender = useMemo(
       () => teamUserData.find(el => el.user_id === sender_id),
       [sender_id, teamUserData],
@@ -275,6 +282,7 @@ const MessageItem = ({
           showAvatar={showAvatar}
           onUserPress={onUserPress}
           embeds={embeds}
+          direct={direct}
         />
         <View style={styles.bodyMessage}>
           <MessageSender
