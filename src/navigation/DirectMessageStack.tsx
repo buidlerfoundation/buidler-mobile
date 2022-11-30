@@ -1,13 +1,14 @@
-import React, {memo, useCallback} from 'react';
+import React, {memo, useCallback, useEffect} from 'react';
 import {DrawerID} from 'common/ScreenID';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import DirectMessageDrawer from './DirectMessageDrawer';
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
 
 const DirectMessageStack = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const header = useCallback(() => null, []);
   const screenOptions = useCallback(
     () => ({
@@ -15,6 +16,11 @@ const DirectMessageStack = () => {
     }),
     [header],
   );
+  useEffect(() => {
+    if (route.params?.child) {
+      navigation.navigate(route.params?.child, route.params);
+    }
+  }, [navigation, route.params]);
   return (
     <Stack.Navigator
       initialRouteName={DrawerID.DirectMessageDrawer}

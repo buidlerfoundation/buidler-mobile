@@ -180,15 +180,13 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   useEffect(() => {
     if (route.params?.jumpMessageId) {
       handleAroundMessage(route.params?.jumpMessageId);
-    } else if (!route.params?.fromNotification) {
+    }
+  }, [handleAroundMessage, route.params?.jumpMessageId]);
+  useEffect(() => {
+    if (!route.params?.fromNotification) {
       handleGetLatestMessage();
     }
-  }, [
-    handleAroundMessage,
-    handleGetLatestMessage,
-    route.params?.fromNotification,
-    route.params?.jumpMessageId,
-  ]);
+  }, [handleGetLatestMessage, route.params?.fromNotification]);
   const scrollDown = useCallback(() => {
     try {
       if (currentChannelId) {

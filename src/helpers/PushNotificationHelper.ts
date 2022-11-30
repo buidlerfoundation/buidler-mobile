@@ -12,7 +12,6 @@ import {
   setCurrentTeam,
   syncDirectChannelData,
 } from 'actions/UserActions';
-import {getMessages} from 'actions/MessageActions';
 
 type NotificationPayload = {data: any; type: string};
 
@@ -64,6 +63,7 @@ class PushNotificationHelper {
         channelMap,
         directChannel,
       } = store.getState()?.user;
+      console.log('XXX: ', data);
       const channel = channelMap?.[currentTeamId];
       const {team_id, channel_type} = data.notification_data;
       const {entity_id, entity_type, message_id} = data.message_data;
@@ -71,17 +71,6 @@ class PushNotificationHelper {
       const channelId = direct ? currentDirectChannelId : currentChannelId;
       const teamNotification = team.find(t => t.team_id === team_id);
       const channelNotification = channel.find(c => c.channel_id === entity_id);
-      if (entity_type === 'channel') {
-        await store.dispatch(
-          getMessages(
-            entity_id,
-            direct ? 'Private' : 'Public',
-            undefined,
-            undefined,
-            true,
-          ),
-        );
-      }
       if (direct) {
         if (!directChannel.find(el => el.channel_id === entity_id)) {
           const success = await store.dispatch(syncDirectChannelData());
@@ -89,16 +78,16 @@ class PushNotificationHelper {
             return;
           }
         }
-        await store.dispatch(setCurrentDirectChannel({channel_id: entity_id}));
+        store.dispatch(setCurrentDirectChannel({channel_id: entity_id}));
       } else {
         if (channelId === entity_id) {
           // Do nothing
         } else if (currentTeamId === team_id) {
           if (channelNotification) {
-            await store.dispatch(setCurrentChannel(channelNotification));
+            store.dispatch(setCurrentChannel(channelNotification));
           }
         } else if (teamNotification && !direct) {
-          await store.dispatch(setCurrentTeam(teamNotification, entity_id));
+          store.dispatch(setCurrentTeam(teamNotification, entity_id));
         }
       }
       if (entity_type === 'post') {

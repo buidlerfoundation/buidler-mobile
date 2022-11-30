@@ -222,7 +222,7 @@ export const getMessages: ActionCreator<any> =
             before,
             isFresh,
             after,
-            reloadSocket: !before && !after,
+            reloadSocket: false,
           },
         });
       } else {

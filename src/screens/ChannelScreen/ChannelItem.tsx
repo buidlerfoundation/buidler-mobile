@@ -23,7 +23,10 @@ const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
 
   const handlePress = useCallback(() => {
     dispatch(setCurrentChannel(c));
-    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+    NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+      fromNotification: false,
+      jumpMessageId: null,
+    });
   }, [c, dispatch]);
   const isUnSeen = useMemo(() => !c?.seen, [c?.seen]);
   const isQuiet = useMemo(
