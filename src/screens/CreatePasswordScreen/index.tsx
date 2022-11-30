@@ -1,6 +1,12 @@
 import NavigationHeader from 'components/NavigationHeader';
 import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
-import {View, StyleSheet, TextInput, Text} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
 import {passwordRules} from 'helpers/PasswordHelper';
@@ -15,6 +21,7 @@ import useThemeColor from 'hook/useThemeColor';
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessApp} from 'actions/UserActions';
 import {useFocusEffect} from '@react-navigation/native';
+import useAccessingApp from 'hook/useAccessingApp';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
@@ -29,6 +36,7 @@ const CreatePasswordScreen = ({route}: Props) => {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const togglePassword = () => setShowPassword(!showPassword);
+  const accessingApp = useAccessingApp();
   const passwordLevel = useMemo(() => {
     const requiredPassRules = passwordRules().filter(el => el.isRequired);
     const passRequired = requiredPassRules.filter(el =>
@@ -119,8 +127,13 @@ const CreatePasswordScreen = ({route}: Props) => {
           </Touchable> */}
           <Touchable
             style={[styles.buttonNext, {backgroundColor: colors.primary}]}
-            onPress={onNextPress}>
-            <Text style={[styles.textNext, {color: colors.text}]}>Next</Text>
+            onPress={onNextPress}
+            disabled={accessingApp}>
+            {accessingApp ? (
+              <ActivityIndicator color={colors.text} />
+            ) : (
+              <Text style={[styles.textNext, {color: colors.text}]}>Next</Text>
+            )}
           </Touchable>
         </View>
       </View>

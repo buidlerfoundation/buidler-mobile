@@ -3,11 +3,11 @@ import messaging, {
 } from '@react-native-firebase/messaging';
 import Permissions from 'react-native-permissions';
 import notifee from '@notifee/react-native';
-import {actionTypes} from 'actions/actionTypes';
 import store from '../store';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID, {StackID} from 'common/ScreenID';
 import {
+  setCurrentChannel,
   setCurrentDirectChannel,
   setCurrentTeam,
   syncDirectChannelData,
@@ -66,7 +66,7 @@ class PushNotificationHelper {
       } = store.getState()?.user;
       const channel = channelMap?.[currentTeamId];
       const {team_id, channel_type} = data.notification_data;
-      const {entity_id, entity_type} = data.message_data;
+      const {entity_id, entity_type, message_id} = data.message_data;
       const direct = channel_type === 'Direct';
       const channelId = direct ? currentDirectChannelId : currentChannelId;
       const teamNotification = team.find(t => t.team_id === team_id);
@@ -83,22 +83,19 @@ class PushNotificationHelper {
         );
       }
       if (direct) {
-        if (!directChannel.find(el => el.channel_id === channelId)) {
+        if (!directChannel.find(el => el.channel_id === entity_id)) {
           const success = await store.dispatch(syncDirectChannelData());
           if (!success) {
             return;
           }
         }
-        store.dispatch(setCurrentDirectChannel({channel_id: entity_id}));
+        await store.dispatch(setCurrentDirectChannel({channel_id: entity_id}));
       } else {
         if (channelId === entity_id) {
           // Do nothing
         } else if (currentTeamId === team_id) {
           if (channelNotification) {
-            store.dispatch({
-              type: actionTypes.SET_CURRENT_CHANNEL,
-              payload: {channel: channelNotification},
-            });
+            await store.dispatch(setCurrentChannel(channelNotification));
           }
         } else if (teamNotification && !direct) {
           await store.dispatch(setCurrentTeam(teamNotification, entity_id));
@@ -112,10 +109,12 @@ class PushNotificationHelper {
         if (direct) {
           NavigationServices.pushToScreen(StackID.DirectMessageStack, {
             fromNotification: true,
+            jumpMessageId: message_id,
           });
         } else {
           NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
             fromNotification: true,
+            jumpMessageId: message_id,
           });
         }
       }

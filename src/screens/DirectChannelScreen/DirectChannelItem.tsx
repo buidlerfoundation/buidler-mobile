@@ -38,7 +38,10 @@ const DirectChannelItem = ({channel}: DirectChannelItemProps) => {
   );
   const handlePress = useCallback(() => {
     dispatch(setCurrentDirectChannel(channel));
-    navigation.navigate(ScreenID.DirectMessageScreen);
+    navigation.navigate(ScreenID.DirectMessageScreen, {
+      fromNotification: false,
+      jumpMessageId: null,
+    });
   }, [channel, dispatch, navigation]);
   return (
     <Touchable

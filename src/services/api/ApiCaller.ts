@@ -44,6 +44,7 @@ const fetchWithRetry = (apiUrl: string, fetchOptions = {}, retries = 0) => {
   logger('Request: ', {
     apiUrl,
     reqTime,
+    fetchOptions,
   });
   return fetch(apiUrl, fetchOptions)
     .then(res => {

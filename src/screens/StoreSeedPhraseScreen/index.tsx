@@ -1,6 +1,12 @@
 import NavigationHeader from 'components/NavigationHeader';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  ActivityIndicator,
+} from 'react-native';
 import Fonts from 'common/Fonts';
 import RNGoldenKeystore from 'react-native-golden-keystore';
 import AppDevice from 'common/AppDevice';
@@ -15,12 +21,14 @@ import {accessApp} from 'actions/UserActions';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import useAccessingApp from 'hook/useAccessingApp';
 
 const StoreSeedPhraseScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const dispatch = useAppDispatch();
   const {password, backupSeed} = useMemo(() => route.params, [route.params]);
+  const accessingApp = useAccessingApp();
   const [seed, setSeed] = useState('');
   const {width} = useWindowDimensions();
   const initialSeed = useCallback(async () => {
@@ -93,10 +101,17 @@ const StoreSeedPhraseScreen = () => {
         </Touchable>
       </View>
       <View style={styles.bottom}>
-        <Touchable style={styles.buttonLater} onPress={onLaterPress}>
-          <Text style={[styles.textButton, {color: colors.subtext}]}>
-            Do it later
-          </Text>
+        <Touchable
+          style={styles.buttonLater}
+          onPress={onLaterPress}
+          disabled={accessingApp}>
+          {accessingApp ? (
+            <ActivityIndicator color={colors.subtext} />
+          ) : (
+            <Text style={[styles.textButton, {color: colors.subtext}]}>
+              Do it later
+            </Text>
+          )}
         </Touchable>
         <Touchable
           style={[styles.buttonNext, {backgroundColor: colors.primary}]}

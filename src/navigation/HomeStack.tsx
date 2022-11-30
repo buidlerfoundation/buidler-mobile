@@ -20,6 +20,8 @@ import NotificationScreen from 'screens/NotificationScreen';
 import NotificationHeader from 'screens/NotificationScreen/NotificationHeader';
 import DirectMessageStack from './DirectMessageStack';
 import DirectEmpty from 'screens/DirectEmpty';
+import UnseenBadge from 'components/UnseenBadge';
+import useUnseenDirect from 'hook/useUnseenDirect';
 
 const Tab = createBottomTabNavigator();
 
@@ -32,6 +34,7 @@ const HomeStack = () => {
   const openOTP = useAppSelector(state => state.configs.openOTP);
   const requestOtpCode = useAppSelector(state => state.configs.requestOtpCode);
   const directChannels = useAppSelector(state => state.user.directChannel);
+  const isUnseenDirect = useUnseenDirect();
   const handleOpenURL = useCallback(
     async (e: {url: string}) => {
       const {url} = e;
@@ -66,15 +69,28 @@ const HomeStack = () => {
   );
   const tabBarIconChat = useCallback(
     ({color}: {focused: boolean; color: string}) => {
-      return <SVG.IconPublicChannel fill={color} width={28} height={28} />;
+      return <SVG.IconTabChannel fill={color} />;
     },
     [],
   );
   const tabBarIconDirect = useCallback(
     ({color}: {focused: boolean; color: string}) => {
-      return <SVG.IconTabChat fill={color} />;
+      return (
+        <View>
+          <SVG.IconTabChat fill={color} />
+          {isUnseenDirect && (
+            <UnseenBadge
+              style={{
+                position: 'absolute',
+                top: 3,
+                right: -1,
+              }}
+            />
+          )}
+        </View>
+      );
     },
-    [],
+    [isUnseenDirect],
   );
   const tabBarIconWallet = useCallback(
     ({color}: {focused: boolean; color: string}) => {
@@ -88,32 +104,18 @@ const HomeStack = () => {
         <View>
           <SVG.IconTabNotification fill={color} />
           {userData.total_unread_notifications > 0 && (
-            <View
+            <UnseenBadge
               style={{
                 position: 'absolute',
-                width: 12,
-                height: 12,
-                borderRadius: 6,
-                backgroundColor: colors.background,
                 top: 3,
                 right: 3,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <View
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: colors.mention,
-                }}
-              />
-            </View>
+              }}
+            />
           )}
         </View>
       );
     },
-    [colors.background, colors.mention, userData.total_unread_notifications],
+    [userData.total_unread_notifications],
   );
   const tabBarIconProfile = useCallback(
     ({focused}: {focused: boolean; color: string}) => {

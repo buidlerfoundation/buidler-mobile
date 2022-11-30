@@ -197,17 +197,18 @@ export const findTeamAndChannel =
     }
   };
 
-export const setCurrentChannel = (channel: any) => (dispatch: Dispatch) => {
-  AsyncStorage.setItem(AsyncKey.lastChannelId, channel.channel_id);
-  dispatch({
-    type: actionTypes.SET_CURRENT_CHANNEL,
-    payload: {channel},
-  });
-};
+export const setCurrentChannel =
+  (channel: any) => async (dispatch: Dispatch) => {
+    await AsyncStorage.setItem(AsyncKey.lastChannelId, channel.channel_id);
+    dispatch({
+      type: actionTypes.SET_CURRENT_CHANNEL,
+      payload: {channel},
+    });
+  };
 
 export const setCurrentDirectChannel =
-  (directChannel: Channel) => (dispatch: Dispatch) => {
-    AsyncStorage.setItem(
+  (directChannel: Channel) => async (dispatch: Dispatch) => {
+    await AsyncStorage.setItem(
       AsyncKey.lastDirectChannelId,
       directChannel.channel_id,
     );
@@ -350,7 +351,6 @@ export const accessApp =
           signature.compact,
         );
         if (res.statusCode === 200) {
-          dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
           await AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);
           await AsyncStorage.setItem(
             AsyncKey.refreshTokenKey,
@@ -369,6 +369,7 @@ export const accessApp =
             type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
             payload: privateKeyChannel,
           });
+          dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
           NavigationServices.reset(ScreenID.SplashScreen);
         } else {
           err = res.message;
@@ -451,9 +452,15 @@ export const accessToHome =
       const channels = channelMap?.[currentTeamId];
       const {data, type} = PushNotificationHelper.initNotificationData;
       const {team_id, channel_type} = data.notification_data;
-      const {entity_id, entity_type} = data.message_data;
+      const {entity_id, entity_type, message_id} = data.message_data;
       const direct = channel_type === 'Direct';
-      params = {type, entity_id, entity_type, direct};
+      params = {
+        type,
+        entity_id,
+        entity_type,
+        direct,
+        jumpMessageId: message_id,
+      };
       const teamNotification = team?.find?.(t => t.team_id === team_id);
       const channelNotification = channels.find(
         el => el.channel_id === entity_id,

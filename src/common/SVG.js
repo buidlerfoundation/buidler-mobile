@@ -78,6 +78,7 @@ import IconNotificationPin from '../assets/images/ic_notification_pin.svg';
 import IconNotificationReply from '../assets/images/ic_notification_reply.svg';
 import IconNotificationMention from '../assets/images/ic_notification_mention.svg';
 import IconVideoPlay from '../assets/images/ic_video_play.svg';
+import IconTabChannel from '../assets/images/ic_tab_channel.svg';
 
 export default {
   IconExpand,
@@ -160,4 +161,5 @@ export default {
   IconNotificationReply,
   IconNotificationMention,
   IconVideoPlay,
+  IconTabChannel,
 };

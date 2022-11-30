@@ -1,6 +1,12 @@
 import NavigationHeader from 'components/NavigationHeader';
 import React, {memo, useCallback, useMemo, useState} from 'react';
-import {View, StyleSheet, useWindowDimensions, Text} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  useWindowDimensions,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import {shuffle} from 'lodash';
 import {createConfirmSeedState} from 'helpers/SeedHelper';
 import AppDevice from 'common/AppDevice';
@@ -15,6 +21,7 @@ import Toast from 'react-native-toast-message';
 import ScreenID from 'common/ScreenID';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
+import useAccessingApp from 'hook/useAccessingApp';
 
 type ShuffleSeedItemProps = {
   title: string;
@@ -124,6 +131,7 @@ const BackupScreen = () => {
   const shuffleSeedData = useMemo(() => shuffle(seed.split(' ')), [seed]);
   const space = useMemo(() => (AppDevice.isIphoneX ? 12 : 6), []);
   const seedWidth = useMemo(() => (width - 41 - space * 2) / 3, [space, width]);
+  const accessingApp = useAccessingApp();
   const onNextPress = useCallback(() => {
     if (
       seed ===
@@ -216,8 +224,13 @@ const BackupScreen = () => {
       </View>
       <Touchable
         style={[styles.buttonNext, {backgroundColor: colors.primary}]}
-        onPress={onNextPress}>
-        <Text style={[styles.textNext, {color: colors.text}]}>Next</Text>
+        onPress={onNextPress}
+        disabled={accessingApp}>
+        {accessingApp ? (
+          <ActivityIndicator color={colors.text} />
+        ) : (
+          <Text style={[styles.textNext, {color: colors.text}]}>Next</Text>
+        )}
       </Touchable>
     </View>
   );
