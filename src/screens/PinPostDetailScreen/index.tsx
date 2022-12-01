@@ -42,6 +42,7 @@ import {updateTask} from 'actions/TaskActions';
 import useChannelId from 'hook/useChannelId';
 import useCommunityId from 'hook/useCommunityId';
 import {actionTypes} from 'actions/actionTypes';
+import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -49,6 +50,7 @@ const PinPostDetailScreen = () => {
   const inputRef = useRef<TextInput>();
   const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
+  const [isOpenMenuDelete, setOpenMenuDelete] = useState(false);
   const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
   const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
@@ -307,9 +309,9 @@ const PinPostDetailScreen = () => {
     );
   }, [currentChannelId, dispatch, selectedMessage]);
   const onMenuDelete = useCallback(() => {
-    onCloseMenuMessage();
+    closeMenuDelete();
     onDeleteMessage();
-  }, [onCloseMenuMessage, onDeleteMessage]);
+  }, [closeMenuDelete, onDeleteMessage]);
   const onMenuCopyMessage = useCallback(async () => {
     await Clipboard.setString(
       `${buidlerURL}/channels/${communityId}/${currentChannelId}/message/${selectedMessage.message_id}`,
@@ -357,6 +359,15 @@ const PinPostDetailScreen = () => {
   }, [onCloseMenuMessage]);
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
+  }, []);
+  const openMenuDelete = useCallback(() => {
+    onCloseMenuMessage();
+    setTimeout(() => {
+      setOpenMenuDelete(true);
+    }, AppConfig.timeoutCloseBottomSheet);
+  }, [onCloseMenuMessage]);
+  const closeMenuDelete = useCallback(() => {
+    setOpenMenuDelete(false);
   }, []);
   const openModalEmoji = useCallback(() => {
     onCloseMenuMessage();
@@ -484,7 +495,7 @@ const PinPostDetailScreen = () => {
             onReply={onReplyMessage}
             onEdit={onEditMessage}
             onCopyMessage={onMenuCopyMessage}
-            onDelete={onMenuDelete}
+            onDelete={openMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={selectedMessage?.sender_id === userData.user_id}
             canPin={false}
@@ -524,6 +535,16 @@ const PinPostDetailScreen = () => {
           <MenuReport
             onClose={closeMenuReport}
             selectedMessage={selectedMessage}
+          />
+        </ModalBottom>
+        <ModalBottom
+          isVisible={isOpenMenuDelete}
+          onSwipeComplete={closeMenuDelete}
+          onBackdropPress={closeMenuDelete}>
+          <MenuConfirmDeleteMessage
+            onClose={closeMenuDelete}
+            selectedMessage={selectedMessage}
+            handleDelete={onMenuDelete}
           />
         </ModalBottom>
       </View>

@@ -13,6 +13,7 @@ import transactionReducer from './TransactionReducer';
 import collectibleReducer from './CollectibleReducers';
 import galleryReducer from './GalleryReducers';
 import notificationReducer from './NotificationReducers';
+import sideBarReducers from './SideBarReducers';
 
 const appReducer = combineReducers({
   configs: configReducers,
@@ -29,6 +30,7 @@ const appReducer = combineReducers({
   collectible: collectibleReducer,
   gallery: galleryReducer,
   notification: notificationReducer,
+  sideBar: sideBarReducers,
 });
 
 const rootReducer = (state, action) => {

@@ -36,10 +36,10 @@ export const getCurrentCommunity = () => {
 
 export const getCurrentChannel = (direct?: boolean) => {
   if (!store) return defaultChannel;
-  const communityId = getCommunityId();
   const channelId = direct ? getDirectChannelId() : getChannelId();
   const {channelMap, directChannel} = store.getState().user;
   if (direct) return directChannel.find(el => el.channel_id === channelId);
+  const communityId = getCommunityId();
   const channels = channelMap?.[communityId];
   return channels?.find(el => el.channel_id === channelId) || defaultChannel;
 };

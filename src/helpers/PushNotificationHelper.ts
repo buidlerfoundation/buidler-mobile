@@ -63,7 +63,6 @@ class PushNotificationHelper {
         channelMap,
         directChannel,
       } = store.getState()?.user;
-      console.log('XXX: ', data);
       const channel = channelMap?.[currentTeamId];
       const {team_id, channel_type} = data.notification_data;
       const {entity_id, entity_type, message_id} = data.message_data;
@@ -113,9 +112,14 @@ class PushNotificationHelper {
   showInAppNotification = async (
     notificationOpen: FirebaseMessagingTypes.RemoteMessage,
   ) => {
-    const {currentChannelId} = store.getState()?.user;
+    const {currentChannelId, currentDirectChannelId} = store.getState()?.user;
     const {notification_data} = JSON.parse(notificationOpen.data.data);
-    if (notification_data?.entity_id !== currentChannelId) {
+    const currentRouteName = NavigationServices.currentRouter?.name;
+    const channelId =
+      currentRouteName === ScreenID.DirectMessageScreen
+        ? currentDirectChannelId
+        : currentChannelId;
+    if (notification_data?.entity_id !== channelId) {
       await notifee.displayNotification({
         data: notificationOpen.data,
         body: notification_data.body.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2'),
@@ -123,7 +127,7 @@ class PushNotificationHelper {
           /(<@)(.*?)(-)(.*?)(>)/gim,
           '@$2',
         ),
-        subtitle: notification_data.subtitle.replace(
+        subtitle: notification_data.subtitle?.replace?.(
           /(<@)(.*?)(-)(.*?)(>)/gim,
           '@$2',
         ),

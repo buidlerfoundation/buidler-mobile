@@ -86,7 +86,10 @@ const StoreSeedPhraseScreen = () => {
                   },
                 ]}
                 key={el}>
-                <Text style={[styles.seedText, {color: colors.text}]}>
+                <Text
+                  style={[styles.seedText, {color: colors.text}]}
+                  ellipsizeMode="tail"
+                  numberOfLines={1}>
                   {index + 1}. {el}
                 </Text>
               </View>

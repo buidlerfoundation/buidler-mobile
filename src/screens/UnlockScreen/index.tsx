@@ -24,6 +24,7 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AppDimension from 'common/AppDimension';
+import {initialSpaceToggle} from 'actions/SideBarActions';
 
 const UnlockScreen = () => {
   const navigation = useNavigation();
@@ -57,6 +58,7 @@ const UnlockScreen = () => {
             type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
             payload: privateKeyChannel,
           });
+          dispatch(initialSpaceToggle());
           await dispatch(accessToHome());
         }
       } catch (error) {

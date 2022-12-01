@@ -164,21 +164,6 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         },
       };
     }
-    case actionTypes.UPDATE_EXPAND_SPACE_ITEM: {
-      return {
-        ...state,
-        spaceChannelMap: {
-          ...spaceChannelMap,
-          [currentTeamId]: spaceChannelMap[currentTeamId]?.map(el => {
-            if (el.space_id === payload.spaceId) {
-              el.isExpanded = payload.isExpand;
-              return {...el};
-            }
-            return el;
-          }),
-        },
-      };
-    }
     case actionTypes.UPDATE_LAST_CHANNEL: {
       const newLastChannel = channelMap?.[payload.communityId]?.find(
         el => el.channel_id === payload.channelId,

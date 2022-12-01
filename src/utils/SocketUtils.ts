@@ -291,6 +291,7 @@ class SocketUtil {
   }
   reloadData = async () => {
     const currentChannel = getCurrentChannel();
+    const currentDirectChannel = getCurrentChannel(true);
     const currentTeam = getCurrentCommunity();
     if (!!currentTeam && !!currentChannel) {
       await actionSetCurrentTeam(
@@ -312,6 +313,13 @@ class SocketUtil {
         currentChannel.channel_type,
         store.dispatch,
       );
+      if (currentDirectChannel) {
+        getMessages(
+          currentDirectChannel.channel_id,
+          currentDirectChannel.channel_type,
+          store.dispatch,
+        );
+      }
       // load task
       if (currentChannel?.user) {
         getTaskFromUser(

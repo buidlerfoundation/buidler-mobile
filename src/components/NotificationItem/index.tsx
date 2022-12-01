@@ -54,6 +54,10 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
         return 'Mentioned you';
     }
   }, [item.notification_type]);
+  const colorByState = useMemo(
+    () => (item.is_read ? colors.subtext : colors.text),
+    [colors.subtext, colors.text, item.is_read],
+  );
   const DestinationNotification = useCallback(() => {
     switch (item.notification_type) {
       case 'post_reply':
@@ -159,10 +163,6 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   const handleLongPress = useCallback(() => {
     onLongPress(item);
   }, [item, onLongPress]);
-  const colorByState = useMemo(
-    () => (item.is_read ? colors.subtext : colors.text),
-    [colors.subtext, colors.text, item.is_read],
-  );
   const IconNotification = useCallback(() => {
     switch (item.notification_type) {
       case 'post_reply':

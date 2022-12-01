@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   title: {
-    marginHorizontal: 5,
+    marginHorizontal: 12,
     flex: 1,
   },
 });

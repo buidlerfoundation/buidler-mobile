@@ -16,4 +16,5 @@ export const AsyncKey = {
   refreshTokenExpire: `${PrefixKey}_refresh_token_expire_key`,
   emojiKey: `${PrefixKey}_emoji_key`,
   lastSyncChannelKey: `${PrefixKey}_last_sync_channel_key`,
+  spaceToggleKey: `${PrefixKey}_space_toggle_key`,
 };

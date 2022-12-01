@@ -68,6 +68,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import MenuConfirmPin from 'components/MenuConfirmPin';
 import useDirectChannelId from 'hook/useDirectChannelId';
 import Header from './Header';
+import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -113,6 +114,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
   const [isOpenMenuConfirmPin, setOpenMenuConfirmPin] = useState(false);
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
+  const [isOpenMenuDelete, setOpenMenuDelete] = useState(false);
   const [isOpenMenuMessage, setOpenMenuMessage] = useState(false);
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenGallery, setOpenGallery] = useState(false);
@@ -508,10 +510,9 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage]);
   const onMenuDelete = useCallback(() => {
-    onCloseMenuMessage();
-    onCloseMenuPinPost();
+    closeMenuDelete();
     onDeleteMessage();
-  }, [onCloseMenuMessage, onCloseMenuPinPost, onDeleteMessage]);
+  }, [closeMenuDelete, onDeleteMessage]);
   const onMenuCopyPinPost = useCallback(async () => {
     await Clipboard.setString(
       `${buidlerURL}/channels/${currentTeamId}/${currentChannelId}/post/${selectedMessage?.task?.task_id}`,
@@ -617,8 +618,18 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       setOpenMenuReport(true);
     }, AppConfig.timeoutCloseBottomSheet);
   }, [onCloseMenuMessage, onCloseMenuPinPost]);
+  const openMenuDelete = useCallback(() => {
+    onCloseMenuMessage();
+    onCloseMenuPinPost();
+    setTimeout(() => {
+      setOpenMenuDelete(true);
+    }, AppConfig.timeoutCloseBottomSheet);
+  }, [onCloseMenuMessage, onCloseMenuPinPost]);
   const closeMenuConfirmPin = useCallback(() => {
     setOpenMenuConfirmPin(false);
+  }, []);
+  const closeMenuDelete = useCallback(() => {
+    setOpenMenuDelete(false);
   }, []);
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
@@ -756,7 +767,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             onReply={onReplyMessage}
             onEdit={onEditMessage}
             onCopyMessage={onMenuCopyMessage}
-            onDelete={onMenuDelete}
+            onDelete={openMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={selectedMessage?.sender_id === userData.user_id}
             canReport={selectedMessage?.sender_id !== userData.user_id}
@@ -774,7 +785,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             onReply={onReplyPinPost}
             onCopyMessage={onMenuCopyMessage}
             onCopyPostLink={onMenuCopyPinPost}
-            onDelete={onMenuDelete}
+            onDelete={openMenuDelete}
             canDelete={selectedMessage?.sender_id === userData.user_id}
             onArchive={onArchive}
             onUnarchive={onUnarchive}
@@ -834,6 +845,16 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           <MenuReport
             onClose={closeMenuReport}
             selectedMessage={selectedMessage}
+          />
+        </ModalBottom>
+        <ModalBottom
+          isVisible={isOpenMenuDelete}
+          onSwipeComplete={closeMenuDelete}
+          onBackdropPress={closeMenuDelete}>
+          <MenuConfirmDeleteMessage
+            onClose={closeMenuDelete}
+            selectedMessage={selectedMessage}
+            handleDelete={onMenuDelete}
           />
         </ModalBottom>
         <ModalBottom

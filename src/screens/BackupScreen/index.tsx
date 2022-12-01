@@ -61,7 +61,9 @@ const ShuffleSeedItem = ({
         style={[
           styles.seedText,
           {color: disabled ? colors.activeBackground : colors.text},
-        ]}>
+        ]}
+        ellipsizeMode="tail"
+        numberOfLines={1}>
         {title}
       </Text>
     </Touchable>
@@ -110,7 +112,9 @@ const ConfirmSeedItem = ({
         style={[
           styles.seedText,
           {color: !disabled ? colors.text : colors.subtext},
-        ]}>
+        ]}
+        ellipsizeMode="tail"
+        numberOfLines={1}>
         {title ? `${index + 1}. ${title}` : index + 1}
       </Text>
     </Touchable>
@@ -252,7 +256,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   seedText: {
-    fontSize: AppDevice.isIphoneX ? 16 : 14,
+    fontSize: AppDevice.isIphoneX ? 15 : 13,
     lineHeight: 24,
     fontFamily: Fonts.SemiBold,
   },

@@ -6,13 +6,14 @@ import SpaceIcon from 'components/SpaceIcon';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
-import {actionTypes} from 'actions/actionTypes';
 import ChannelItem from './ChannelItem';
 import useCurrentChannel from 'hook/useCurrentChannel';
 import useChannel from 'hook/useChannel';
 import AppStyles from 'common/AppStyles';
 import {useNavigation} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
+import {updateSpaceToggle} from 'actions/SideBarActions';
+import useSpaceCollapsed from 'hook/useSpaceCollapsed';
 
 type SpaceItemProps = {
   item: Space;
@@ -22,19 +23,13 @@ type SpaceItemProps = {
 
 const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
   const navigation = useNavigation();
-  const isCollapsed = useMemo(() => !item.isExpanded, [item.isExpanded]);
+  const isCollapsed = useSpaceCollapsed(item.space_id);
   const currentChannel = useCurrentChannel();
   const channel = useChannel();
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const toggleSpace = useCallback(() => {
-    dispatch({
-      type: actionTypes.UPDATE_EXPAND_SPACE_ITEM,
-      payload: {
-        spaceId: item.space_id,
-        isExpand: isCollapsed,
-      },
-    });
+    dispatch(updateSpaceToggle(item.space_id, isCollapsed));
   }, [dispatch, isCollapsed, item.space_id]);
   const onBadgePress = useCallback(() => {
     navigation.navigate(ScreenID.SpaceDetailScreen, {space: item});
@@ -63,7 +58,10 @@ const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
       ]}>
       <Touchable style={styles.groupHead} onPress={toggleSpace}>
         <View
-          style={[styles.logoSpaceWrapper, {backgroundColor: colors.border}]}>
+          style={[
+            styles.logoSpaceWrapper,
+            !item.space_image_url && {backgroundColor: colors.border},
+          ]}>
           <SpaceIcon space={item} />
         </View>
         <Text

@@ -36,6 +36,7 @@ import {addReact, removeReact} from 'actions/ReactActions';
 import MenuReport from 'components/MenuReport';
 import ModalBottom from 'components/ModalBottom';
 import AppConfig from 'common/AppConfig';
+import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 
@@ -49,6 +50,7 @@ const PinPostScreen = () => {
   const loadMoreTask = useAppSelector(state => taskMoreSelector(state));
   const {canMoreTask} = usePinPostData();
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
+  const [isOpenMenuDelete, setOpenMenuDelete] = useState(false);
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const userData = useAppSelector(state => state.user.userData);
@@ -101,9 +103,9 @@ const PinPostScreen = () => {
     await dispatch(deleteTask(selectedPinPost?.task_id, currentChannelId));
   }, [currentChannelId, dispatch, selectedPinPost?.task_id]);
   const onMenuDelete = useCallback(() => {
-    onCloseMenuPinPost();
+    closeMenuDelete();
     onDeletePost();
-  }, [onCloseMenuPinPost, onDeletePost]);
+  }, [closeMenuDelete, onDeletePost]);
   const onMenuCopyPinPost = useCallback(async () => {
     await Clipboard.setString(
       `${buidlerURL}/channels/${communityId}/${currentChannelId}/post/${selectedPinPost?.task_id}`,
@@ -197,6 +199,15 @@ const PinPostScreen = () => {
   const closeMenuReport = useCallback(() => {
     setOpenMenuReport(false);
   }, []);
+  const openMenuDelete = useCallback(() => {
+    onCloseMenuPinPost();
+    setTimeout(() => {
+      setOpenMenuDelete(true);
+    }, AppConfig.timeoutCloseBottomSheet);
+  }, [onCloseMenuPinPost]);
+  const closeMenuDelete = useCallback(() => {
+    setOpenMenuDelete(false);
+  }, []);
   const openModalEmoji = useCallback(() => {
     onCloseMenuPinPost();
     setTimeout(() => {
@@ -260,7 +271,7 @@ const PinPostScreen = () => {
           onJumpToMessage={onJumpToMessage}
           onCopyMessage={onMenuCopyMessage}
           onCopyPostLink={onMenuCopyPinPost}
-          onDelete={onMenuDelete}
+          onDelete={openMenuDelete}
           canDelete={selectedPinPost?.message_sender_id === userData.user_id}
           onArchive={onArchive}
           onUnarchive={onUnarchive}
@@ -303,6 +314,16 @@ const PinPostScreen = () => {
         <MenuReport
           onClose={closeMenuReport}
           selectedPinPost={selectedPinPost}
+        />
+      </ModalBottom>
+      <ModalBottom
+        isVisible={isOpenMenuDelete}
+        onSwipeComplete={closeMenuDelete}
+        onBackdropPress={closeMenuDelete}>
+        <MenuConfirmDeleteMessage
+          onClose={closeMenuDelete}
+          selectedPinPost={selectedPinPost}
+          handleDelete={onMenuDelete}
         />
       </ModalBottom>
     </View>

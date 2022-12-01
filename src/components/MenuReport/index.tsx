@@ -79,8 +79,7 @@ const MenuReport = ({
     return null;
   }, [colors.border, selectedMessage, selectedPinPost]);
   return (
-    <View
-      style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
+    <View style={[styles.container, {backgroundColor: colors.background}]}>
       <Text
         style={[
           AppStyles.TextBold17,
@@ -107,7 +106,7 @@ const MenuReport = ({
       <Touchable
         style={[
           styles.bottomButton,
-          {backgroundColor: colors.background, marginTop: 25},
+          {backgroundColor: colors.border, marginTop: 25},
         ]}
         useReactNative
         onPress={handleSubmit}
@@ -119,7 +118,7 @@ const MenuReport = ({
       <Touchable
         style={[
           styles.bottomButton,
-          {backgroundColor: colors.background, marginTop: 10},
+          {backgroundColor: colors.border, marginTop: 10},
         ]}
         useReactNative
         onPress={onClose}>
