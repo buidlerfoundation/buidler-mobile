@@ -272,7 +272,11 @@ const PinPostScreen = () => {
           onCopyMessage={onMenuCopyMessage}
           onCopyPostLink={onMenuCopyPinPost}
           onDelete={openMenuDelete}
-          canDelete={selectedPinPost?.message_sender_id === userData.user_id}
+          canDelete={
+            selectedPinPost?.message_sender_id === userData.user_id ||
+            userRole === 'Admin' ||
+            userRole === 'Owner'
+          }
           onArchive={onArchive}
           onUnarchive={onUnarchive}
           onUploadToIPFS={onUploadToIPFS}

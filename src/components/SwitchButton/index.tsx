@@ -45,9 +45,9 @@ const SwitchButton = ({toggleOn, onChange}: SwitchButtonProps) => {
     () =>
       animatedValue.current.interpolate({
         inputRange: [0, 1],
-        outputRange: [colors.activeBackground, colors.mention],
+        outputRange: [colors.activeBackground, colors.blue],
       }),
-    [colors.activeBackground, colors.mention],
+    [colors.activeBackground, colors.blue],
   );
   const thumbColor = useMemo(
     () =>

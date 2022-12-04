@@ -136,7 +136,7 @@ const UnlockScreen = () => {
           />
         </View>
         <Touchable
-          style={[styles.buttonUnlock, {backgroundColor: colors.primary}]}
+          style={[styles.buttonUnlock, {backgroundColor: colors.blue}]}
           disabled={loading}
           onPress={checkPassword}>
           {loading ? (

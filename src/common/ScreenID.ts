@@ -27,6 +27,7 @@ export const StackID = {
   AuthStack: 'AuthStack',
   ConversationStack: 'ConversationStack',
   DirectMessageStack: 'DirectMessageStack',
+  UserStack: 'UserStack',
 };
 
 export const DrawerID = {

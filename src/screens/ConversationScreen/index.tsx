@@ -23,6 +23,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   FlatList,
+  Keyboard,
 } from 'react-native';
 import {createLoadMoreSelector} from 'reducers/selectors';
 import BottomSheetHandle from 'components/BottomSheetHandle';
@@ -131,6 +132,9 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     }
   }, [navigation, route.params?.fromNotification]);
   useEffect(() => {
+    if (drawerStatus === 'open') {
+      Keyboard.dismiss();
+    }
     navigation.setParams({drawerStatus});
   }, [drawerStatus, navigation]);
   useEffect(() => {
@@ -189,6 +193,16 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       handleGetLatestMessage();
     }
   }, [handleGetLatestMessage, route.params?.fromNotification]);
+  useEffect(() => {
+    if (currentChannelId) {
+      dispatch(
+        setScrollData(currentChannelId, {
+          showScrollDown: false,
+        }),
+      );
+      setLoadMoreAfterMessage(false);
+    }
+  }, [currentChannelId, dispatch]);
   const scrollDown = useCallback(() => {
     try {
       if (currentChannelId) {
@@ -769,7 +783,11 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             onCopyMessage={onMenuCopyMessage}
             onDelete={openMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
-            canDelete={selectedMessage?.sender_id === userData.user_id}
+            canDelete={
+              selectedMessage?.sender_id === userData.user_id ||
+              userRole === 'Admin' ||
+              userRole === 'Owner'
+            }
             canReport={selectedMessage?.sender_id !== userData.user_id}
             canPin={(userRole === 'Admin' || userRole === 'Owner') && !direct}
             openModalEmoji={openModalEmoji}
@@ -786,7 +804,11 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             onCopyMessage={onMenuCopyMessage}
             onCopyPostLink={onMenuCopyPinPost}
             onDelete={openMenuDelete}
-            canDelete={selectedMessage?.sender_id === userData.user_id}
+            canDelete={
+              selectedMessage?.sender_id === userData.user_id ||
+              userRole === 'Admin' ||
+              userRole === 'Owner'
+            }
             onArchive={onArchive}
             onUnarchive={onUnarchive}
             onUploadToIPFS={onUploadToIPFS}

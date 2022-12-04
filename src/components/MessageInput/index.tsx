@@ -180,13 +180,15 @@ const MessageInput = ({
     }
   }, [cursorPos, isOpenPopupMention, val]);
   const dataMention = useMemo(() => {
-    return teamUserData.filter(
-      el =>
-        !el.is_deleted &&
-        el?.user_name
-          ?.toLowerCase?.()
-          ?.includes?.(mentionStr?.toLowerCase?.() || ''),
-    );
+    return teamUserData
+      .filter(el => !!el)
+      .filter(
+        el =>
+          !el.is_deleted &&
+          el?.user_name
+            ?.toLowerCase?.()
+            ?.includes?.(mentionStr?.toLowerCase?.() || ''),
+      );
   }, [mentionStr, teamUserData]);
   const normalizeMessageEdit = useCallback((content: string) => {
     let res = content;
@@ -561,7 +563,7 @@ const MessageInput = ({
               placeholder={
                 placeholder ||
                 `message to ${
-                  direct
+                  direct && directChannelUser
                     ? `@ ${normalizeUserName(directChannelUser.user_name)}`
                     : `# ${currentChannel?.channel_name}`
                 }`

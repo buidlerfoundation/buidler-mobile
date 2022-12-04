@@ -169,6 +169,15 @@ const NotificationTabItem = ({type}: NotificationTabItemProps) => {
             </View>
           ) : undefined
         }
+        ListEmptyComponent={
+          <Text
+            style={[
+              AppStyles.TextMed15,
+              {color: colors.subtext, marginHorizontal: 20},
+            ]}>
+            You have no notification yet
+          </Text>
+        }
       />
       <ModalBottom
         isVisible={isOpenMenu}

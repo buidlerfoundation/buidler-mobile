@@ -12,6 +12,7 @@ const WalletTokens = () => {
       keyExtractor={item => item.contract.contract_address}
       renderItem={({item}) => <TokenItem item={item} />}
       ItemSeparatorComponent={renderSeparate}
+      ListHeaderComponent={<View style={{height: 14}} />}
     />
   );
 };

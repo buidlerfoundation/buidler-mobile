@@ -63,7 +63,7 @@ const ImportSeedPhraseScreen = () => {
           </View>
         </View>
         <Touchable
-          style={[styles.buttonNext, {backgroundColor: colors.primary}]}
+          style={[styles.buttonNext, {backgroundColor: colors.blue}]}
           onPress={onNextPress}>
           <Text style={[styles.textNext, {color: colors.text}]}>Next</Text>
         </Touchable>

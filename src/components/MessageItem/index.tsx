@@ -313,6 +313,14 @@ const MessageItem = ({
                     item.isSending ? 'message-text-sending' : undefined,
                   )}
                   embeds={embeds}
+                  defaultTextProps={
+                    !embeds
+                      ? undefined
+                      : {
+                          ellipsizeMode: 'tail',
+                          numberOfLines: 5,
+                        }
+                  }
                 />
               )) || <View style={{height: 8}} />}
               <MessagePhoto

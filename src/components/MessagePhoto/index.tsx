@@ -72,7 +72,7 @@ const AttachmentItem = ({
           </Text>
           <SVG.IconDownload fill={colors.subtext} />
         </Touchable>
-        {stackAttachment > 0 && (
+        {stackAttachment > 1 && (
           <View style={styles.stackView}>
             <Text style={[styles.stackCount, {color: colors.text}]}>
               +{stackAttachment}
@@ -169,7 +169,7 @@ const MessagePhoto = ({
     [teamId],
   );
   const morePhoto = useMemo(() => {
-    if (stack) return attachments?.length - 2;
+    if (stack) return attachments?.length - 1;
     return 0;
   }, [attachments?.length, stack]);
   const attachmentData = useMemo(() => {

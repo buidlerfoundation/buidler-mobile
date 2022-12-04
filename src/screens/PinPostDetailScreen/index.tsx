@@ -43,6 +43,7 @@ import useChannelId from 'hook/useChannelId';
 import useCommunityId from 'hook/useCommunityId';
 import {actionTypes} from 'actions/actionTypes';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
+import useUserRole from 'hook/useUserRole';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -65,6 +66,7 @@ const PinPostDetailScreen = () => {
   const {colors} = useThemeColor();
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userData = useAppSelector(state => state.user.userData);
+  const userRole = useUserRole();
   const communityId = useCommunityId();
   const currentChannelId = useChannelId();
   const navigation = useNavigation();
@@ -478,7 +480,7 @@ const PinPostDetailScreen = () => {
               This post has been archived!
             </Text>
             <Touchable
-              style={[styles.btnUnarchive, {backgroundColor: colors.primary}]}
+              style={[styles.btnUnarchive, {backgroundColor: colors.blue}]}
               useReactNative
               onPress={handleUnarchive}>
               <Text style={[AppStyles.TextMed15, {color: colors.text}]}>
@@ -497,7 +499,11 @@ const PinPostDetailScreen = () => {
             onCopyMessage={onMenuCopyMessage}
             onDelete={openMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
-            canDelete={selectedMessage?.sender_id === userData.user_id}
+            canDelete={
+              selectedMessage?.sender_id === userData.user_id ||
+              userRole === 'Admin' ||
+              userRole === 'Owner'
+            }
             canPin={false}
             openModalEmoji={openModalEmoji}
             onEmojiSelected={onEmojiSelected}

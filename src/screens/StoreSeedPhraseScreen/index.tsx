@@ -117,7 +117,7 @@ const StoreSeedPhraseScreen = () => {
           )}
         </Touchable>
         <Touchable
-          style={[styles.buttonNext, {backgroundColor: colors.primary}]}
+          style={[styles.buttonNext, {backgroundColor: colors.blue}]}
           onPress={onNextPress}>
           <Text style={[styles.textButton, {color: colors.text}]}>Next</Text>
         </Touchable>

@@ -177,7 +177,12 @@ const UserScreen = () => {
     return '';
   }, [userProfile?.is_verified_avatar, userProfile?.is_verified_username]);
   const Body = useCallback(() => {
-    if (loading) return <Spinner />;
+    if (loading)
+      return (
+        <View style={{flex: 1}}>
+          <Spinner />
+        </View>
+      );
     if (userProfile) {
       return (
         <View style={{flex: 1}}>

@@ -1,6 +1,8 @@
+import {useNavigation} from '@react-navigation/native';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import Fonts from 'common/Fonts';
+import ScreenID from 'common/ScreenID';
 import AvatarView from 'components/AvatarView';
 import Touchable from 'components/Touchable';
 import {utils} from 'ethers';
@@ -15,6 +17,7 @@ import {View, StyleSheet, Text} from 'react-native';
 import Toast from 'react-native-toast-message';
 
 const WalletHeader = () => {
+  const navigation = useNavigation();
   const userData = useUserData();
   const walletBalance = useWalletBalance();
   const {colors} = useThemeColor();
@@ -22,6 +25,9 @@ const WalletHeader = () => {
     if (!userData?.user_id) return '';
     return utils.computeAddress(userData.user_id);
   }, [userData.user_id]);
+  const onUserPress = useCallback(() => {
+    navigation.navigate(ScreenID.ProfileScreen);
+  }, [navigation]);
   const onSendPress = useCallback(() => {
     Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
   }, []);
@@ -33,17 +39,27 @@ const WalletHeader = () => {
   }, []);
   return (
     <View style={styles.container}>
-      <View style={styles.userWrap}>
-        <AvatarView user={userData} withStatus={false} size={20} />
-        <Text
-          style={[styles.userName, AppStyles.TextBold17, {color: colors.text}]}>
-          {userData.user_name}
-        </Text>
+      <View style={styles.header}>
+        <Touchable onPress={onUserPress}>
+          <AvatarView user={userData} size={30} />
+        </Touchable>
+        <View style={styles.title}>
+          <View style={styles.userWrap}>
+            <Text style={[AppStyles.TextBold17, {color: colors.text}]}>
+              {userData.user_name}
+            </Text>
+          </View>
+          <Text
+            style={[
+              styles.address,
+              AppStyles.TextMed15,
+              {color: colors.subtext},
+            ]}>
+            {normalizeUserName(address, 5)}
+          </Text>
+        </View>
+        <View style={{width: 30}} />
       </View>
-      <Text
-        style={[styles.address, AppStyles.TextMed15, {color: colors.subtext}]}>
-        {normalizeUserName(address, 5)}
-      </Text>
       <Text style={[styles.balance, {color: colors.text}]}>
         ${formatNumber(totalBalanceUSD(walletBalance)) || '0.00'}
       </Text>
@@ -79,13 +95,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: AppDimension.extraTop,
   },
+  header: {
+    flexDirection: 'row',
+    paddingTop: 10,
+  },
+  title: {
+    flex: 1,
+    alignItems: 'center',
+  },
   userWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 9,
-  },
-  userName: {
-    marginLeft: 8,
   },
   address: {
     marginTop: 2,

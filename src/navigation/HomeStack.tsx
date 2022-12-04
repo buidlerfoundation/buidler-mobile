@@ -4,8 +4,6 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import ScreenID, {StackID} from 'common/ScreenID';
 import NavigationServices, {getCurrentRoute} from 'services/NavigationServices';
 import ModalOtp from 'components/ModalOtp';
-import WalletScreen from 'screens/WalletScreen';
-import ProfileScreen from 'screens/ProfileScreen';
 import useThemeColor from 'hook/useThemeColor';
 import SVG from 'common/SVG';
 import useAppSelector from 'hook/useAppSelector';
@@ -15,13 +13,13 @@ import ConversationStack from './ConversationStack';
 import SideBarCommunity from 'components/SideBarCommunity';
 import useAppDispatch from 'hook/useAppDispatch';
 import {acceptInvitation} from 'actions/UserActions';
-import WalletHeader from 'screens/WalletScreen/WalletHeader';
 import NotificationScreen from 'screens/NotificationScreen';
 import NotificationHeader from 'screens/NotificationScreen/NotificationHeader';
 import DirectMessageStack from './DirectMessageStack';
 import DirectEmpty from 'screens/DirectEmpty';
 import UnseenBadge from 'components/UnseenBadge';
 import useUnseenDirect from 'hook/useUnseenDirect';
+import UserStack from './UserStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -91,12 +89,6 @@ const HomeStack = () => {
       );
     },
     [isUnseenDirect],
-  );
-  const tabBarIconWallet = useCallback(
-    ({color}: {focused: boolean; color: string}) => {
-      return <SVG.IconTabWallet fill={color} />;
-    },
-    [],
   );
   const tabBarIconNotification = useCallback(
     ({color}: {focused: boolean; color: string}) => {
@@ -217,14 +209,6 @@ const HomeStack = () => {
         />
         <Tab.Screen
           options={{
-            tabBarIcon: tabBarIconWallet,
-            header: () => <WalletHeader />,
-          }}
-          name={ScreenID.WalletScreen}
-          component={WalletScreen}
-        />
-        <Tab.Screen
-          options={{
             tabBarIcon: tabBarIconNotification,
             header: () => <NotificationHeader />,
           }}
@@ -232,9 +216,11 @@ const HomeStack = () => {
           component={NotificationScreen}
         />
         <Tab.Screen
-          options={{tabBarIcon: tabBarIconProfile}}
-          name={ScreenID.ProfileScreen}
-          component={ProfileScreen}
+          options={{
+            tabBarIcon: tabBarIconProfile,
+          }}
+          name={StackID.UserStack}
+          component={UserStack}
         />
       </Tab.Navigator>
       {openOTP && !!requestOtpCode && (

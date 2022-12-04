@@ -227,7 +227,7 @@ const BackupScreen = () => {
         </View>
       </View>
       <Touchable
-        style={[styles.buttonNext, {backgroundColor: colors.primary}]}
+        style={[styles.buttonNext, {backgroundColor: colors.blue}]}
         onPress={onNextPress}
         disabled={accessingApp}>
         {accessingApp ? (

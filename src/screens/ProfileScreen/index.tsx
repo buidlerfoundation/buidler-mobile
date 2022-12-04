@@ -18,6 +18,7 @@ import MenuConfirmDeleteAccount from 'components/MenuConfirmDeleteAccount';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import AppStyles from 'common/AppStyles';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -63,8 +64,22 @@ const ProfileScreen = () => {
   const onBackupPress = useCallback(() => {
     navigation.navigate(ScreenID.UnlockScreen, {backupData});
   }, [backupData, navigation]);
+  const onBack = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Touchable onPress={onBack}>
+          <SVG.IconArrowBack fill={colors.text} />
+        </Touchable>
+        <Text
+          style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}
+          numberOfLines={1}
+          ellipsizeMode="tail">
+          {userData.user_name}
+        </Text>
+      </View>
       <UserInfo userData={userData} />
       <View style={styles.userActionWrap}>
         {backupData && (
@@ -135,6 +150,17 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1, paddingTop: AppDimension.extraTop},
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    height: AppDimension.headerHeight,
+  },
+  title: {
+    marginLeft: 20,
+    flex: 1,
+  },
   avatarWrap: {
     padding: 10,
   },
