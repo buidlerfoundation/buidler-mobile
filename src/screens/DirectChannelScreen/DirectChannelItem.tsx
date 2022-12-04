@@ -56,7 +56,7 @@ const DirectChannelItem = ({channel}: DirectChannelItemProps) => {
         ]}
         numberOfLines={1}
         ellipsizeMode="tail">
-        {otherUser.user_name}
+        {otherUser?.user_name}
       </Text>
       {isUnseen && (
         <View style={[styles.unseenBadge, {backgroundColor: colors.mention}]} />
