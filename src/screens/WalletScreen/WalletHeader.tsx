@@ -3,6 +3,7 @@ import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import Fonts from 'common/Fonts';
 import ScreenID from 'common/ScreenID';
+import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
 import Touchable from 'components/Touchable';
 import {utils} from 'ethers';
@@ -14,6 +15,7 @@ import useUserData from 'hook/useUserData';
 import useWalletBalance from 'hook/useWalletBalance';
 import React, {memo, useCallback, useMemo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 
 const WalletHeader = () => {
@@ -37,26 +39,43 @@ const WalletHeader = () => {
   const onSwapPress = useCallback(() => {
     Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
   }, []);
+  const onCopyAddress = useCallback(async () => {
+    await Clipboard.setString(address);
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [address]);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Touchable onPress={onUserPress}>
+        <Touchable useReactNative onPress={onUserPress}>
           <AvatarView user={userData} size={30} />
         </Touchable>
         <View style={styles.title}>
-          <View style={styles.userWrap}>
-            <Text style={[AppStyles.TextBold17, {color: colors.text}]}>
-              {userData.user_name}
-            </Text>
-          </View>
-          <Text
-            style={[
-              styles.address,
-              AppStyles.TextMed15,
-              {color: colors.subtext},
-            ]}>
-            {normalizeUserName(address, 5)}
-          </Text>
+          <Touchable
+            useReactNative
+            style={{alignItems: 'center'}}
+            onPress={onCopyAddress}>
+            <View style={styles.userWrap}>
+              <Text style={[AppStyles.TextBold17, {color: colors.text}]}>
+                {userData.user_name}
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: 2,
+              }}>
+              <Text
+                style={[
+                  styles.address,
+                  AppStyles.TextMed15,
+                  {color: colors.subtext},
+                ]}>
+                {normalizeUserName(address, 5)}
+              </Text>
+              <SVG.IconCopy fill={colors.subtext} width={15} height={15} />
+            </View>
+          </Touchable>
         </View>
         <View style={{width: 30}} />
       </View>
@@ -97,7 +116,8 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    paddingTop: 10,
+    paddingTop: 12,
+    paddingHorizontal: 10,
   },
   title: {
     flex: 1,
@@ -108,7 +128,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   address: {
-    marginTop: 2,
+    marginRight: 5,
   },
   balance: {
     marginTop: 26,

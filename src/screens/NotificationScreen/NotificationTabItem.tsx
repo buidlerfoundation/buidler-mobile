@@ -22,7 +22,10 @@ import {
   Text,
   View,
 } from 'react-native';
-import {createLoadMoreSelector} from 'reducers/selectors';
+import {
+  createLoadingSelector,
+  createLoadMoreSelector,
+} from 'reducers/selectors';
 import api from 'services/api';
 
 type NotificationTabItemProps = {
@@ -30,6 +33,10 @@ type NotificationTabItemProps = {
 };
 
 const loadMoreSelector = createLoadMoreSelector([
+  actionTypes.NOTIFICATION_PREFIX,
+]);
+
+const loadingSelector = createLoadingSelector([
   actionTypes.NOTIFICATION_PREFIX,
 ]);
 
@@ -41,6 +48,7 @@ const NotificationTabItem = ({type}: NotificationTabItemProps) => {
   const [selectedNotification, setSelectedNotification] =
     useState<NotificationData | null>(null);
   const loadMore = useAppSelector(state => loadMoreSelector(state));
+  const loading = useAppSelector(state => loadingSelector(state));
   const fetchNotification = useCallback(
     async (before?: string) => {
       dispatch(getNotifications(type, before));
@@ -170,13 +178,17 @@ const NotificationTabItem = ({type}: NotificationTabItemProps) => {
           ) : undefined
         }
         ListEmptyComponent={
-          <Text
-            style={[
-              AppStyles.TextMed15,
-              {color: colors.subtext, marginHorizontal: 20},
-            ]}>
-            You have no notification yet
-          </Text>
+          loading ? (
+            <ActivityIndicator />
+          ) : (
+            <Text
+              style={[
+                AppStyles.TextMed15,
+                {color: colors.subtext, marginHorizontal: 20},
+              ]}>
+              You have no notification yet
+            </Text>
+          )
         }
       />
       <ModalBottom
