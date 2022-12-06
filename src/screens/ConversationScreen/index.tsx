@@ -357,7 +357,12 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           }),
         );
       }
-      if (y <= 0 && messageData?.canMoreAfter && !loadMoreAfterMessage) {
+      if (
+        y <= 0 &&
+        messageData?.canMoreAfter &&
+        !loadMoreAfterMessage &&
+        !updateFromSocket
+      ) {
         setLoadMoreAfterMessage(true);
       }
     },
@@ -367,6 +372,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       loadMoreAfterMessage,
       messageData?.canMoreAfter,
       scrollData?.showScrollDown,
+      updateFromSocket,
     ],
   );
   const onScrollToIndexFailed = useCallback(

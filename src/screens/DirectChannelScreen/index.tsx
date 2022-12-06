@@ -5,7 +5,13 @@ import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
 import {Channel} from 'models';
 import React, {memo, useCallback} from 'react';
-import {FlatList, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import DirectChannelItem from './DirectChannelItem';
 
 const DirectChannelScreen = () => {
@@ -15,6 +21,7 @@ const DirectChannelScreen = () => {
     ({item}: {item: Channel}) => <DirectChannelItem channel={item} />,
     [],
   );
+  const updateFromSocket = useAppSelector(state => state.user.updateFromSocket);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -29,6 +36,9 @@ const DirectChannelScreen = () => {
         data={directChannels.sort(sortChannel)}
         keyExtractor={item => item.channel_id}
         renderItem={renderItem}
+        ListHeaderComponent={
+          updateFromSocket ? <ActivityIndicator /> : undefined
+        }
       />
     </View>
   );

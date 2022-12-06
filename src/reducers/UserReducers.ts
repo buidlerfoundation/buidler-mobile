@@ -41,6 +41,7 @@ interface UserReducerState {
   };
   apiTeamController?: AbortController | null;
   apiSpaceMemberController?: AbortController | null;
+  updateFromSocket?: boolean;
 }
 
 const defaultChannel: Channel = {
@@ -93,6 +94,7 @@ const initialState: UserReducerState = {
     },
   },
   apiTeamController: null,
+  updateFromSocket: false,
 };
 
 const userReducers: Reducer<UserReducerState, AnyAction> = (
@@ -121,6 +123,12 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     defaultChannel;
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.UPDATE_TEAM_FROM_SOCKET: {
+      return {
+        ...state,
+        updateFromSocket: payload,
+      };
+    }
     case actionTypes.SYNC_DIRECT_CHANNEL_DATA: {
       const {resDirectChannel, directChannelUsersRes} = payload;
       return {
