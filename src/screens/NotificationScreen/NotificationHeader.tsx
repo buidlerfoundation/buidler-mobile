@@ -21,7 +21,7 @@ const NotificationHeader = () => {
   const onOpenSetting = useCallback(() => {}, []);
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}>
+      <Text style={[styles.title, AppStyles.TextBold20, {color: colors.text}]}>
         Notification
       </Text>
       <Touchable onPress={onMarkRead}>

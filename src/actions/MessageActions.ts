@@ -35,6 +35,8 @@ export const getAroundMessage =
             data: messageData,
             channelId,
             messageId,
+            canMoreAfter: messageRes.metadata?.can_loadmore_message_after,
+            canMoreBefore: messageRes.metadata?.can_loadmore_message_before,
           },
         });
       } else {
@@ -146,6 +148,8 @@ export const getPinPostMessages: ActionCreator<any> =
             reloadSocket: !before && !after,
             messageId,
             after,
+            canMoreAfter: messageRes.metadata?.can_loadmore_message_after,
+            canMoreBefore: messageRes.metadata?.can_loadmore_message_before,
           },
         });
       } else {

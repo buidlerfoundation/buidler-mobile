@@ -16,7 +16,14 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {StyleSheet, View, Text, FlatList, TextInput} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  ActivityIndicator,
+} from 'react-native';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import SocketUtils from 'utils/SocketUtils';
@@ -44,11 +51,13 @@ import useCommunityId from 'hook/useCommunityId';
 import {actionTypes} from 'actions/actionTypes';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 import useUserRole from 'hook/useUserRole';
+import useLoadMoreBeforePinPostMessage from 'hook/useLoadMoreBeforePinPostMessage';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
   const listRef = useRef<FlatList>();
   const inputRef = useRef<TextInput>();
+  const loadMoreBefore = useLoadMoreBeforePinPostMessage();
   const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuDelete, setOpenMenuDelete] = useState(false);
@@ -432,15 +441,22 @@ const PinPostDetailScreen = () => {
               {messages &&
                 (messages?.length || 0) <
                   parseInt(pinPost.data?.total_messages || '0') && (
-                  <Touchable onPress={onMorePPMessage}>
-                    <Text
-                      style={[
-                        styles.textMore,
-                        AppStyles.TextSemi15,
-                        {color: colors.mention},
-                      ]}>
-                      View previous replies
-                    </Text>
+                  <Touchable
+                    onPress={onMorePPMessage}
+                    disabled={loadMoreBefore}
+                    useReactNative
+                    style={styles.textMore}>
+                    {loadMoreBefore ? (
+                      <ActivityIndicator
+                        color={colors.mention}
+                        style={{height: 22}}
+                      />
+                    ) : (
+                      <Text
+                        style={[AppStyles.TextSemi15, {color: colors.mention}]}>
+                        View previous replies
+                      </Text>
+                    )}
                   </Touchable>
                 )}
             </View>
@@ -582,6 +598,7 @@ const styles = StyleSheet.create({
   },
   textMore: {
     marginHorizontal: 20,
+    alignItems: 'flex-start',
   },
   messageInputContainer: {
     marginTop: 20,
