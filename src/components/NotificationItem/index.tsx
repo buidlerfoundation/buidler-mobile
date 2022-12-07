@@ -58,6 +58,20 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
     () => (item.is_read ? colors.subtext : colors.text),
     [colors.subtext, colors.text, item.is_read],
   );
+  const parsedText = useMemo(() => {
+    return item?.content.split(/(\s)/g).map((el, index) => {
+      if (/(<@)(.*?)(-)(.*?)(>)/.test(el)) {
+        return (
+          <Text
+            style={[{color: item.is_read ? colors.subtext : colors.mention}]}
+            key={`${el}-${index}`}>
+            {el.replace(/(<@)(.*?)(-)(.*?)(>)/, '@$2')}
+          </Text>
+        );
+      }
+      return <Text key={`${el}-${index}`}>{el}</Text>;
+    });
+  }, [colors.mention, colors.subtext, item?.content, item.is_read]);
   const DestinationNotification = useCallback(() => {
     switch (item.notification_type) {
       case 'post_reply':
@@ -229,7 +243,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
               style={[AppStyles.TextMed15, {color: colorByState}]}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {item.content.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2')}
+              {parsedText}
             </Text>
             <Text style={[AppStyles.TextMed15, {color: colorByState}]}>"</Text>
           </View>
