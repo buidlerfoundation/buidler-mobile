@@ -30,6 +30,8 @@ import {addReact, removeReact} from 'actions/ReactActions';
 import {useNavigation} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useCommunityId from 'hook/useCommunityId';
+import usePublicUser from 'hook/usePublicUser';
+import {DeletedUser} from 'common/AppConfig';
 
 type ReplyMessageProps = {
   replyMessage?: MessageData;
@@ -137,7 +139,7 @@ const MessageAvatar = memo(
   }: MessageAvatarProps) => {
     const teamUserData = useTeamUserData(direct);
     const sender = useMemo(
-      () => teamUserData.find(el => el.user_id === sender_id),
+      () => teamUserData.find(el => el.user_id === sender_id) || DeletedUser,
       [sender_id, teamUserData],
     );
     if (showAvatar || embeds)
@@ -169,12 +171,8 @@ const MessageSender = memo(
     onUserPress,
     embeds,
   }: MessageSenderProps) => {
-    const teamUserData = useTeamUserData();
     const {colors} = useThemeColor();
-    const sender = useMemo(
-      () => teamUserData.find(el => el.user_id === sender_id),
-      [sender_id, teamUserData],
-    );
+    const sender = usePublicUser(sender_id);
     if ((!showAvatar && !embeds) || !sender) return null;
     return (
       <View style={styles.nameWrapper}>

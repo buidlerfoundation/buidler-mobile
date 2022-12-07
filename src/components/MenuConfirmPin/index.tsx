@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   bottomButton: {
-    marginTop: 10,
+    marginTop: 15,
     height: 60,
     borderRadius: 5,
     alignItems: 'center',

@@ -1,4 +1,4 @@
-import {UserRoleType} from 'models';
+import {UserData, UserRoleType} from 'models';
 
 const AppConfig = {
   baseUrl: 'https://api.buidler.app/',
@@ -175,3 +175,9 @@ export const UserRole: {
 };
 
 export default AppConfig;
+
+export const DeletedUser: UserData = {
+  user_id: '',
+  user_name: 'Deleted User',
+  avatar_url: '',
+};

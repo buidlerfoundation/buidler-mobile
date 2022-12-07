@@ -7,6 +7,7 @@ import AppStyles from 'common/AppStyles';
 import {StackID} from 'common/ScreenID';
 import SVG from 'common/SVG';
 import MenuConfirm from 'components/MenuConfirm';
+import MenuConfirmStartDM from 'components/MenuConfirmStartDM';
 import MenuUser from 'components/MenuUser';
 import ModalBottom from 'components/ModalBottom';
 import Spinner from 'components/Spinner';
@@ -59,62 +60,77 @@ const UserScreen = () => {
   const {colors} = useThemeColor();
   const [isOpenMenu, setOpenMenu] = useState(false);
   const [isOpenConfirmBlock, setOpenConfirmBlock] = useState(false);
+  const [isOpenConfirmDM, setOpenConfirmDM] = useState(false);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
   const onPressMenu = useCallback(() => {
     setOpenMenu(true);
   }, []);
-  const onDirectMessage = useCallback(async () => {
-    let directChannelId = directUser?.direct_channel_id;
-    if (!directChannelId) {
-      const channelMemberData = await createMemberChannelData([
-        userData,
-        userProfile,
-      ]);
-      const body = {
-        channel_type: 'Direct',
-        channel_member_data: channelMemberData.res,
-      };
-      const res = await api.createDirectChannel(
-        AppConfig.directCommunityId,
-        body,
+  const getDirectMessageIdFromApi = useCallback(async () => {
+    let directChannelId = '';
+    const channelMemberData = await createMemberChannelData([
+      userData,
+      userProfile,
+    ]);
+    const body = {
+      channel_type: 'Direct',
+      channel_member_data: channelMemberData.res,
+    };
+    const res = await api.createDirectChannel(
+      AppConfig.directCommunityId,
+      body,
+    );
+    if (res.statusCode === 200) {
+      directChannelId = res.data?.channel_id;
+      const myKey = channelMemberData.res.find(
+        el => el.user_id === userData.user_id,
       );
-      if (res.statusCode === 200) {
-        directChannelId = res.data?.channel_id;
-        const myKey = channelMemberData.res.find(
-          el => el.user_id === userData.user_id,
+      if (myKey) {
+        await SocketUtils.handleChannelPrivateKey(
+          directChannelId,
+          myKey.key,
+          myKey.timestamp,
         );
-        if (myKey) {
-          await SocketUtils.handleChannelPrivateKey(
-            directChannelId,
-            myKey.key,
-            myKey.timestamp,
-          );
-        }
-        dispatch({
-          type: actionTypes.NEW_DIRECT_USER,
-          payload: [{...userProfile, direct_channel_id: directChannelId}],
-        });
-        dispatch({
-          type: actionTypes.NEW_CHANNEL,
-          payload: res.data,
-        });
       }
+      dispatch({
+        type: actionTypes.NEW_DIRECT_USER,
+        payload: [{...userProfile, direct_channel_id: directChannelId}],
+      });
+      dispatch({
+        type: actionTypes.NEW_CHANNEL,
+        payload: res.data,
+      });
     }
-    if (directChannelId) {
-      dispatch(setCurrentDirectChannel({channel_id: directChannelId}));
-      navigation.navigate(StackID.DirectMessageStack);
+    return directChannelId;
+  }, [dispatch, userData, userProfile]);
+  const startDM = useCallback(
+    async (directChannelId?: string) => {
+      let dmChannelId = directChannelId;
+      if (!dmChannelId) {
+        dmChannelId = await getDirectMessageIdFromApi();
+      }
+      if (dmChannelId) {
+        dispatch(setCurrentDirectChannel({channel_id: dmChannelId}));
+        navigation.navigate(StackID.DirectMessageStack);
+      }
+      onCloseConfirmDM();
+    },
+    [dispatch, getDirectMessageIdFromApi, navigation, onCloseConfirmDM],
+  );
+  const handleStartDM = useCallback(() => {
+    startDM();
+  }, [startDM]);
+  const onDirectMessage = useCallback(async () => {
+    if (directUser?.direct_channel_id) {
+      startDM(directUser?.direct_channel_id);
+    } else {
+      setOpenConfirmDM(true);
     }
-  }, [
-    directUser?.direct_channel_id,
-    dispatch,
-    navigation,
-    userData,
-    userProfile,
-  ]);
+  }, [directUser?.direct_channel_id, startDM]);
   const onSendCrypto = useCallback(() => {
     Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
   }, []);
   const onCloseMenu = useCallback(() => setOpenMenu(false), []);
+  const onCloseConfirmDM = useCallback(() => setOpenConfirmDM(false), []);
   const onCloseConfirmBlock = useCallback(() => setOpenConfirmBlock(false), []);
   const fetchUserProfileById = useCallback(async () => {
     const userId = route.params?.userId;
@@ -279,6 +295,16 @@ const UserScreen = () => {
           onConfirm={onBlock}
           confirmLabel="Block"
           message="Are you sure you want to block this user?"
+        />
+      </ModalBottom>
+      <ModalBottom
+        isVisible={isOpenConfirmDM}
+        onSwipeComplete={onCloseConfirmDM}
+        onBackdropPress={onCloseConfirmDM}>
+        <MenuConfirmStartDM
+          user={userProfile}
+          onClose={onCloseConfirmDM}
+          startDM={handleStartDM}
         />
       </ModalBottom>
     </View>

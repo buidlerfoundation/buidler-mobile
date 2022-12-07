@@ -16,6 +16,7 @@ import {
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
+import usePublicUser from 'hook/usePublicUser';
 import useTeamUserData from 'hook/useTeamUserData';
 import useThemeColor from 'hook/useThemeColor';
 import useUserData from 'hook/useUserData';
@@ -122,10 +123,7 @@ const PinPostItem = ({
     [pinPost.status],
   );
   const userData = useUserData();
-  const creator = useMemo(
-    () => teamUserData.find(el => el.user_id === pinPost.message_sender_id),
-    [pinPost.message_sender_id, teamUserData],
-  );
+  const creator = usePublicUser(pinPost.message_sender_id);
   const isIPFS = useMemo(() => !!pinPost.cid, [pinPost.cid]);
   const isUploadingToIPFS = useMemo(
     () => !!pinPost.uploadingIPFS,
