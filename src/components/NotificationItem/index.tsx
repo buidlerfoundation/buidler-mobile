@@ -19,8 +19,14 @@ import useCommunityId from 'hook/useCommunityId';
 import useDirectChannelId from 'hook/useDirectChannelId';
 import useThemeColor from 'hook/useThemeColor';
 import {NotificationData} from 'models';
-import React, {memo, useCallback, useMemo} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import React, {memo, useCallback, useMemo, useState} from 'react';
+import {
+  View,
+  StyleSheet,
+  Text,
+  LayoutChangeEvent,
+  useWindowDimensions,
+} from 'react-native';
 import {notificationFromNow} from 'utils/DateUtils';
 import SocketUtils from 'utils/SocketUtils';
 
@@ -31,12 +37,14 @@ type NotificationItemProps = {
 
 const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   const dispatch = useAppDispatch();
+  const [isOverSize, setOverSize] = useState(false);
   const communityId = useCommunityId();
   const channelId = useChannelId();
   const directChannelId = useDirectChannelId();
   const navigation = useNavigation();
   const {colors} = useThemeColor();
   const communities = useAppSelector(state => state.user.team);
+  const screenWidth = useWindowDimensions().width;
   const community = useMemo(
     () => communities?.find(el => el.team_id === item.team_id),
     [communities, item.team_id],
@@ -72,17 +80,35 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
       return <Text key={`${el}-${index}`}>{el}</Text>;
     });
   }, [colors.mention, colors.subtext, item?.content, item.is_read]);
+  const onLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const {width} = event.nativeEvent.layout;
+      if (width > screenWidth - 78 && !isOverSize) {
+        setOverSize(true);
+      }
+    },
+    [isOverSize, screenWidth],
+  );
   const DestinationNotification = useCallback(() => {
     switch (item.notification_type) {
       case 'post_reply':
       case 'post_mention':
         return (
-          <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
+          <View
+            style={[
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                alignSelf: 'flex-start',
+              },
+              isOverSize && {flex: 1},
+            ]}>
             <SVG.IconNotificationPin fill={colorByState} />
             <Text
               style={[
                 AppStyles.TextMed15,
-                {color: colorByState, marginLeft: 5, flex: 1},
+                {color: colorByState, marginLeft: 5},
+                isOverSize && {flex: 1},
               ]}
               numberOfLines={1}
               ellipsizeMode="tail">
@@ -114,7 +140,13 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
           </View>
         );
     }
-  }, [colorByState, item.channel, item.notification_type, item.post?.content]);
+  }, [
+    colorByState,
+    isOverSize,
+    item.channel,
+    item.notification_type,
+    item.post?.content,
+  ]);
   const onItemPress = useCallback(async () => {
     if (!item.is_read) {
       if (item.post?.task_id) {
@@ -248,7 +280,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
             <Text style={[AppStyles.TextMed15, {color: colorByState}]}>"</Text>
           </View>
         </View>
-        <View style={styles.contentDestinationWrap}>
+        <View style={styles.contentDestinationWrap} onLayout={onLayout}>
           <DestinationNotification />
           {community && (
             <>
@@ -314,6 +346,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 5,
+    alignSelf: 'flex-start',
   },
 });
 

@@ -97,7 +97,7 @@ const UserScreen = () => {
       });
       dispatch({
         type: actionTypes.NEW_CHANNEL,
-        payload: res.data,
+        payload: {...res.data, seen: true},
       });
     }
     return directChannelId;
