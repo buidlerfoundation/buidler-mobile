@@ -5,6 +5,7 @@ import {StyleSheet, View, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import useThemeColor from 'hook/useThemeColor';
 import SvgUri from 'components/SvgUri';
+import SVG from 'common/SVG';
 
 type AvatarViewProps = {
   user: UserData;
@@ -21,6 +22,19 @@ const AvatarView = ({
 }: AvatarViewProps) => {
   const {colors} = useThemeColor();
   const renderBody = useCallback(() => {
+    if (!user?.avatar_url && !user?.user_id) {
+      return (
+        <View
+          style={{
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: colors.border,
+          }}>
+          <SVG.IconUser fill={colors.text} width={size} height={size} />
+        </View>
+      );
+    }
     const data = ImageHelper.normalizeAvatar(user?.avatar_url, user?.user_id);
     if (data.includes('.svg')) {
       return (
@@ -49,7 +63,7 @@ const AvatarView = ({
         }}
       />
     );
-  }, [colors.border, size, user?.avatar_url, user?.user_id]);
+  }, [colors.border, colors.text, size, user?.avatar_url, user?.user_id]);
 
   return (
     <View style={[style, {width: size, height: size}]}>
