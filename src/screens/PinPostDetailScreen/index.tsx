@@ -438,27 +438,25 @@ const PinPostDetailScreen = () => {
                   style={[styles.separate, {backgroundColor: colors.border}]}
                 />
               )}
-              {messages &&
-                (messages?.length || 0) <
-                  parseInt(pinPost.data?.total_messages || '0') && (
-                  <Touchable
-                    onPress={onMorePPMessage}
-                    disabled={loadMoreBefore}
-                    useReactNative
-                    style={styles.textMore}>
-                    {loadMoreBefore ? (
-                      <ActivityIndicator
-                        color={colors.mention}
-                        style={{height: 22}}
-                      />
-                    ) : (
-                      <Text
-                        style={[AppStyles.TextSemi15, {color: colors.mention}]}>
-                        View previous replies
-                      </Text>
-                    )}
-                  </Touchable>
-                )}
+              {messageData?.[postId]?.canMore && (
+                <Touchable
+                  onPress={onMorePPMessage}
+                  disabled={loadMoreBefore}
+                  useReactNative
+                  style={styles.textMore}>
+                  {loadMoreBefore ? (
+                    <ActivityIndicator
+                      color={colors.mention}
+                      style={{height: 22}}
+                    />
+                  ) : (
+                    <Text
+                      style={[AppStyles.TextSemi15, {color: colors.mention}]}>
+                      View previous replies
+                    </Text>
+                  )}
+                </Touchable>
+              )}
             </View>
           }
           keyExtractor={item => item.message_id}
