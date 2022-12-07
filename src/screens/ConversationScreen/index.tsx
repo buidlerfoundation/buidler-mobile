@@ -791,8 +791,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={
               selectedMessage?.sender_id === userData.user_id ||
-              userRole === 'Admin' ||
-              userRole === 'Owner'
+              (!direct && (userRole === 'Admin' || userRole === 'Owner'))
             }
             canReport={selectedMessage?.sender_id !== userData.user_id}
             canPin={(userRole === 'Admin' || userRole === 'Owner') && !direct}
