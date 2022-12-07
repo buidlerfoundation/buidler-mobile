@@ -38,6 +38,7 @@ type ReplyMessageProps = {
   replyMessageId?: string;
   onPressMessageReply?: (replyMessage: MessageData) => void;
   embeds?: boolean;
+  direct?: boolean;
 };
 
 const ReplyMessage = memo(
@@ -46,8 +47,9 @@ const ReplyMessage = memo(
     replyMessageId,
     onPressMessageReply,
     embeds,
+    direct,
   }: ReplyMessageProps) => {
-    const teamUserData = useTeamUserData();
+    const teamUserData = useTeamUserData(direct);
     const {colors} = useThemeColor();
     const replier = useMemo(
       () => teamUserData.find(el => el.user_id === replyMessage?.sender_id),
@@ -269,6 +271,7 @@ const MessageItem = ({
         replyMessageId={item.reply_message_id}
         onPressMessageReply={onPressMessageReply}
         embeds={embeds}
+        direct={direct}
       />
       <Touchable
         style={[styles.container]}
