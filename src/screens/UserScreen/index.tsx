@@ -51,11 +51,11 @@ const UserScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const communityId = useCommunityId();
-  const isMine = useMemo(
-    () => userData.user_id === userProfile?.user_id,
-    [userData.user_id, userProfile?.user_id],
-  );
   const route = useRoute();
+  const isMine = useMemo(
+    () => userData.user_id === route.params?.userId,
+    [route.params?.userId, userData.user_id],
+  );
   const directUser = useDirectUser(route.params?.userId);
   const {colors} = useThemeColor();
   const [isOpenMenu, setOpenMenu] = useState(false);
