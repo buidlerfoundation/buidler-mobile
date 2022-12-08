@@ -341,26 +341,27 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     }
     case actionTypes.NEW_CHANNEL: {
       const newDirectChannel = [...state.directChannel];
-      if (payload.channel_type === 'Direct') {
+      const isDirect = payload.channel_type === 'Direct';
+      if (isDirect) {
         newDirectChannel.push(payload);
       }
       const newChannels = channelMap[currentTeamId] || [];
-      if (
-        payload.channel_type !== 'Direct' &&
-        payload.team_id === currentTeamId
-      ) {
+      if (!isDirect && payload.team_id === currentTeamId) {
         newChannels.push(payload);
       }
       return {
         ...state,
-        channelMap:
-          payload.channel_type === 'Direct'
-            ? channelMap
-            : {
-                ...channelMap,
-                [currentTeamId]: newChannels,
-              },
+        channelMap: isDirect
+          ? channelMap
+          : {
+              ...channelMap,
+              [currentTeamId]: newChannels,
+            },
         directChannel: uniqBy(newDirectChannel, 'channel_id'),
+        currentDirectChannelId:
+          !isDirect || state.currentDirectChannelId
+            ? state.currentDirectChannelId
+            : payload.channel_id,
         spaceChannelMap: {
           ...spaceChannelMap,
           [currentTeamId]: spaceChannelMap[currentTeamId].map(el => {

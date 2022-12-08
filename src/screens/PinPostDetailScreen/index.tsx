@@ -281,9 +281,9 @@ const PinPostDetailScreen = () => {
   );
   const onKeyboardShow = useCallback(() => {
     setTimeout(() => {
-      if (messages?.length > 0) listRef.current.scrollToIndex({index: 0});
+      listRef.current.scrollToIndex({index: 0});
     }, 300);
-  }, [messages?.length]);
+  }, []);
   const onReplyMessage = useCallback(() => {
     setMessageEdit(null);
     setMessageReply(selectedMessage);
