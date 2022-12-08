@@ -279,11 +279,16 @@ const PinPostDetailScreen = () => {
     },
     [communityId, toggleGallery],
   );
-  const onKeyboardShow = useCallback(() => {
+  const onSent = useCallback(() => {
     setTimeout(() => {
       listRef.current.scrollToIndex({index: 0});
     }, 300);
   }, []);
+  const onKeyboardShow = useCallback(() => {
+    setTimeout(() => {
+      if (messages?.length > 0) listRef.current.scrollToIndex({index: 0});
+    }, 300);
+  }, [messages?.length]);
   const onReplyMessage = useCallback(() => {
     setMessageEdit(null);
     setMessageReply(selectedMessage);
@@ -481,7 +486,7 @@ const PinPostDetailScreen = () => {
               messageEdit={messageEdit}
               onClearReply={onClearReply}
               postId={postId}
-              onSent={onKeyboardShow}
+              onSent={onSent}
               inputRef={inputRef}
               inputStyle={styles.inputContainer}
               canMoreAfter={messageData?.[postId]?.canMoreAfter}
