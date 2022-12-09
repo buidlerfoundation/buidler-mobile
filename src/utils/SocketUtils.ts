@@ -704,10 +704,12 @@ class SocketUtil {
       if (key && timestamp) {
         this.handleChannelPrivateKey(channel.channel_id, key, timestamp);
       }
-      store.dispatch({
-        type: actionTypes.NEW_DIRECT_USER,
-        payload: new_direct_users,
-      });
+      if (new_direct_users?.length > 0) {
+        store.dispatch({
+          type: actionTypes.NEW_DIRECT_USER,
+          payload: new_direct_users,
+        });
+      }
       store.dispatch({
         type: actionTypes.NEW_CHANNEL,
         payload: channel,
