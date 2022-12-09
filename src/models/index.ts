@@ -87,6 +87,7 @@ export interface Channel {
   group_channel_id?: string;
   attachment?: any;
   updatedAt?: string;
+  is_chat_deactivated?: boolean;
 }
 
 export interface Space {

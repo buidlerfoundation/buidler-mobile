@@ -70,6 +70,7 @@ import MenuConfirmPin from 'components/MenuConfirmPin';
 import useDirectChannelId from 'hook/useDirectChannelId';
 import Header from './Header';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
+import useChannelById from 'hook/useChannelById';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -108,6 +109,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     () => (direct ? currentDirectChannelId : currentPublicChannelId),
     [currentDirectChannelId, currentPublicChannelId, direct],
   );
+  const currentChannel = useChannelById(currentChannelId, direct);
   const channelType = useMemo(() => (direct ? 'Private' : 'Public'), [direct]);
   const [isFocus, setFocus] = useState(false);
   const [messageReply, setMessageReply] = useState<MessageData>(null);
@@ -704,6 +706,10 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     },
     [closeModalEmoji, onCloseMenuMessage, onCloseMenuPinPost, onReactPress],
   );
+  const canChat = useMemo(() => {
+    if (!currentChannel?.is_chat_deactivated) return true;
+    return userRole === 'Owner' || userRole === 'Admin';
+  }, [currentChannel?.is_chat_deactivated, userRole]);
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
       <View style={styles.container}>
@@ -763,20 +769,24 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           </View>
         )}
         <View style={styles.bottomView}>
-          <MessageInput
-            openGallery={toggleGallery}
-            onRemoveAttachment={onRemoveAttachment}
-            attachments={attachments}
-            onClearAttachment={onClearAttachment}
-            messageReply={messageReply}
-            messageEdit={messageEdit}
-            onClearReply={onClearReply}
-            inputRef={inputRef}
-            onFocusChanged={setFocus}
-            canMoreAfter={messageData?.canMoreAfter}
-            scrollDown={scrollDown}
-            direct={direct}
-          />
+          {canChat ? (
+            <MessageInput
+              openGallery={toggleGallery}
+              onRemoveAttachment={onRemoveAttachment}
+              attachments={attachments}
+              onClearAttachment={onClearAttachment}
+              messageReply={messageReply}
+              messageEdit={messageEdit}
+              onClearReply={onClearReply}
+              inputRef={inputRef}
+              onFocusChanged={setFocus}
+              canMoreAfter={messageData?.canMoreAfter}
+              scrollDown={scrollDown}
+              direct={direct}
+            />
+          ) : (
+            <View style={{height: 1, backgroundColor: colors.border}} />
+          )}
         </View>
         <ModalBottom
           isVisible={isOpenMenuMessage}
