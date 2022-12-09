@@ -10,12 +10,14 @@ type MenuConfirmStartDMProps = {
   user: UserData;
   onClose: () => void;
   startDM: () => void;
+  creating?: boolean;
 };
 
 const MenuConfirmStartDM = ({
   user,
   startDM,
   onClose,
+  creating,
 }: MenuConfirmStartDMProps) => {
   const {colors} = useThemeColor();
   return (
@@ -61,7 +63,8 @@ const MenuConfirmStartDM = ({
       <Touchable
         style={[styles.bottomButton, {backgroundColor: colors.blue}]}
         useReactNative
-        onPress={startDM}>
+        onPress={startDM}
+        disabled={creating}>
         <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>Start</Text>
       </Touchable>
     </View>

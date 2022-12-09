@@ -49,6 +49,7 @@ const UserScreen = () => {
   const userData = useUserData();
   const [userProfile, setUserProfile] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const communityId = useCommunityId();
   const route = useRoute();
@@ -66,6 +67,7 @@ const UserScreen = () => {
     setOpenMenu(true);
   }, []);
   const getDirectMessageIdFromApi = useCallback(async () => {
+    setCreating(true);
     let directChannelId = '';
     const channelMemberData = await createMemberChannelData([
       userData,
@@ -100,6 +102,7 @@ const UserScreen = () => {
         payload: {...res.data, seen: true},
       });
     }
+    setCreating(false);
     return directChannelId;
   }, [dispatch, userData, userProfile]);
   const startDM = useCallback(
@@ -305,6 +308,7 @@ const UserScreen = () => {
           user={userProfile}
           onClose={onCloseConfirmDM}
           startDM={handleStartDM}
+          creating={creating}
         />
       </ModalBottom>
     </View>
