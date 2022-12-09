@@ -280,22 +280,14 @@ const PinPostDetailScreen = () => {
     [communityId, toggleGallery],
   );
   const onSent = useCallback(() => {
-    try {
-      setTimeout(() => {
-        listRef.current.scrollToIndex({index: 0});
-      }, 300);
-    } catch (error) {
-      console.log(error);
-    }
+    setTimeout(() => {
+      listRef.current?.scrollToIndex?.({index: 0});
+    }, 300);
   }, []);
   const onKeyboardShow = useCallback(() => {
-    try {
-      setTimeout(() => {
-        if (messages?.length > 0) listRef.current.scrollToIndex({index: 0});
-      }, 300);
-    } catch (error) {
-      console.log(error);
-    }
+    setTimeout(() => {
+      if (messages?.length > 0) listRef.current?.scrollToIndex?.({index: 0});
+    }, 300);
   }, [messages?.length]);
   const onReplyMessage = useCallback(() => {
     setMessageEdit(null);
