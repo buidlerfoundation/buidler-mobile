@@ -170,16 +170,14 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   );
   const handleAroundMessage = useCallback(
     async (jumpMessageId: string) => {
+      const messageChannelId = route.params?.channelId || currentChannelId;
+      if (!messageChannelId) return;
       const messageId = jumpMessageId.split(':')[0];
       if (findMessageById(messageId)) {
         scrollToMessageId(messageId);
       } else {
         await dispatch(
-          getAroundMessage(
-            messageId,
-            route.params?.channelId || currentChannelId,
-            channelType,
-          ),
+          getAroundMessage(messageId, messageChannelId, channelType),
         );
         scrollToMessageId(messageId);
       }

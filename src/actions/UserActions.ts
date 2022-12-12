@@ -21,6 +21,7 @@ import {UserRole} from 'common/AppConfig';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import {Channel} from 'models';
 import {getPrivateChannel} from 'helpers/ChannelHelper';
+import notifee from '@notifee/react-native';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -37,6 +38,7 @@ export const getInitial: ActionCreator<any> =
   };
 
 export const logout: ActionCreator<any> = () => async (dispatch: Dispatch) => {
+  notifee.cancelAllNotifications();
   const deviceCode = await getDeviceCode();
   api.removeDevice({
     device_code: deviceCode,
