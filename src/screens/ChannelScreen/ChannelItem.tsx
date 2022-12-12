@@ -1,3 +1,4 @@
+import {useNavigation} from '@react-navigation/native';
 import {setCurrentChannel} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
@@ -10,7 +11,6 @@ import {Channel} from 'models';
 import React, {memo, useMemo} from 'react';
 import {useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import NavigationServices from 'services/NavigationServices';
 
 type ChannelItemProps = {
   c: Channel;
@@ -20,15 +20,16 @@ type ChannelItemProps = {
 
 const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
   const dispatch = useAppDispatch();
+  const navigation = useNavigation();
   const {colors} = useThemeColor();
 
   const handlePress = useCallback(() => {
     dispatch(setCurrentChannel(c));
-    NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+    navigation.navigate(ScreenID.ConversationScreen, {
       fromNotification: false,
       jumpMessageId: null,
     });
-  }, [c, dispatch]);
+  }, [c, dispatch, navigation]);
   const isUnSeen = useMemo(() => !c?.seen, [c?.seen]);
   const isQuiet = useMemo(
     () => c?.notification_type === 'Quiet',

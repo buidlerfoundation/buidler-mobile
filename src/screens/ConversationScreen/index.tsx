@@ -134,23 +134,21 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     }
   }, [navigation, route.params?.fromNotification]);
   useEffect(() => {
+    if (currentTeamId) {
+      if (route.params?.openDrawer) {
+        navigation.setParams({openDrawer: false});
+        setTimeout(() => {
+          navigation?.openDrawer?.();
+        }, 0);
+      }
+    }
+  }, [currentTeamId, navigation, route.params?.openDrawer]);
+  useEffect(() => {
     if (drawerStatus === 'open') {
       Keyboard.dismiss();
     }
     navigation.setParams({drawerStatus});
   }, [drawerStatus, navigation]);
-  useEffect(() => {
-    if (currentTeamId) {
-      setTimeout(() => {
-        navigation?.openDrawer?.();
-      }, 0);
-    }
-  }, [currentTeamId, navigation]);
-  useEffect(() => {
-    setTimeout(() => {
-      navigation?.closeDrawer?.();
-    }, 0);
-  }, [navigation]);
   const handleGetLatestMessage = useCallback(async () => {
     if (currentChannelId) {
       await dispatch(
