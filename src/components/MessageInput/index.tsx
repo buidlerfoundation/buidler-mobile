@@ -412,7 +412,7 @@ const MessageInput = ({
             ellipsizeMode="tail"
             numberOfLines={1}>
             {normalizeMessageTextPlain(
-              messageReply.content || 'Attachment',
+              messageReply.content.trim() || 'Attachment',
               undefined,
               undefined,
               true,
