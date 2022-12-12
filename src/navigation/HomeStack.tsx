@@ -50,9 +50,15 @@ const HomeStack = () => {
     if (route.params?.entity_type === 'post' && route.params?.entity_id) {
       navigation.navigate(ScreenID.PinPostDetailScreen, {
         postId: route.params?.entity_id,
+        messageId: route.params?.jumpMessageId,
       });
     }
-  }, [navigation, route.params?.entity_id, route.params?.entity_type]);
+  }, [
+    navigation,
+    route.params?.entity_id,
+    route.params?.entity_type,
+    route.params?.jumpMessageId,
+  ]);
   useEffect(() => {
     if (openOTP && !requestOtpCode) {
       NavigationServices.pushToScreen(ScreenID.EnterOTPScreen);

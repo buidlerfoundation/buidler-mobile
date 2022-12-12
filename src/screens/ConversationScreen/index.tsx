@@ -172,7 +172,11 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         scrollToMessageId(messageId);
       } else {
         await dispatch(
-          getAroundMessage(messageId, currentChannelId, channelType),
+          getAroundMessage(
+            messageId,
+            route.params?.channelId || currentChannelId,
+            channelType,
+          ),
         );
         scrollToMessageId(messageId);
       }
@@ -182,6 +186,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       currentChannelId,
       dispatch,
       findMessageById,
+      route.params?.channelId,
       scrollToMessageId,
     ],
   );

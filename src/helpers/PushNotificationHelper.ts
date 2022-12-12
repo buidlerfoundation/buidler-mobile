@@ -92,17 +92,20 @@ class PushNotificationHelper {
       if (entity_type === 'post') {
         NavigationServices.pushToScreen(ScreenID.PinPostDetailScreen, {
           postId: entity_id,
+          messageId: message_id,
         });
       } else {
         if (direct) {
           NavigationServices.pushToScreen(StackID.DirectMessageStack, {
             fromNotification: true,
             jumpMessageId: message_id,
+            channelId: entity_id,
           });
         } else {
           NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
             fromNotification: true,
             jumpMessageId: message_id,
+            channelId: entity_id,
           });
         }
       }
