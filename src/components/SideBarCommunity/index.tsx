@@ -35,7 +35,11 @@ const SideBarCommunity = () => {
   const team = useAppSelector(state => state.user.team || []);
   const handlePress = useCallback(
     async (item: Community) => {
-      navigation.navigate(ScreenID.ConversationScreen, {openDrawer: true});
+      navigation.navigate(ScreenID.ConversationScreen, {
+        openDrawer: true,
+        fromNotification: false,
+        jumpMessageId: null,
+      });
       dispatch(setCurrentTeam(item));
     },
     [dispatch, navigation],

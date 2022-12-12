@@ -137,9 +137,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     if (currentTeamId) {
       if (route.params?.openDrawer) {
         navigation.setParams({openDrawer: false});
-        setTimeout(() => {
-          navigation?.openDrawer?.();
-        }, 0);
+        navigation?.openDrawer?.();
       }
     }
   }, [currentTeamId, navigation, route.params?.openDrawer]);
