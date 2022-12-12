@@ -19,6 +19,8 @@ class PushNotificationHelper {
   initialNotification = false;
   initNotificationData: NotificationPayload = null;
   async init() {
+    this.initialNotification = false;
+    this.initNotificationData = null;
     const enabled = await this.checkPermission();
     if (enabled) {
       await messaging().registerDeviceForRemoteMessages();

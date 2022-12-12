@@ -67,7 +67,10 @@ const AttachmentItem = ({
           disabled={disabled}
           style={styles.fileItem}>
           <SVG.IconFile fill={colors.subtext} />
-          <Text style={[styles.fileName, {color: colors.text}]}>
+          <Text
+            style={[styles.fileName, {color: colors.text}]}
+            numberOfLines={1}
+            ellipsizeMode="tail">
             {att.original_name}
           </Text>
           <SVG.IconDownload fill={colors.subtext} />
@@ -232,6 +235,7 @@ const styles = StyleSheet.create({
   },
   fileItemWrap: {
     marginTop: 10,
+    width: '100%',
   },
   fileItem: {
     padding: 10,
@@ -244,6 +248,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 26,
     fontFamily: Fonts.Medium,
+    flex: 1,
   },
   edited: {
     fontFamily: Fonts.Medium,

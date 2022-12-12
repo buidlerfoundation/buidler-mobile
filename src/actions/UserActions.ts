@@ -465,7 +465,6 @@ export const accessToHome =
       const channelNotification = channels.find(
         el => el.channel_id === entity_id,
       );
-      PushNotificationHelper.reset();
       if (direct) {
         await dispatch(setCurrentDirectChannel({channel_id: entity_id}));
       } else if (currentTeamId === team_id) {
@@ -475,6 +474,7 @@ export const accessToHome =
       } else if (teamNotification) {
         await dispatch(setCurrentTeam(teamNotification, entity_id));
       }
+      PushNotificationHelper.reset();
     }
     NavigationServices.replace(StackID.HomeStack, params);
   };
