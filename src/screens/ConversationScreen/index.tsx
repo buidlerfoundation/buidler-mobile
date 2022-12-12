@@ -141,9 +141,16 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   }, [drawerStatus, navigation]);
   useEffect(() => {
     if (currentTeamId) {
-      navigation?.openDrawer?.();
+      setTimeout(() => {
+        navigation?.openDrawer?.();
+      }, 0);
     }
   }, [currentTeamId, navigation]);
+  useEffect(() => {
+    setTimeout(() => {
+      navigation?.closeDrawer?.();
+    }, 0);
+  }, [navigation]);
   const handleGetLatestMessage = useCallback(async () => {
     if (currentChannelId) {
       await dispatch(
