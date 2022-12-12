@@ -30,7 +30,6 @@ import {addReact, removeReact} from 'actions/ReactActions';
 import {useNavigation} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useCommunityId from 'hook/useCommunityId';
-import usePublicUser from 'hook/usePublicUser';
 import {DeletedUser} from 'common/AppConfig';
 
 type ReplyMessageProps = {
@@ -163,6 +162,7 @@ type MessageSenderProps = {
   createdAt: string;
   onUserPress: () => void;
   embeds?: boolean;
+  direct?: boolean;
 };
 
 const MessageSender = memo(
@@ -172,9 +172,14 @@ const MessageSender = memo(
     createdAt,
     onUserPress,
     embeds,
+    direct,
   }: MessageSenderProps) => {
     const {colors} = useThemeColor();
-    const sender = usePublicUser(sender_id);
+    const teamUserData = useTeamUserData(direct);
+    const sender = useMemo(
+      () => teamUserData.find(el => el.user_id === sender_id) || DeletedUser,
+      [sender_id, teamUserData],
+    );
     if ((!showAvatar && !embeds) || !sender) return null;
     return (
       <View style={styles.nameWrapper}>
@@ -292,6 +297,7 @@ const MessageItem = ({
             showAvatar={showAvatar}
             onUserPress={onUserPress}
             embeds={embeds}
+            direct={direct}
           />
           {item.task ? (
             <PinPostItem
