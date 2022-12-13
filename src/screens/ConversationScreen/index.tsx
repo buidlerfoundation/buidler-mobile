@@ -44,7 +44,7 @@ import {
 } from 'actions/MessageActions';
 import useMessageData from 'hook/useMessageData';
 import {createTask, updateTask, uploadToIPFS} from 'actions/TaskActions';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useUserRole from 'hook/useUserRole';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -102,6 +102,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   );
   const userData = useAppSelector(state => state.user.userData);
   const userRole = useUserRole();
+  const isFocused = useIsFocused();
   const currentTeamId = useCommunityId(direct);
   const currentPublicChannelId = useChannelId();
   const currentDirectChannelId = useDirectChannelId();
@@ -111,7 +112,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   );
   const currentChannel = useChannelById(currentChannelId, direct);
   const channelType = useMemo(() => (direct ? 'Private' : 'Public'), [direct]);
-  const [isFocus, setFocus] = useState(false);
+  const [isInputFocus, setFocus] = useState(false);
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
   const [selectedMessage, setSelectedMessage] = useState<MessageData>(null);
@@ -128,6 +129,11 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     () => setOpenGallery(current => !current),
     [],
   );
+  useEffect(() => {
+    if (!isFocused) {
+      navigation.closeDrawer();
+    }
+  }, [isFocused, navigation]);
   useEffect(() => {
     if (route.params?.fromNotification) {
       navigation.closeDrawer();
@@ -759,7 +765,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             )
           }
         />
-        {((!isFocus && scrollData?.showScrollDown) ||
+        {((!isInputFocus && scrollData?.showScrollDown) ||
           messageData?.canMoreAfter) && (
           <View style={styles.scrollDownWrap}>
             <View style={styles.scrollDownAbs}>
