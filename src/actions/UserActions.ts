@@ -421,7 +421,9 @@ export const acceptInvitation = (url: string) => async (dispatch: Dispatch) => {
     });
     dispatch({type: actionTypes.ACCEPT_TEAM_SUCCESS, payload: inviteRes.data});
     await dispatch(setCurrentTeam(inviteRes.data));
-    NavigationServices.pushToScreen(ScreenID.ConversationScreen);
+    NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+      openDrawer: true,
+    });
   }
 };
 
@@ -446,6 +448,9 @@ export const accessToHome =
         type: 'customSuccess',
         props: {message: 'You have successfully joined new community.'},
       });
+      params = {
+        openDrawer: true,
+      };
       await dispatch(setCurrentTeam(invitationCommunity));
     } else if (
       PushNotificationHelper.initialNotification &&
