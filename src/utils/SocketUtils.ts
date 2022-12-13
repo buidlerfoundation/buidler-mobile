@@ -839,16 +839,26 @@ class SocketUtil {
       const {channelPrivateKey} = store.getState()?.configs || {};
       const {userData} = user;
       const direct = notification_data.channel_type === 'Direct';
+      const currentRouteName = NavigationServices.currentRouter?.name;
+      const isFocusedScreen = direct
+        ? currentRouteName === ScreenID.DirectMessageScreen
+        : currentRouteName === ScreenID.ConversationScreen;
       const currentChannel = getCurrentChannel(direct);
       if (!currentChannel) return;
 
       const messageData: any = store.getState()?.message.messageData;
-      if (currentChannel.channel_id === message_data.entity_id) {
+      if (
+        currentChannel.channel_id === message_data.entity_id &&
+        isFocusedScreen
+      ) {
         this.emitSeenChannel(message_data.message_id, message_data.entity_id);
       }
       if (userData?.user_id !== notification_data?.sender_data?.user_id) {
         if (notification_type !== 'Muted') {
-          if (currentChannel.channel_id !== message_data.entity_id) {
+          if (
+            currentChannel.channel_id !== message_data.entity_id ||
+            !isFocusedScreen
+          ) {
             store.dispatch({
               type: actionTypes.MARK_UN_SEEN_CHANNEL,
               payload: {

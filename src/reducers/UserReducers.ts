@@ -726,31 +726,34 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         }
         return el;
       });
-      state.channelMap = {
-        ...channelMap,
-        [currentTeamId]: channels,
+      return {
+        ...state,
+        channelMap: {
+          ...channelMap,
+          [currentTeamId]: channels,
+        },
+        directChannel: state.directChannel.map(el => {
+          if (el.channel_id === channel_id) {
+            return {
+              ...el,
+              seen: true,
+            };
+          }
+          return el;
+        }),
+        team: state.team?.map(el => {
+          if (el.team_id === currentTeamId) {
+            return {
+              ...el,
+              seen:
+                channels.find(
+                  c => !c.seen && c.notification_type !== 'Muted',
+                ) === undefined,
+            };
+          }
+          return el;
+        }),
       };
-      state.directChannel = state.directChannel.map(el => {
-        if (el.channel_id === channel_id) {
-          return {
-            ...el,
-            seen: true,
-          };
-        }
-        return el;
-      });
-      state.team = state.team?.map(el => {
-        if (el.team_id === currentTeamId) {
-          return {
-            ...el,
-            seen:
-              channels.find(c => !c.seen && c.notification_type !== 'Muted') ===
-              undefined,
-          };
-        }
-        return el;
-      });
-      return state;
     }
     case actionTypes.MARK_UN_SEEN_CHANNEL: {
       const {channelId, communityId} = payload;
@@ -760,8 +763,8 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
       if (!unSeenChannel?.seen) {
         return state;
       }
-      const spaceId = unSeenChannel?.space_id;
-      if (!spaceId) {
+      const direct = unSeenChannel?.channel_type === 'Direct';
+      if (direct) {
         return {
           ...state,
           directChannel: directChannel.map(el => {

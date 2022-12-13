@@ -51,8 +51,9 @@ const UserScreen = () => {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
-  const communityId = useCommunityId();
   const route = useRoute();
+  const direct = useMemo(() => route.params?.direct, [route.params?.direct]);
+  const communityId = useCommunityId(direct);
   const isMine = useMemo(
     () => userData.user_id === route.params?.userId,
     [route.params?.userId, userData.user_id],

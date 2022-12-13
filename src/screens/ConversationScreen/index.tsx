@@ -44,7 +44,12 @@ import {
 } from 'actions/MessageActions';
 import useMessageData from 'hook/useMessageData';
 import {createTask, updateTask, uploadToIPFS} from 'actions/TaskActions';
-import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useUserRole from 'hook/useUserRole';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -246,6 +251,17 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const uniqMessages = useMemo(
     () => normalizeMessages(uniqBy(messages, 'message_id')),
     [messages],
+  );
+  const lastMessageId = useMemo(
+    () =>
+      uniqMessages.filter(el => el.entity_type !== 'date-title')?.[0]
+        ?.message_id,
+    [uniqMessages],
+  );
+  useFocusEffect(
+    useCallback(() => {
+      SocketUtils.emitSeenChannel(lastMessageId, currentChannelId);
+    }, [currentChannelId, lastMessageId]),
   );
   const onRemoveAttachment = useCallback(
     id =>
@@ -743,6 +759,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             )
           }
           onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
           onScroll={onListScroll}
