@@ -341,7 +341,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     }
     case actionTypes.NEW_CHANNEL: {
       const newDirectChannel = [...state.directChannel];
-      const isDirect = payload.channel_type === 'Direct';
+      const isDirect = payload?.channel_type === 'Direct';
       if (isDirect) {
         newDirectChannel.push(payload);
       }
@@ -619,7 +619,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
             c =>
               c.channel_id === lastChannel?.[payload.team.team_id]?.channel_id,
           ) ||
-          resChannel.data.filter(c => c.channel_type !== 'Direct')[0];
+          resChannel.data.filter(c => c?.channel_type !== 'Direct')[0];
       }
       AsyncStorage.setItem(AsyncKey.lastChannelId, channel?.channel_id);
       return {
@@ -820,7 +820,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
       if (currentChannel.channel_id === payload.channelId) {
         newCurrentChannel =
           newChannel?.[currentIdx] || newChannel?.[0] || defaultChannel;
-        if (newCurrentChannel.channel_type === 'Direct') {
+        if (newCurrentChannel?.channel_type === 'Direct') {
           newCurrentChannel.user = teamUserData?.find(
             u => u.direct_channel === newCurrentChannel.channel_id,
           );

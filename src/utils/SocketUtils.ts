@@ -176,7 +176,7 @@ const loadMessageIfNeeded = async () => {
   const refreshSelector = createRefreshSelector([actionTypes.MESSAGE_PREFIX]);
   const currentChannel = getCurrentChannel();
   const refresh = refreshSelector(store.getState());
-  if (!currentChannel || refresh || currentChannel.channel_type === 'Public')
+  if (!currentChannel || refresh || currentChannel?.channel_type === 'Public')
     return;
   store.dispatch({
     type: actionTypes.MESSAGE_FRESH,
@@ -184,8 +184,8 @@ const loadMessageIfNeeded = async () => {
   });
   const messageRes = await api.getMessages(currentChannel.channel_id);
   const messageData =
-    currentChannel.channel_type === 'Private' ||
-    currentChannel.channel_type === 'Direct'
+    currentChannel?.channel_type === 'Private' ||
+    currentChannel?.channel_type === 'Direct'
       ? await normalizeMessageData(
           messageRes.data || [],
           currentChannel.channel_id,
@@ -286,14 +286,14 @@ class SocketUtil {
       }
       // load message
       getMessages(
-        currentChannel.channel_id,
-        currentChannel.channel_type,
+        currentChannel?.channel_id,
+        currentChannel?.channel_type,
         store.dispatch,
       );
       if (currentDirectChannel) {
         getMessages(
-          currentDirectChannel.channel_id,
-          currentDirectChannel.channel_type,
+          currentDirectChannel?.channel_id,
+          currentDirectChannel?.channel_type,
           store.dispatch,
         );
       }
@@ -547,7 +547,7 @@ class SocketUtil {
       const channel = channelMap[currentTeamId] || [];
       if (data.space_id === currentChannel.space_id) {
         const nextChannelId =
-          channel?.filter(el => el.channel_type !== 'Direct')?.[0]
+          channel?.filter(el => el?.channel_type !== 'Direct')?.[0]
             ?.channel_id || '';
         console.log(nextChannelId);
         // Update screen
@@ -838,7 +838,7 @@ class SocketUtil {
       const user = store.getState()?.user;
       const {channelPrivateKey} = store.getState()?.configs || {};
       const {userData} = user;
-      const direct = notification_data.channel_type === 'Direct';
+      const direct = notification_data?.channel_type === 'Direct';
       const currentRouteName = NavigationServices.currentRouter?.name;
       const isFocusedScreen = direct
         ? currentRouteName === ScreenID.DirectMessageScreen

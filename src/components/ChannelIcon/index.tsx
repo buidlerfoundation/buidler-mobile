@@ -37,7 +37,7 @@ const ChannelIcon = ({
   if (channel?.channel_emoji) {
     return <Emoji name={channel.channel_emoji} style={{fontSize: emojiSize}} />;
   }
-  if (channel.channel_type === 'Private') {
+  if (channel?.channel_type === 'Private') {
     return (
       <View style={[styles.channelIcon, {width: size, height: size}]}>
         <SVG.IconPrivate fill={color} />
