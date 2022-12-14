@@ -84,7 +84,7 @@ const WalletCollectibles = () => {
             ...el,
             key: el.token_id,
             type: 'collection-item',
-            isFirst: idx % 3 === 0,
+            index: idx,
           }));
       res.push(
         ...[
@@ -128,13 +128,18 @@ const WalletCollectibles = () => {
           <View
             style={[
               styles.collectionItemContainer,
-              data.isFirst && {paddingLeft: 20},
+              data.index % 3 === 0 && {paddingLeft: 20},
+              data.index % 3 === 2 && {paddingRight: 20},
             ]}>
             {data.image_url.includes('.svg') ? (
               <View
                 style={[
                   styles.collectionItemImage,
-                  {backgroundColor: colors.border},
+                  {
+                    backgroundColor: colors.border,
+                    width: itemSize,
+                    height: itemSize,
+                  },
                 ]}>
                 <SvgUri
                   uri={data.image_url}
@@ -209,7 +214,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   collectionItemContainer: {
-    paddingHorizontal: 7.5,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingTop: 15,
   },
   collectionItemImage: {
