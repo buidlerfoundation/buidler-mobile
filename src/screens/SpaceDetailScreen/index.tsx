@@ -9,18 +9,24 @@ import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import {Space, SpaceCollectionData, UserData} from 'models';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {View, StyleSheet, Text, FlatList} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  FlatList,
+  useWindowDimensions,
+} from 'react-native';
 import api from 'services/api';
 import SpaceDetailHeader from './SpaceDetailHeader';
 
 type MemberItemProps = {
   item: UserData;
-  index: number;
 };
 
-const MemberItem = memo(({item, index}: MemberItemProps) => {
+const MemberItem = memo(({item}: MemberItemProps) => {
   const navigation = useNavigation();
   const {colors} = useThemeColor();
+  const {width} = useWindowDimensions();
   const onUserPress = useCallback(() => {
     navigation.navigate(ScreenID.UserScreen, {userId: item.user_id});
   }, [item.user_id, navigation]);
@@ -29,8 +35,7 @@ const MemberItem = memo(({item, index}: MemberItemProps) => {
       style={[
         styles.memberItem,
         {
-          marginLeft: index % 3 === 0 ? 12.5 : 0,
-          marginRight: (index + 1) % 3 === 0 ? 12.5 : 0,
+          width: (width - 25) / 3,
         },
       ]}
       useReactNative
@@ -74,12 +79,9 @@ const SpaceDetailScreen = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  const renderItem = useCallback(
-    ({item, index}: {item: UserData; index: number}) => {
-      return <MemberItem item={item} index={index} />;
-    },
-    [],
-  );
+  const renderItem = useCallback(({item}: {item: UserData; index: number}) => {
+    return <MemberItem item={item} />;
+  }, []);
   const renderSeparate = useCallback(() => <View style={{height: 25}} />, []);
   return (
     <View style={styles.container}>
@@ -109,6 +111,7 @@ const SpaceDetailScreen = () => {
           }
           ItemSeparatorComponent={renderSeparate}
           ListFooterComponent={renderSeparate}
+          style={{paddingHorizontal: 12.5}}
         />
       )}
     </View>
@@ -132,7 +135,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   memberItem: {
-    flex: 0.33,
     alignItems: 'center',
     paddingHorizontal: 7.5,
   },

@@ -34,6 +34,13 @@ const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
   const onBadgePress = useCallback(() => {
     navigation.navigate(ScreenID.SpaceDetailScreen, {space: item});
   }, [item, navigation]);
+  const handleSpacePress = useCallback(() => {
+    if (item.is_space_member) {
+      toggleSpace();
+    } else {
+      onBadgePress();
+    }
+  }, [item.is_space_member, onBadgePress, toggleSpace]);
   const channelData = useMemo(() => {
     return item.channel_ids
       ?.map(el => channel.find(c => c.channel_id === el))
@@ -56,7 +63,7 @@ const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
           borderColor: isCollapsed ? colors.background : colors.border,
         },
       ]}>
-      <Touchable style={styles.groupHead} onPress={toggleSpace}>
+      <Touchable style={styles.groupHead} onPress={handleSpacePress}>
         <View
           style={[
             styles.logoSpaceWrapper,

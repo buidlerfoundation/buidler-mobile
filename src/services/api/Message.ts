@@ -5,14 +5,19 @@ import ApiCaller from './ApiCaller';
 export const getPinPostMessage = async (
   postId: string,
   limit = 15,
-  before = new Date().toISOString(),
+  before?: string,
   after?: string,
   controller?: AbortController,
 ) => {
   const deviceCode = await getDeviceCode();
-  let uri = `messages/${postId}/post?page[size]=${limit}&page[before]=${before}&device_code=${deviceCode}`;
+  let uri = `messages/${postId}/post?page[size]=${limit}&device_code=${deviceCode}`;
   if (after) {
+    if (before) {
+      uri += `&page[before]=${before}`;
+    }
     uri += `&page[after]=${after}`;
+  } else {
+    uri += `&page[before]=${before || new Date().toISOString()}`;
   }
   return ApiCaller.get<Array<MessageData>>(uri, undefined, controller);
 };
