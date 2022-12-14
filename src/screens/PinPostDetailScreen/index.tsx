@@ -432,6 +432,7 @@ const PinPostDetailScreen = () => {
           contentContainerStyle={{flexDirection: 'column-reverse'}}
           data={messages}
           onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           ListHeaderComponent={<View style={{height: 20}} />}
