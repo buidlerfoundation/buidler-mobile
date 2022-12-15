@@ -172,25 +172,27 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
           showScrollDown: false,
         };
       }
+      let messageCanMoreBefore = state.messageData?.[channelId]?.canMore;
+      let messageCanMoreAfter = false;
+      if (canMoreBefore !== undefined) {
+        messageCanMoreBefore = canMoreBefore;
+      } else if (!after) {
+        messageCanMoreBefore = data.length !== 0;
+      }
+      if (canMoreAfter !== undefined) {
+        messageCanMoreAfter = canMoreAfter;
+      } else if (messageId) {
+        messageCanMoreAfter = true;
+      } else if (after) {
+        messageCanMoreAfter = data.length !== 0;
+      } else if (before) {
+        messageCanMoreAfter = state.messageData?.[channelId]?.canMoreAfter;
+      }
       newMessageData[channelId] = {
         ...(newMessageData[channelId] || {}),
         data: normalizeMessage(msg),
-        canMore:
-          canMoreBefore !== undefined
-            ? canMoreBefore
-            : !after
-            ? data.length !== 0
-            : state.messageData?.[channelId]?.canMore,
-        canMoreAfter:
-          canMoreAfter !== undefined
-            ? canMoreAfter
-            : messageId
-            ? true
-            : after
-            ? data.length !== 0
-            : before
-            ? state.messageData?.[channelId]?.canMoreAfter
-            : false,
+        canMore: messageCanMoreBefore,
+        canMoreAfter: messageCanMoreAfter,
         scrollData,
       };
       return {
