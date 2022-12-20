@@ -170,12 +170,19 @@ const PinPostScreen = () => {
     selectedPinPost?.task_id,
   ]);
   const onUploadToIPFS = useCallback(() => {
-    dispatch(uploadToIPFS(selectedPinPost?.task_id, currentChannelId));
+    dispatch(
+      uploadToIPFS(
+        selectedPinPost?.task_id,
+        currentChannelId,
+        selectedPinPost?.content,
+      ),
+    );
     onCloseMenuPinPost();
   }, [
     currentChannelId,
     dispatch,
     onCloseMenuPinPost,
+    selectedPinPost?.content,
     selectedPinPost?.task_id,
   ]);
   const onMenuCopyMessage = useCallback(async () => {

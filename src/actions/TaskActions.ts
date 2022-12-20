@@ -5,7 +5,7 @@ import {AppGetState} from 'store';
 import {utils} from 'ethers';
 
 export const uploadToIPFS =
-  (pinPostId: string, channelId: string) =>
+  (pinPostId: string, channelId: string, content: string) =>
   async (dispatch: Dispatch, getState: AppGetState) => {
     dispatch({
       type: actionTypes.UPDATE_TASK_REQUEST,
@@ -19,7 +19,7 @@ export const uploadToIPFS =
       const private_key = getState().configs.privateKey;
       if (private_key) {
         const timestamp = new Date().getTime();
-        const message = `Nonce: ${timestamp}`;
+        const message = content;
         const msgHash = utils.hashMessage(message);
         const msgHashBytes = utils.arrayify(msgHash);
         const signingKey = new utils.SigningKey(`0x${private_key}`);

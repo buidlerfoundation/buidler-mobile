@@ -530,7 +530,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       };
       await dispatch(createTask(currentChannelId, body));
       if (isLock) {
-        dispatch(uploadToIPFS(body.task_id, currentChannelId));
+        dispatch(uploadToIPFS(body.task_id, currentChannelId, body.content));
       }
       closeMenuConfirmPin();
     },
@@ -609,12 +609,19 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     selectedMessage?.message_id,
   ]);
   const onUploadToIPFS = useCallback(() => {
-    dispatch(uploadToIPFS(selectedMessage?.task?.task_id, currentChannelId));
+    dispatch(
+      uploadToIPFS(
+        selectedMessage?.task?.task_id,
+        currentChannelId,
+        selectedMessage?.task?.content,
+      ),
+    );
     onCloseMenuPinPost();
   }, [
     currentChannelId,
     dispatch,
     onCloseMenuPinPost,
+    selectedMessage?.task?.content,
     selectedMessage?.task?.task_id,
   ]);
   const onMenuCopyMessage = useCallback(async () => {
