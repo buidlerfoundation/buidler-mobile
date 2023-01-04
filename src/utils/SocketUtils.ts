@@ -922,13 +922,13 @@ class SocketUtil {
       const configs: any = store.getState()?.configs;
       const {channelPrivateKey} = configs;
       const user = store.getState()?.user;
-      const {channelMap, currentTeamId} = user;
+      const {channelMap, currentTeamId, directChannel} = user;
       const channel = channelMap?.[currentTeamId] || [];
-      const channelNotification = channel.find(
-        (c: any) => c.channel_id === data.entity_id,
-      );
+      const channelNotification =
+        channel.find(c => c.channel_id === data.entity_id) ||
+        directChannel.find(c => c.channel_id === data.entity_id);
       let res = data;
-      if (channelNotification?.channel_type === 'Private') {
+      if (channelNotification?.channel_type === 'Direct') {
         const keys = channelPrivateKey[data.entity_id];
         if (keys?.length > 0) {
           res = await normalizeMessageItem(

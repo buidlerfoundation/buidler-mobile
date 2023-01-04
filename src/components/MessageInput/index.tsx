@@ -351,14 +351,17 @@ const MessageInput = ({
   ]);
   const editMessage = useCallback(async () => {
     if (!val && attachments.length === 0) return;
-    let content = normalizeContentMessageSubmit(val.trim());
-    let plain_text = val.trim();
+    const text = normalizeContentMessageSubmit(val.trim());
+    const content = direct ? encryptMessage(text, currentChannelId) : text;
+    const plain_text = direct ? encryptMessage(text, currentChannelId) : text;
     await api.editMessage(messageEdit?.message_id, content, plain_text);
     setVal('');
     onClearReply?.();
     onClearAttachment?.();
   }, [
-    attachments,
+    attachments.length,
+    currentChannelId,
+    direct,
     messageEdit?.message_id,
     normalizeContentMessageSubmit,
     onClearAttachment,
