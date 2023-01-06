@@ -17,8 +17,11 @@ import usePinPosts from 'hook/usePinPosts';
 import useThemeColor from 'hook/useThemeColor';
 import {TaskData} from 'models';
 import React, {memo, useCallback, useEffect, useState} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
-import {createLoadMoreSelector} from 'reducers/selectors';
+import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
+import {
+  createLoadingSelector,
+  createLoadMoreSelector,
+} from 'reducers/selectors';
 import MenuPinPost from 'components/MenuPinPost';
 import useUserRole from 'hook/useUserRole';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -39,6 +42,7 @@ import AppConfig from 'common/AppConfig';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
+const taskLoadingSelector = createLoadingSelector([actionTypes.TASK_PREFIX]);
 
 const PinPostScreen = () => {
   const dispatch = useAppDispatch();
@@ -48,6 +52,7 @@ const PinPostScreen = () => {
   const communityId = useCommunityId();
   const {colors} = useThemeColor();
   const loadMoreTask = useAppSelector(state => taskMoreSelector(state));
+  const loadingTask = useAppSelector(state => taskLoadingSelector(state));
   const {canMoreTask} = usePinPostData();
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuDelete, setOpenMenuDelete] = useState(false);
@@ -257,6 +262,7 @@ const PinPostScreen = () => {
         <ChannelTitle />
       </View>
       <View style={styles.body}>
+        {loadingTask && pinPosts?.length === 0 && <ActivityIndicator />}
         <FlatList
           data={pinPosts}
           keyExtractor={item => item.task_id}

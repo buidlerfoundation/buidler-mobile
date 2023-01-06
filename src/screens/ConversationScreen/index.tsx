@@ -49,6 +49,7 @@ import {
   useIsFocused,
   useNavigation,
   useRoute,
+  useScrollToTop,
 } from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useUserRole from 'hook/useUserRole';
@@ -133,6 +134,13 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const toggleGallery = useCallback(
     () => setOpenGallery(current => !current),
     [],
+  );
+  useScrollToTop(
+    useRef({
+      scrollToTop: () => {
+        navigation?.toggleDrawer?.();
+      },
+    }),
   );
   useEffect(() => {
     if (!isFocused) {

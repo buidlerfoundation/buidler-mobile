@@ -141,11 +141,11 @@ const WalletCollectibles = () => {
                     height: itemSize,
                   },
                 ]}>
-                <SvgUri
+                {/* <SvgUri
                   uri={data.image_url}
                   width={itemSize}
                   height={itemSize}
-                />
+                /> */}
               </View>
             ) : (
               <FastImage

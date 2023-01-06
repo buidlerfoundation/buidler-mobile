@@ -126,6 +126,13 @@ const getMessages = async (
   dispatch({type: actionTypes.UPDATE_FROM_SOCKET, payload: false});
 };
 
+const syncCommunityList = async () => {
+  const res = await api.findTeam();
+  if (res.statusCode === 200) {
+    store.dispatch({type: actionTypes.TEAM_SUCCESS, payload: {team: res.data}});
+  }
+};
+
 const actionSetCurrentTeam = async (
   team: any,
   dispatch: Dispatch,
@@ -267,6 +274,7 @@ class SocketUtil {
     });
   }
   reloadData = async () => {
+    syncCommunityList();
     const currentChannel = getCurrentChannel();
     const currentDirectChannel = getCurrentChannel(true);
     const currentTeam = getCurrentCommunity();
