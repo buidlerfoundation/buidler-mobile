@@ -1,4 +1,4 @@
-import React, {memo, useState} from 'react';
+import React, {memo, useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -25,6 +25,8 @@ import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AppDimension from 'common/AppDimension';
 import {initialSpaceToggle} from 'actions/SideBarActions';
+import {biometricAuthenticate} from 'services/biometric';
+import {getCredentials} from 'services/keychain';
 
 const UnlockScreen = () => {
   const navigation = useNavigation();
@@ -38,12 +40,12 @@ const UnlockScreen = () => {
     navigation.goBack();
   }, [navigation]);
   const handleAccessToHome = useCallback(
-    async (iv: string) => {
+    async (iv: string, password: string) => {
       try {
         const encryptedStr: any = await AsyncStorage.getItem(
           AsyncKey.encryptedDataKey,
         );
-        const decryptedStr = decryptString(encryptedStr, pass, iv);
+        const decryptedStr = decryptString(encryptedStr, password, iv);
         if (!decryptedStr) {
           alert('Invalid Password');
         } else {
@@ -65,7 +67,39 @@ const UnlockScreen = () => {
         alert('Invalid Password');
       }
     },
-    [dispatch, pass, user.user_id],
+    [dispatch, user.user_id],
+  );
+  const checkIfUsingBiometrics = useCallback(async () => {
+    if (route.params?.toggleBiometric) return;
+    const credentialFromKeychain = await getCredentials();
+    if (credentialFromKeychain) {
+      const iv = await getIV();
+      biometricAuthenticate().then(async res => {
+        if (res.success) {
+          setLoading(true);
+          await handleAccessToHome(iv, credentialFromKeychain.password);
+          setLoading(false);
+        }
+      });
+    }
+  }, [handleAccessToHome, route.params?.toggleBiometric]);
+  const handleActiveBiometric = useCallback(
+    async (iv: string, password: string) => {
+      try {
+        const encryptedStr: any = await AsyncStorage.getItem(
+          AsyncKey.encryptedDataKey,
+        );
+        const decryptedStr = decryptString(encryptedStr, password, iv);
+        if (!decryptedStr) {
+          alert('Invalid Password');
+        } else {
+          navigation.navigate(ScreenID.ProfileScreen, {password});
+        }
+      } catch (error) {
+        alert('Invalid Password');
+      }
+    },
+    [navigation],
   );
   const handleBackup = useCallback(
     (iv: string, encryptedStr) => {
@@ -88,20 +122,33 @@ const UnlockScreen = () => {
     if (loading) return;
     setLoading(true);
     const iv = await getIV();
-    if (route.params?.backupData) {
+    if (route.params?.toggleBiometric) {
+      await handleActiveBiometric(iv, pass);
+    } else if (route.params?.backupData) {
       await handleBackup(iv, route.params?.backupData);
     } else {
-      await handleAccessToHome(iv);
+      await handleAccessToHome(iv, pass);
     }
     setLoading(false);
-  }, [loading, route.params?.backupData, handleBackup, handleAccessToHome]);
+  }, [
+    loading,
+    route.params?.toggleBiometric,
+    route.params?.backupData,
+    handleActiveBiometric,
+    pass,
+    handleBackup,
+    handleAccessToHome,
+  ]);
+  useEffect(() => {
+    checkIfUsingBiometrics();
+  }, [checkIfUsingBiometrics]);
   if (!user) return <View style={styles.container} />;
 
   return (
     <KeyboardLayout>
       <View style={styles.container}>
         <View style={styles.body}>
-          {route.params?.backupData && (
+          {(route.params?.backupData || route.params?.toggleBiometric) && (
             <Touchable
               style={styles.backButton}
               useReactNative

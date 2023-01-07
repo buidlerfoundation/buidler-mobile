@@ -28,7 +28,6 @@ import {normalizeUserName} from 'helpers/MessageHelper';
 import {getCurrentChannel, getCurrentCommunity} from 'helpers/StoreHelper';
 import {getCollectibles} from 'actions/CollectibleActions';
 import {getDeviceCode} from 'helpers/GenerateUUID';
-import Config from 'react-native-config';
 import {AsyncKey} from 'common/AppStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NavigationServices from 'services/NavigationServices';
@@ -38,6 +37,7 @@ import {Socket} from 'socket.io-client';
 import messaging from '@react-native-firebase/messaging';
 import {Platform} from 'react-native';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
+import {API_URL} from 'react-native-dotenv';
 
 const syncChannelPrivateKey = async () => {
   const {privateKey} = store.getState().configs;
@@ -227,7 +227,7 @@ class SocketUtil {
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
     const deviceCode = await getDeviceCode();
     const deviceToken = await messaging().getToken();
-    this.socket = io(`${Config.API_URL}`, {
+    this.socket = io(`${API_URL}`, {
       query: {
         token: accessToken,
         device_code: deviceCode,

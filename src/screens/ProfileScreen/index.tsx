@@ -19,10 +19,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import AppStyles from 'common/AppStyles';
+import {
+  getCredentials,
+  removeCredentials,
+  storeCredentials,
+} from 'services/keychain';
+import {biometricAuthenticate} from 'services/biometric';
+import SwitchButton from 'components/SwitchButton';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const [toggleBiometric, setToggleBiometric] = useState(false);
   const [isOpenConfirmLogout, setOpenConfirmLogout] = useState(false);
   const [isOpenConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [backupData, setBackupData] = useState(null);
@@ -32,6 +40,13 @@ const ProfileScreen = () => {
   const initialDataBackup = useCallback(async () => {
     const dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedSeedKey);
     setBackupData(dataBackup);
+  }, []);
+  useEffect(() => {
+    getCredentials().then(res => {
+      if (res) {
+        setToggleBiometric(true);
+      }
+    });
   }, []);
   useEffect(() => {
     if (route.params?.seed) {
@@ -45,6 +60,13 @@ const ProfileScreen = () => {
   useEffect(() => {
     initialDataBackup();
   }, [initialDataBackup]);
+  useEffect(() => {
+    if (route.params?.password) {
+      storeCredentials(route.params?.password);
+      setToggleBiometric(true);
+      navigation.setParams({password: null});
+    }
+  }, [navigation, route.params?.password]);
   const toggleConfirmLogout = useCallback(
     () => setOpenConfirmLogout(current => !current),
     [],
@@ -67,6 +89,18 @@ const ProfileScreen = () => {
   const onBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
+  const toggleFaceID = useCallback(async () => {
+    biometricAuthenticate().then(res => {
+      if (res.success) {
+        if (toggleBiometric) {
+          setToggleBiometric(false);
+          removeCredentials();
+        } else {
+          navigation.navigate(ScreenID.UnlockScreen, {toggleBiometric: true});
+        }
+      }
+    });
+  }, [navigation, toggleBiometric]);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -97,6 +131,18 @@ const ProfileScreen = () => {
             <SVG.IconArrowRight fill={colors.subtext} />
           </Touchable>
         )}
+        <Touchable
+          style={[
+            styles.actionItem,
+            {backgroundColor: colors.activeBackgroundLight},
+          ]}
+          onPress={toggleFaceID}>
+          <SVG.IconMenuSetting />
+          <Text style={[styles.actionLabel, {color: colors.text}]}>
+            Toggle Biometric
+          </Text>
+          <SwitchButton toggleOn={toggleBiometric} readonly />
+        </Touchable>
         <Touchable
           style={[
             styles.actionItem,

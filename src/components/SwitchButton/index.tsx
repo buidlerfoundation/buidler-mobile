@@ -12,15 +12,16 @@ import {Animated, StyleSheet} from 'react-native';
 
 type SwitchButtonProps = {
   toggleOn?: boolean;
-  onChange: (isActive: boolean) => void;
+  onChange?: (isActive: boolean) => void;
+  readonly?: boolean;
 };
 
-const SwitchButton = ({toggleOn, onChange}: SwitchButtonProps) => {
+const SwitchButton = ({toggleOn, readonly, onChange}: SwitchButtonProps) => {
   const animatedValue = useRef(new Animated.Value(0));
   const {colors} = useThemeColor();
   const [isActive, setActive] = useState(false);
   const toggle = useCallback(() => {
-    onChange(!isActive);
+    onChange?.(!isActive);
   }, [isActive, onChange]);
   const switchOn = useCallback(() => {
     Animated.spring(animatedValue.current, {
@@ -33,7 +34,6 @@ const SwitchButton = ({toggleOn, onChange}: SwitchButtonProps) => {
     }).start();
   }, []);
   useEffect(() => {
-    console.log(toggleOn);
     setActive(toggleOn);
     if (toggleOn) {
       switchOn();
@@ -66,7 +66,7 @@ const SwitchButton = ({toggleOn, onChange}: SwitchButtonProps) => {
     [],
   );
   return (
-    <Touchable onPress={toggle} useWithoutFeedBack>
+    <Touchable onPress={toggle} disabled={readonly} useWithoutFeedBack>
       <Animated.View style={[styles.container, {backgroundColor}]}>
         <Animated.View
           style={[

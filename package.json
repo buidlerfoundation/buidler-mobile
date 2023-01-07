@@ -8,7 +8,8 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "postinstall": "rn-nodeify --install stream,buffer,events,assert,crypto,vm --hack"
+    "postinstall": "rn-nodeify --install stream,buffer,events,assert,crypto,vm --hack",
+    "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/notable/main.jsbundle' --dev=false --platform='ios' --assets-dest='./iOS'"
   },
   "dependencies": {
     "@ethersproject/shims": "^5.6.0",
@@ -37,16 +38,18 @@
     "mixpanel-react-native": "^2.1.0",
     "moment": "^2.29.1",
     "numeral": "^2.0.6",
+    "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "react": "18.1.0",
     "react-native": "0.70.4",
     "react-native-actionsheet": "^2.4.2",
+    "react-native-biometrics": "^3.0.1",
     "react-native-calendars": "^1.1268.0",
     "react-native-collapsible": "^1.6.0",
-    "react-native-config": "^1.4.11",
     "react-native-convert-ph-asset": "^1.0.3",
     "react-native-create-thumbnail": "^1.6.3",
     "react-native-crypto": "^2.2.0",
+    "react-native-dotenv": "^3.4.7",
     "react-native-emoji-selector": "https://github.com/HungNguyenBao/react-native-emoji-selector",
     "react-native-fast-image": "^8.5.11",
     "react-native-gesture-handler": "^1.10.3",
@@ -55,6 +58,7 @@
     "react-native-image-picker": "^4.10.0",
     "react-native-image-resizer": "^1.4.5",
     "react-native-image-zoom-viewer": "^3.0.1",
+    "react-native-keychain": "^8.1.1",
     "react-native-modal": "^13.0.1",
     "react-native-pager-view": "^5.4.7",
     "react-native-permissions": "^3.1.0",
@@ -105,7 +109,8 @@
     "_stream_duplex": "readable-stream/duplex",
     "_stream_passthrough": "readable-stream/passthrough",
     "stream": "stream-browserify",
-    "vm": "vm-browserify"
+    "vm": "vm-browserify",
+    "path": "path-browserify"
   },
   "browser": {
     "crypto": "react-native-crypto",
@@ -115,6 +120,7 @@
     "_stream_duplex": "readable-stream/duplex",
     "_stream_passthrough": "readable-stream/passthrough",
     "stream": "stream-browserify",
-    "vm": "vm-browserify"
+    "vm": "vm-browserify",
+    "path": "path-browserify"
   }
 }

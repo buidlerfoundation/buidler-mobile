@@ -1,10 +1,10 @@
 import {getCategoryByApi, getEventNameByApi} from 'helpers/AnalyticHelper';
 import {Mixpanel} from 'mixpanel-react-native';
 import {UserData} from 'models';
-import Config from 'react-native-config';
+import {MIXPANEL_TOKEN} from 'react-native-dotenv';
 
 class MixpanelAnalytics {
-  mixpanel = new Mixpanel(Config.MIXPANEL_TOKEN, true);
+  mixpanel = new Mixpanel(MIXPANEL_TOKEN, true);
   init() {
     this.mixpanel.init();
   }

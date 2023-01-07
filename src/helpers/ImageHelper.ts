@@ -1,5 +1,5 @@
 import CryptoJS from 'crypto-js';
-import Config from 'react-native-config';
+import {IMAGE_KEY, IMAGE_SALT} from 'react-native-dotenv';
 
 type imageOptions = {
   w?: number;
@@ -69,8 +69,8 @@ class ImageHelper {
     }
     const domain = this.imgDomain;
     const path = this.buildImagePath(name, id, options, noParams);
-    const message = `${Config.IMAGE_SALT}/${path}`;
-    const key = `${Config.IMAGE_KEY}`;
+    const message = `${IMAGE_SALT}/${path}`;
+    const key = `${IMAGE_KEY}`;
     const signature = CryptoJS.HmacSHA256(message, key)
       .toString(CryptoJS.enc.Base64)
       .replace(/\+/g, '-')

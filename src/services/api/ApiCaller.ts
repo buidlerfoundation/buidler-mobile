@@ -9,8 +9,8 @@ import {logout, refreshToken} from 'actions/UserActions';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID, {StackID} from 'common/ScreenID';
 import SocketUtils from 'utils/SocketUtils';
-import Config from 'react-native-config';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
+import {API_URL} from 'react-native-dotenv';
 
 const METHOD_GET = 'get';
 const METHOD_POST = 'post';
@@ -88,7 +88,7 @@ const fetchWithRetry = (apiUrl: string, fetchOptions = {}, retries = 0) => {
     })
     .catch(err => {
       MixpanelAnalytics.trackingError(
-        apiUrl.replace(Config.API_URL, ''),
+        apiUrl.replace(API_URL, ''),
         fetchOptions.method.toLowerCase(),
         err.message || '',
         err.statusCode,
@@ -160,7 +160,7 @@ async function requestAPI<T = any>(
   if (serviceBaseUrl) {
     apiUrl = serviceBaseUrl + uri;
   } else {
-    apiUrl = Config.API_URL + uri;
+    apiUrl = API_URL + uri;
   }
 
   // Get access token and attach it to API request's header
