@@ -467,6 +467,7 @@ export const accessToHome =
         entity_type,
         direct,
         jumpMessageId: message_id,
+        channelId: entity_id,
       };
       const teamNotification = team?.find?.(t => t.team_id === team_id);
       const channelNotification = channels.find(

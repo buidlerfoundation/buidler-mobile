@@ -64,6 +64,7 @@ const RenderHTML = ({
           }
           navigation.navigate(ScreenID.ConversationScreen, {
             jumpMessageId: `${messageId}:${Math.random()}`,
+            channelId,
           });
         } else if (postId) {
           navigation.navigate(ScreenID.PinPostDetailScreen, {postId});

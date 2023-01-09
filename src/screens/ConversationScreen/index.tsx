@@ -189,7 +189,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   );
   const handleAroundMessage = useCallback(
     async (jumpMessageId: string) => {
-      const messageChannelId = route.params?.channelId || currentChannelId;
+      const messageChannelId = route.params?.channelId;
       if (!messageChannelId) return;
       const messageId = jumpMessageId.split(':')[0];
       if (findMessageById(messageId)) {
@@ -203,7 +203,6 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     },
     [
       channelType,
-      currentChannelId,
       dispatch,
       findMessageById,
       route.params?.channelId,

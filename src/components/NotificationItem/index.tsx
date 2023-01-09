@@ -181,10 +181,12 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
           navigation.navigate(StackID.DirectMessageStack, {
             jumpMessageId: `${item?.message_id}:${Math.random()}`,
             child: ScreenID.DirectMessageScreen,
+            channelId: item.channel?.channel_id,
           });
         } else {
           navigation.navigate(ScreenID.ConversationScreen, {
             jumpMessageId: `${item?.message_id}:${Math.random()}`,
+            channelId: item.channel?.channel_id,
           });
         }
         break;

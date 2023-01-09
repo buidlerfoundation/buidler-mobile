@@ -2,7 +2,7 @@ import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import React, {memo, useCallback} from 'react';
+import React, {memo, useCallback, useEffect} from 'react';
 import {View, StyleSheet, Text, Linking} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
@@ -10,6 +10,7 @@ import useThemeColor from 'hook/useThemeColor';
 import GlobalVariable from 'services/GlobalVariable';
 import AppStyles from 'common/AppStyles';
 import {buidlerHomeURL} from 'helpers/LinkHelper';
+import {removeCredentials} from 'services/keychain';
 
 const LoginScreen = () => {
   const {colors} = useThemeColor();
@@ -26,6 +27,9 @@ const LoginScreen = () => {
   }, []);
   const onPrivacyPress = useCallback(() => {
     Linking.openURL(`${buidlerHomeURL}/privacy`);
+  }, []);
+  useEffect(() => {
+    removeCredentials();
   }, []);
   return (
     <View style={styles.container}>
