@@ -46,6 +46,11 @@ const AppStyles = StyleSheet.create({
     fontFamily: Fonts.SemiBold,
     lineHeight: 18,
   },
+  TextSemi14: {
+    fontSize: 14,
+    fontFamily: Fonts.SemiBold,
+    lineHeight: 19,
+  },
   TextMed13: {
     fontSize: 13,
     fontFamily: Fonts.Medium,

@@ -189,7 +189,7 @@ const HomeStack = () => {
     <>
       <Tab.Navigator
         initialRouteName={
-          route.params?.direct
+          !route.params?.direct
             ? StackID.DirectMessageStack
             : StackID.ConversationStack
         }

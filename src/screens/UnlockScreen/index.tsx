@@ -1,4 +1,4 @@
-import React, {memo, useState, useEffect} from 'react';
+import React, {memo, useState, useEffect, useRef} from 'react';
 import {
   View,
   StyleSheet,
@@ -25,16 +25,19 @@ import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AppDimension from 'common/AppDimension';
 import {initialSpaceToggle} from 'actions/SideBarActions';
-import {biometricAuthenticate} from 'services/biometric';
+import {biometricAuthenticate, isBiometricAvailable} from 'services/biometric';
 import {getCredentials} from 'services/keychain';
+import AppStyles from 'common/AppStyles';
 
 const UnlockScreen = () => {
+  const inputRef = useRef<TextInput>();
   const navigation = useNavigation();
   const route = useRoute();
   const [pass, setPass] = useState('');
   const {colors} = useThemeColor();
   const dispatch = useDispatch();
   const user = useAppSelector(state => state.user.userData);
+  const [biometricType, setBiometricType] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const goBack = useCallback(() => {
     navigation.goBack();
@@ -70,17 +73,29 @@ const UnlockScreen = () => {
     [dispatch, user.user_id],
   );
   const checkIfUsingBiometrics = useCallback(async () => {
-    if (route.params?.toggleBiometric) return;
+    if (route.params?.toggleBiometric) {
+      inputRef.current?.focus?.();
+      return;
+    }
     const credentialFromKeychain = await getCredentials();
     if (credentialFromKeychain) {
       const iv = await getIV();
-      biometricAuthenticate().then(async res => {
-        if (res.success) {
-          setLoading(true);
-          await handleAccessToHome(iv, credentialFromKeychain.password);
-          setLoading(false);
-        }
-      });
+      const biometricTypeRes = await isBiometricAvailable();
+      if (biometricTypeRes.biometryType) {
+        inputRef.current?.blur?.();
+        setBiometricType(biometricTypeRes.biometryType);
+        biometricAuthenticate().then(async res => {
+          if (res.success) {
+            setLoading(true);
+            await handleAccessToHome(iv, credentialFromKeychain.password);
+            setLoading(false);
+          } else {
+            inputRef.current?.focus?.();
+          }
+        });
+      }
+    } else {
+      inputRef.current?.focus?.();
     }
   }, [handleAccessToHome, route.params?.toggleBiometric]);
   const handleActiveBiometric = useCallback(
@@ -156,32 +171,52 @@ const UnlockScreen = () => {
               <SVG.IconArrowBack />
             </Touchable>
           )}
-          <AvatarView user={user} withStatus={false} size={120} />
+          <AvatarView user={user} withStatus={false} size={90} />
           <Text style={[styles.userName, {color: colors.text}]}>
             {user?.user_name}
           </Text>
-          <TextInput
-            autoFocus
-            placeholder="Password"
-            textAlign="center"
-            secureTextEntry
-            returnKeyType="done"
-            onSubmitEditing={checkPassword}
-            blurOnSubmit={false}
-            placeholderTextColor={colors.subtext}
-            value={pass}
-            onChangeText={text => setPass(text)}
-            textContentType="oneTimeCode"
-            style={[
-              styles.input,
-              {
-                color: colors.text,
-                backgroundColor: colors.activeBackgroundLight,
-                borderColor: colors.border,
-              },
-            ]}
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              ref={inputRef}
+              placeholder="Password"
+              textAlign="center"
+              secureTextEntry
+              returnKeyType="done"
+              onSubmitEditing={checkPassword}
+              blurOnSubmit={false}
+              placeholderTextColor={colors.subtext}
+              value={pass}
+              onChangeText={text => setPass(text)}
+              textContentType="oneTimeCode"
+              style={[
+                styles.input,
+                {
+                  color: colors.text,
+                  backgroundColor: colors.activeBackgroundLight,
+                  borderColor: colors.border,
+                },
+              ]}
+            />
+          </View>
         </View>
+        {biometricType && (
+          <Touchable
+            style={styles.unlockWithFaceID}
+            onPress={checkIfUsingBiometrics}>
+            {biometricType === 'FaceID' ? (
+              <SVG.IconFaceID fill={colors.subtext} />
+            ) : (
+              <SVG.IconTouchID fill={colors.subtext} />
+            )}
+            <Text
+              style={[
+                AppStyles.TextSemi14,
+                {color: colors.subtext, marginLeft: 10},
+              ]}>
+              Unlock with {biometricType}
+            </Text>
+          </Touchable>
+        )}
         <Touchable
           style={[styles.buttonUnlock, {backgroundColor: colors.blue}]}
           disabled={loading}
@@ -207,7 +242,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     width: '100%',
-    paddingHorizontal: 20,
+    paddingHorizontal: 25,
     justifyContent: 'center',
   },
   userName: {
@@ -216,14 +251,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 45,
+  },
   input: {
-    paddingVertical: 12,
-    marginTop: 35,
+    paddingVertical: 14,
     fontFamily: Fonts.SemiBold,
     fontSize: 16,
     borderWidth: 1,
     borderRadius: 5,
-    width: '100%',
+    flex: 1,
   },
   buttonUnlock: {
     height: 60,
@@ -240,6 +279,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: AppDimension.extraTop + 25,
     left: 15,
+  },
+  unlockWithFaceID: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 5,
+    alignSelf: 'center',
+    marginBottom: 20,
   },
 });
 

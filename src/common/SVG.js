@@ -80,6 +80,9 @@ import IconNotificationMention from '../assets/images/ic_notification_mention.sv
 import IconVideoPlay from '../assets/images/ic_video_play.svg';
 import IconTabChannel from '../assets/images/ic_tab_channel.svg';
 import IconBellQuite from '../assets/images/ic_bell_quite.svg';
+import IconMenuBiometry from '../assets/images/ic_menu_biometry.svg';
+import IconFaceID from '../assets/images/ic_face_id.svg';
+import IconTouchID from '../assets/images/ic_touch_id.svg';
 
 export default {
   IconExpand,
@@ -164,4 +167,7 @@ export default {
   IconVideoPlay,
   IconTabChannel,
   IconBellQuite,
+  IconMenuBiometry,
+  IconFaceID,
+  IconTouchID,
 };

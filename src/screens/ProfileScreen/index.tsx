@@ -24,12 +24,13 @@ import {
   removeCredentials,
   storeCredentials,
 } from 'services/keychain';
-import {biometricAuthenticate} from 'services/biometric';
+import {biometricAuthenticate, isBiometricAvailable} from 'services/biometric';
 import SwitchButton from 'components/SwitchButton';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const [biometricType, setShowBiometricType] = useState<string | null>(null);
   const [toggleBiometric, setToggleBiometric] = useState(false);
   const [isOpenConfirmLogout, setOpenConfirmLogout] = useState(false);
   const [isOpenConfirmDelete, setOpenConfirmDelete] = useState(false);
@@ -46,6 +47,11 @@ const ProfileScreen = () => {
       if (res) {
         setToggleBiometric(true);
       }
+    });
+  }, []);
+  useEffect(() => {
+    isBiometricAvailable().then(res => {
+      setShowBiometricType(res.biometryType);
     });
   }, []);
   useEffect(() => {
@@ -131,18 +137,20 @@ const ProfileScreen = () => {
             <SVG.IconArrowRight fill={colors.subtext} />
           </Touchable>
         )}
-        <Touchable
-          style={[
-            styles.actionItem,
-            {backgroundColor: colors.activeBackgroundLight},
-          ]}
-          onPress={toggleFaceID}>
-          <SVG.IconMenuSetting />
-          <Text style={[styles.actionLabel, {color: colors.text}]}>
-            Toggle Biometric
-          </Text>
-          <SwitchButton toggleOn={toggleBiometric} readonly />
-        </Touchable>
+        {biometricType && (
+          <Touchable
+            style={[
+              styles.actionItem,
+              {backgroundColor: colors.activeBackgroundLight},
+            ]}
+            onPress={toggleFaceID}>
+            <SVG.IconMenuBiometry />
+            <Text style={[styles.actionLabel, {color: colors.text}]}>
+              Unlock with {biometricType}
+            </Text>
+            <SwitchButton toggleOn={toggleBiometric} readonly />
+          </Touchable>
+        )}
         <Touchable
           style={[
             styles.actionItem,

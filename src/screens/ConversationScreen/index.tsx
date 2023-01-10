@@ -153,6 +153,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     }
   }, [navigation, route.params?.fromNotification]);
   useEffect(() => {
+    console.log('XXX: ', currentTeamId, route?.params?.openDrawer);
     if (currentTeamId) {
       if (route.params?.openDrawer) {
         navigation.setParams({openDrawer: false});

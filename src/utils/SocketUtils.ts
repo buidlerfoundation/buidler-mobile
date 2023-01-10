@@ -38,6 +38,7 @@ import messaging from '@react-native-firebase/messaging';
 import {Platform} from 'react-native';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import {API_URL} from 'react-native-dotenv';
+import Toast from 'react-native-toast-message';
 
 const syncChannelPrivateKey = async () => {
   const {privateKey} = store.getState().configs;
@@ -251,6 +252,15 @@ class SocketUtil {
           await store.dispatch(logout());
           NavigationServices.reset(StackID.AuthStack);
         }
+      } else {
+        Toast.show({
+          type: 'customError',
+          props: {message},
+        });
+        store.dispatch({
+          type: actionTypes.UPDATE_FROM_SOCKET,
+          payload: false,
+        });
       }
     });
     this.socket?.on('connect', () => {
@@ -258,6 +268,11 @@ class SocketUtil {
       console.log('socket connected');
       if (!this.firstLoad) {
         this.reloadData();
+      } else {
+        store.dispatch({
+          type: actionTypes.UPDATE_FROM_SOCKET,
+          payload: false,
+        });
       }
       this.firstLoad = false;
       this.removeListenSocket();
@@ -1042,6 +1057,7 @@ class SocketUtil {
   };
   reconnectIfNeeded = () => {
     if (!this.socket?.connected) {
+      store.dispatch({type: actionTypes.UPDATE_FROM_SOCKET, payload: true});
       this.socket?.connect?.();
     }
   };
