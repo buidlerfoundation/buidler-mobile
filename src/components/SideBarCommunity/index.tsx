@@ -4,16 +4,13 @@ import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
-import SVG from 'common/SVG';
 import CommunityItem from 'components/CommunityItem';
 import MenuCommunity from 'components/MenuCommunity';
 import MenuConfirmLeaveCommunity from 'components/MenuConfirmLeaveCommunity';
 import ModalBottom from 'components/ModalBottom';
-import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
-import useUserRole from 'hook/useUserRole';
 import {Community} from 'models';
 import React, {memo, useCallback, useState} from 'react';
 import {StyleSheet, Text, View, FlatList, Alert} from 'react-native';
@@ -31,7 +28,6 @@ const SideBarCommunity = () => {
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(
     null,
   );
-  const userRole = useUserRole();
   const team = useAppSelector(state => state.user.team || []);
   const handlePress = useCallback(
     async (item: Community) => {
@@ -94,24 +90,8 @@ const SideBarCommunity = () => {
     }
   }, [dispatch, onCloseMenuConfirmLeave, selectedCommunity?.team_id]);
   const renderFooter = useCallback(() => {
-    if (userRole === 'Owner') {
-      return (
-        <Touchable
-          style={[styles.createButton, {backgroundColor: colors.background}]}
-          onPress={onCreateCommunity}>
-          <SVG.IconPlus fill={colors.subtext} />
-          <Text
-            style={[
-              AppStyles.TextSemi15,
-              {color: colors.subtext, marginLeft: 28},
-            ]}>
-            New community
-          </Text>
-        </Touchable>
-      );
-    }
     return <View style={{height: 10}} />;
-  }, [colors.background, colors.subtext, onCreateCommunity, userRole]);
+  }, []);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>

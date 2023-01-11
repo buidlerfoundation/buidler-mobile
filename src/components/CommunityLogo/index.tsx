@@ -1,8 +1,8 @@
-import SVG from 'common/SVG';
+import Fonts from 'common/Fonts';
 import ImageHelper from 'helpers/ImageHelper';
 import {Community} from 'models';
 import React, {memo} from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 type CommunityLogoProps = {
@@ -42,8 +42,21 @@ const CommunityLogo = ({
         height: size,
         borderRadius: borderRadius,
         overflow: 'hidden',
+        backgroundColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
-      <SVG.LogoDarkSquare width={size} height={size} />
+      <Text
+        style={{
+          color: 'white',
+          fontFamily: Fonts.Helvetica,
+          textAlign: 'center',
+          fontWeight: 'bold',
+          fontSize: size / 2,
+          textTransform: 'uppercase',
+        }}>
+        {community.team_display_name.charAt(0)}
+      </Text>
     </View>
   );
 };
