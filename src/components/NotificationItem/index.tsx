@@ -127,6 +127,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
               emojiSize={15}
               size={15}
               color={colorByState}
+              communityId={item.team_id}
             />
             <Text
               style={[
@@ -146,6 +147,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
     item.channel,
     item.notification_type,
     item.post?.content,
+    item.team_id,
   ]);
   const onItemPress = useCallback(async () => {
     if (!item.is_read) {

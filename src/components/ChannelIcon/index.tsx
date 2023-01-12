@@ -12,6 +12,7 @@ type ChannelIconProps = {
   color: string;
   size?: number;
   emojiSize?: number;
+  communityId?: string;
 };
 
 const ChannelIcon = ({
@@ -19,6 +20,7 @@ const ChannelIcon = ({
   color,
   size = 20,
   emojiSize = 16,
+  communityId,
 }: ChannelIconProps) => {
   const currentCommunity = useCurrentCommunity();
   if (channel?.channel_image_url) {
@@ -28,7 +30,7 @@ const ChannelIcon = ({
         source={{
           uri: ImageHelper.normalizeImage(
             channel.channel_image_url,
-            currentCommunity.team_id,
+            communityId || currentCommunity.team_id,
           ),
         }}
       />
