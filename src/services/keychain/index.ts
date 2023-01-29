@@ -26,6 +26,4 @@ export const getCredentials: () => Promise<Keychain.UserCredentials | null> =
     }
   };
 
-export const removeCredentials = () => {
-  Keychain.resetGenericPassword(options);
-};
+export const removeCredentials = () => Keychain.resetGenericPassword(options);

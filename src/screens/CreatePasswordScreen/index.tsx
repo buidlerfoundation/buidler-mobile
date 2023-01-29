@@ -1,5 +1,12 @@
 import NavigationHeader from 'components/NavigationHeader';
-import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   StyleSheet,
@@ -22,6 +29,10 @@ import useAppDispatch from 'hook/useAppDispatch';
 import {accessApp} from 'actions/UserActions';
 import {useFocusEffect} from '@react-navigation/native';
 import useAccessingApp from 'hook/useAccessingApp';
+import {biometricAuthenticate, isBiometricAvailable} from 'services/biometric';
+import SwitchButton from 'components/SwitchButton';
+import AppStyles from 'common/AppStyles';
+import {removeCredentials, storeCredentials} from 'services/keychain';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
@@ -33,8 +44,14 @@ const CreatePasswordScreen = ({route}: Props) => {
   const inputRef = useRef<TextInput>();
   const seed = useMemo(() => route.params?.seed || '', [route.params?.seed]);
   const {colors, dark} = useThemeColor();
+  const [biometricType, setShowBiometricType] = useState<string | null>(null);
+  const [activeBiometric, setActiveBiometric] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
+  const toggleBiometric = useCallback(
+    () => setActiveBiometric(current => !current),
+    [],
+  );
   const togglePassword = () => setShowPassword(!showPassword);
   const accessingApp = useAccessingApp();
   const passwordLevel = useMemo(() => {
@@ -49,7 +66,7 @@ const CreatePasswordScreen = ({route}: Props) => {
       return 0;
     return passwordRules().filter(el => el.regex.test(password)).length;
   }, [password]);
-  const onNextPress = useCallback(() => {
+  const handleNext = useCallback(() => {
     if (seed) {
       // logged on
       dispatch(accessApp(seed, password));
@@ -59,12 +76,29 @@ const CreatePasswordScreen = ({route}: Props) => {
       });
     }
   }, [dispatch, password, seed]);
+  const onNextPress = useCallback(async () => {
+    if (activeBiometric) {
+      await removeCredentials();
+      const res = await biometricAuthenticate();
+      if (res.success) {
+        storeCredentials(password);
+        handleNext();
+      }
+    } else {
+      handleNext();
+    }
+  }, [activeBiometric, handleNext, password]);
   const onChangePassword = useCallback(text => setPassword(text), []);
   useFocusEffect(
     useCallback(() => {
       inputRef.current?.focus();
     }, []),
   );
+  useEffect(() => {
+    isBiometricAvailable().then(res => {
+      setShowBiometricType(res.biometryType);
+    });
+  }, []);
   return (
     <KeyboardLayout>
       <View style={styles.container}>
@@ -125,6 +159,18 @@ const CreatePasswordScreen = ({route}: Props) => {
               How does Notable store your password?
             </Text>
           </Touchable> */}
+          {biometricType && (
+            <Touchable style={styles.biometryWrap} onPress={toggleBiometric}>
+              <Text
+                style={[
+                  AppStyles.TextMed15,
+                  {color: colors.text, marginRight: 10},
+                ]}>
+                Unlock with {biometricType}
+              </Text>
+              <SwitchButton toggleOn={activeBiometric} readonly />
+            </Touchable>
+          )}
           <Touchable
             style={[styles.buttonNext, {backgroundColor: colors.blue}]}
             onPress={onNextPress}
@@ -206,6 +252,12 @@ const styles = StyleSheet.create({
   },
   buttonSecureDes: {
     alignSelf: 'center',
+  },
+  biometryWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    justifyContent: 'center',
   },
 });
 
