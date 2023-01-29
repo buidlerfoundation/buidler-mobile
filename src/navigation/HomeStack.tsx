@@ -81,7 +81,7 @@ const HomeStack = () => {
     ({color}: {focused: boolean; color: string}) => {
       return (
         <View>
-          <SVG.IconTabChat fill={color} />
+          <SVG.IconLock fill={color} />
           {isUnseenDirect && (
             <UnseenBadge
               style={{
@@ -179,11 +179,16 @@ const HomeStack = () => {
             currentRoute.params?.drawerStatus === 'open'
               ? colors.border
               : colors.background,
-          backgroundColor: colors.background,
+          backgroundColor: colors.backgroundHeader,
         },
       };
     },
-    [colors.background, colors.border, tabBarIconDirect],
+    [
+      colors.background,
+      colors.backgroundHeader,
+      colors.border,
+      tabBarIconDirect,
+    ],
   );
   return (
     <>

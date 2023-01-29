@@ -61,6 +61,11 @@ const AppStyles = StyleSheet.create({
     fontFamily: Fonts.Medium,
     lineHeight: 13,
   },
+  TextMed12: {
+    fontSize: 12,
+    fontFamily: Fonts.Medium,
+    lineHeight: 17,
+  },
 });
 
 export default AppStyles;

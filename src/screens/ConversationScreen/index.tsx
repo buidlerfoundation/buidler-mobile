@@ -153,7 +153,6 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     }
   }, [navigation, route.params?.fromNotification]);
   useEffect(() => {
-    console.log('XXX: ', currentTeamId, route?.params?.openDrawer);
     if (currentTeamId) {
       if (route.params?.openDrawer) {
         navigation.setParams({openDrawer: false});
@@ -755,7 +754,11 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   }, [currentChannel?.is_chat_deactivated, userRole]);
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          direct && {backgroundColor: colors.backgroundHeader},
+        ]}>
         <Header direct={direct} />
         <FlatList
           data={uniqMessages}

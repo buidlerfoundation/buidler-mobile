@@ -83,6 +83,7 @@ import IconBellQuite from '../assets/images/ic_bell_quite.svg';
 import IconMenuBiometry from '../assets/images/ic_menu_biometry.svg';
 import IconFaceID from '../assets/images/ic_face_id.svg';
 import IconTouchID from '../assets/images/ic_touch_id.svg';
+import IconLock from '../assets/images/ic_lock.svg';
 
 export default {
   IconExpand,
@@ -170,4 +171,5 @@ export default {
   IconMenuBiometry,
   IconFaceID,
   IconTouchID,
+  IconLock,
 };

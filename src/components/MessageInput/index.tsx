@@ -513,7 +513,9 @@ const MessageInput = ({
       <View
         style={[
           {
-            backgroundColor: colors.background,
+            backgroundColor: direct
+              ? colors.backgroundHeader
+              : colors.background,
             borderTopWidth: 1,
             borderColor: colors.border,
           },
