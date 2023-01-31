@@ -11,6 +11,8 @@ import GlobalVariable from 'services/GlobalVariable';
 import AppStyles from 'common/AppStyles';
 import {buidlerHomeURL} from 'helpers/LinkHelper';
 import {removeCredentials} from 'services/keychain';
+import web3auth, {web3authRedirectUrl} from 'services/connectors/web3auth';
+import {LOGIN_PROVIDER} from '@web3auth/react-native-sdk';
 
 const LoginScreen = () => {
   const {colors} = useThemeColor();
@@ -21,6 +23,18 @@ const LoginScreen = () => {
   const onImportPress = useCallback(() => {
     GlobalVariable.sessionExpired = false;
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
+  }, []);
+  const onSocialConnectPress = useCallback(async () => {
+    GlobalVariable.sessionExpired = false;
+    const res = await web3auth.login({
+      redirectUrl: web3authRedirectUrl,
+      loginProvider: LOGIN_PROVIDER.DISCORD,
+    });
+    if (res.privKey) {
+      NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {
+        seed: res.privKey,
+      });
+    }
   }, []);
   const onTermPress = useCallback(() => {
     Linking.openURL(`${buidlerHomeURL}/terms`);
@@ -59,6 +73,18 @@ const LoginScreen = () => {
         useReactNative>
         <Text style={[styles.text, {color: colors.text}]}>Import wallet</Text>
         <SVG.IconArrowImport fill={colors.text} />
+      </Touchable>
+      <Touchable
+        style={[
+          styles.createButton,
+          {backgroundColor: colors.border, marginTop: 15},
+        ]}
+        onPress={onSocialConnectPress}
+        useReactNative>
+        <Text style={[styles.text, {color: colors.text}]}>Social connect</Text>
+        <View style={{padding: 4}}>
+          <SVG.IconWeb3auth width={18} height={18} />
+        </View>
       </Touchable>
       <Text
         style={[AppStyles.TextMed13, {color: colors.subtext, marginTop: 25}]}>

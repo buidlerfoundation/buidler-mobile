@@ -84,6 +84,7 @@ import IconMenuBiometry from '../assets/images/ic_menu_biometry.svg';
 import IconFaceID from '../assets/images/ic_face_id.svg';
 import IconTouchID from '../assets/images/ic_touch_id.svg';
 import IconLock from '../assets/images/ic_lock.svg';
+import IconWeb3auth from '../assets/images/ic_web3auth.svg';
 
 export default {
   IconExpand,
@@ -172,4 +173,5 @@ export default {
   IconFaceID,
   IconTouchID,
   IconLock,
+  IconWeb3auth,
 };

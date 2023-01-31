@@ -1,7 +1,8 @@
 import {UserData, UserRoleType} from 'models';
+import {API_URL} from 'react-native-dotenv';
 
 const AppConfig = {
-  baseUrl: 'https://api.buidler.app/',
+  baseUrl: API_URL,
   maximumFileSize: 100000000,
   showScrollMoreOffset: 275,
   timeoutCloseBottomSheet: 400,

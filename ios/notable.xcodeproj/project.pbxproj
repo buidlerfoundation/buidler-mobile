@@ -569,6 +569,7 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = notable/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Buidler;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -605,6 +606,7 @@
 				DEVELOPMENT_TEAM = UDCV6ZY8CU;
 				INFOPLIST_FILE = notable/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Buidler;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -419,6 +419,8 @@ PODS:
   - react-native-video/Video (6.0.0-alpha.3):
     - PromisesSwift
     - React-Core
+  - react-native-web-browser (1.1.0):
+    - React-Core
   - react-native-webview (11.23.1):
     - React-Core
   - React-perflogger (0.70.4)
@@ -626,6 +628,7 @@ DEPENDENCIES:
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-video (from `../node_modules/react-native-video`)
+  - "react-native-web-browser (from `../node_modules/@toruslabs/react-native-web-browser`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -761,6 +764,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-video:
     :path: "../node_modules/react-native-video"
+  react-native-web-browser:
+    :path: "../node_modules/@toruslabs/react-native-web-browser"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-perflogger:
@@ -882,6 +887,7 @@ SPEC CHECKSUMS:
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: dfe5aa13bee37a0c7e8059d14f72ffc076d120e9
   react-native-video: 3b4fa3b67e6d8efcfba6c27231a7a493c28d4f1f
+  react-native-web-browser: 087b454e1e94b58b40ba73f54251d77486144d19
   react-native-webview: d33e2db8925d090871ffeb232dfa50cb3a727581
   React-perflogger: 5e41b01b35d97cc1b0ea177181eb33b5c77623b6
   React-RCTActionSheet: 48949f30b24200c82f3dd27847513be34e06a3ae
@@ -917,6 +923,6 @@ SPEC CHECKSUMS:
   Yoga: 1f02ef4ce4469aefc36167138441b27d988282b1
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 9c30923d6e90888381efb8ca1a856c38e56aff2f
+PODFILE CHECKSUM: 9987bd0ab51b8fcbdd0abf174e32ab000ba1d4c7
 
 COCOAPODS: 1.11.3
