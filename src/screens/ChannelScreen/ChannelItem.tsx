@@ -2,7 +2,6 @@ import {useNavigation} from '@react-navigation/native';
 import {setCurrentChannel} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
-import SVG from 'common/SVG';
 import ChannelIcon from 'components/ChannelIcon';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
@@ -86,7 +85,6 @@ const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
             style={[styles.unSeenBadge, {backgroundColor: colors.mention}]}
           />
         )}
-        {isQuiet && <SVG.IconBellQuite fill={titleColor} />}
       </Touchable>
     </View>
   );
