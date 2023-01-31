@@ -68,11 +68,21 @@ const ProfileScreen = () => {
   }, [initialDataBackup]);
   useEffect(() => {
     if (route.params?.password) {
-      storeCredentials(route.params?.password);
-      setToggleBiometric(true);
+      const pass = route.params?.password;
+      biometricAuthenticate().then(res => {
+        if (res.success) {
+          if (toggleBiometric) {
+            setToggleBiometric(false);
+            removeCredentials();
+          } else {
+            storeCredentials(pass);
+            setToggleBiometric(true);
+          }
+        }
+      });
       navigation.setParams({password: null});
     }
-  }, [navigation, route.params?.password]);
+  }, [navigation, route.params?.password, toggleBiometric]);
   const toggleConfirmLogout = useCallback(
     () => setOpenConfirmLogout(current => !current),
     [],
@@ -96,17 +106,8 @@ const ProfileScreen = () => {
     navigation.goBack();
   }, [navigation]);
   const toggleFaceID = useCallback(async () => {
-    biometricAuthenticate().then(res => {
-      if (res.success) {
-        if (toggleBiometric) {
-          setToggleBiometric(false);
-          removeCredentials();
-        } else {
-          navigation.navigate(ScreenID.UnlockScreen, {toggleBiometric: true});
-        }
-      }
-    });
-  }, [navigation, toggleBiometric]);
+    navigation.navigate(ScreenID.UnlockScreen, {toggleBiometric: true});
+  }, [navigation]);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
