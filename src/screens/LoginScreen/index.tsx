@@ -24,11 +24,11 @@ const LoginScreen = () => {
     GlobalVariable.sessionExpired = false;
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
   }, []);
-  const onSocialConnectPress = useCallback(async () => {
+  const onSocialConnectPress = useCallback(async (provider: string) => {
     GlobalVariable.sessionExpired = false;
     const res = await web3auth.login({
       redirectUrl: web3authRedirectUrl,
-      loginProvider: LOGIN_PROVIDER.DISCORD,
+      loginProvider: provider,
     });
     if (res.privKey) {
       NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {
@@ -36,6 +36,18 @@ const LoginScreen = () => {
       });
     }
   }, []);
+  const onLoginWithApple = useCallback(() => {
+    onSocialConnectPress(LOGIN_PROVIDER.APPLE);
+  }, [onSocialConnectPress]);
+  const onLoginWithDiscord = useCallback(() => {
+    onSocialConnectPress(LOGIN_PROVIDER.DISCORD);
+  }, [onSocialConnectPress]);
+  const onLoginWithFacebook = useCallback(() => {
+    onSocialConnectPress(LOGIN_PROVIDER.FACEBOOK);
+  }, [onSocialConnectPress]);
+  const onLoginWithGoogle = useCallback(() => {
+    onSocialConnectPress(LOGIN_PROVIDER.GOOGLE);
+  }, [onSocialConnectPress]);
   const onTermPress = useCallback(() => {
     Linking.openURL(`${buidlerHomeURL}/terms`);
   }, []);
@@ -74,18 +86,38 @@ const LoginScreen = () => {
         <Text style={[styles.text, {color: colors.text}]}>Import wallet</Text>
         <SVG.IconArrowImport fill={colors.text} />
       </Touchable>
-      <Touchable
-        style={[
-          styles.createButton,
-          {backgroundColor: colors.border, marginTop: 15},
-        ]}
-        onPress={onSocialConnectPress}
-        useReactNative>
-        <Text style={[styles.text, {color: colors.text}]}>Social connect</Text>
-        <View style={{padding: 4}}>
-          <SVG.IconWeb3auth width={18} height={18} />
+      <View
+        style={{marginTop: 20, alignItems: 'center', justifyContent: 'center'}}>
+        <Text style={[AppStyles.TextMed15, {color: colors.text}]}>
+          Or connect with social account:
+        </Text>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Touchable
+            useReactNative
+            style={{padding: 10}}
+            onPress={onLoginWithApple}>
+            <SVG.IconLogoApple fill={colors.text} />
+          </Touchable>
+          <Touchable
+            useReactNative
+            style={{padding: 10}}
+            onPress={onLoginWithDiscord}>
+            <SVG.IconLogoDiscord fill={colors.text} />
+          </Touchable>
+          <Touchable
+            useReactNative
+            style={{padding: 10}}
+            onPress={onLoginWithFacebook}>
+            <SVG.IconLogoFacebook fill={colors.text} />
+          </Touchable>
+          <Touchable
+            useReactNative
+            style={{padding: 10}}
+            onPress={onLoginWithGoogle}>
+            <SVG.IconLogoGoogle fill={colors.text} />
+          </Touchable>
         </View>
-      </Touchable>
+      </View>
       <Text
         style={[AppStyles.TextMed13, {color: colors.subtext, marginTop: 25}]}>
         By connecting wallet, you agree to our{' '}

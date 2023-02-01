@@ -85,6 +85,10 @@ import IconFaceID from '../assets/images/ic_face_id.svg';
 import IconTouchID from '../assets/images/ic_touch_id.svg';
 import IconLock from '../assets/images/ic_lock.svg';
 import IconWeb3auth from '../assets/images/ic_web3auth.svg';
+import IconLogoApple from '../assets/images/ic_logo_apple.svg';
+import IconLogoDiscord from '../assets/images/ic_logo_discord.svg';
+import IconLogoFacebook from '../assets/images/ic_logo_facebook.svg';
+import IconLogoGoogle from '../assets/images/ic_logo_google.svg';
 
 export default {
   IconExpand,
@@ -174,4 +178,8 @@ export default {
   IconTouchID,
   IconLock,
   IconWeb3auth,
+  IconLogoApple,
+  IconLogoDiscord,
+  IconLogoFacebook,
+  IconLogoGoogle,
 };
