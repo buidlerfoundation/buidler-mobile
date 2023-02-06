@@ -6,17 +6,23 @@ import AppStyles from 'common/AppStyles';
 import Emoji from 'components/Emoji';
 import Touchable from 'components/Touchable';
 import SVG from 'common/SVG';
+import {useModal} from 'components/ModalProvider';
+import ReactDetail from 'components/ReactDetail';
 
 type ReactItemProps = {
   react: any;
   onReactPress?: (name: string) => void;
+  onReactLongPress?: (name: string) => void;
 };
 
-const ReactItem = ({react, onReactPress}: ReactItemProps) => {
+const ReactItem = ({react, onReactPress, onReactLongPress}: ReactItemProps) => {
   const {colors} = useThemeColor();
   const onPress = useCallback(() => {
     onReactPress?.(react.reactName);
   }, [onReactPress, react.reactName]);
+  const onLongPress = useCallback(() => {
+    onReactLongPress?.(react.reactName);
+  }, [onReactLongPress, react.reactName]);
   return (
     <Touchable
       style={[
@@ -28,7 +34,8 @@ const ReactItem = ({react, onReactPress}: ReactItemProps) => {
         },
       ]}
       useWithoutFeedBack
-      onPress={onPress}>
+      onPress={onPress}
+      onLongPress={onLongPress}>
       <Emoji name={react.reactName} style={styles.emoji} />
       <Text
         style={[
@@ -47,6 +54,7 @@ type ReactViewProps = {
   reacts: Array<ReactReducerData>;
   onReactPress?: (name: string) => void;
   openReactView?: () => void;
+  parentId: string;
 };
 
 const ReactView = ({
@@ -54,7 +62,21 @@ const ReactView = ({
   reacts,
   onReactPress,
   openReactView,
+  parentId,
 }: ReactViewProps) => {
+  const {toggle} = useModal();
+  const onReactLongPress = useCallback(
+    (reactId: string) => {
+      toggle(
+        <ReactDetail
+          parentId={parentId}
+          initialReactId={reactId}
+          reacts={reacts}
+        />,
+      );
+    },
+    [parentId, reacts, toggle],
+  );
   if (!reacts || reacts.length === 0) return null;
   return (
     <View style={[styles.container, style]}>
@@ -63,6 +85,7 @@ const ReactView = ({
           key={react.reactName}
           react={react}
           onReactPress={onReactPress}
+          onReactLongPress={onReactLongPress}
         />
       ))}
       {openReactView && (

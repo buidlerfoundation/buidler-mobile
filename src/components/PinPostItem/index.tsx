@@ -352,6 +352,7 @@ const PinPostItem = ({
           reacts={reacts}
           onReactPress={handleReactPress}
           openReactView={openReactView ? handleOpenReactView : undefined}
+          parentId={pinPost.task_id}
         />
       )}
       {!embedReport && pinPost.total_messages > 0 && (

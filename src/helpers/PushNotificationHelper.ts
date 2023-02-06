@@ -145,6 +145,10 @@ class PushNotificationHelper {
     return token;
   }
 
+  deleteToken() {
+    return messaging().deleteToken();
+  }
+
   async checkPermission() {
     const res = await Permissions.checkNotifications();
     return res.status === Permissions.RESULTS.GRANTED;

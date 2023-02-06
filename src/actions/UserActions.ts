@@ -39,6 +39,7 @@ export const getInitial: ActionCreator<any> =
 
 export const logout: ActionCreator<any> = () => async (dispatch: Dispatch) => {
   notifee.cancelAllNotifications();
+  PushNotificationHelper.deleteToken();
   const deviceCode = await getDeviceCode();
   api.removeDevice({
     device_code: deviceCode,

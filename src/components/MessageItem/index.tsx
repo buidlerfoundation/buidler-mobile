@@ -349,6 +349,7 @@ const MessageItem = ({
                   reacts={reactData[item.message_id]}
                   onReactPress={handleReactPress}
                   openReactView={handleOpenReactView}
+                  parentId={item.message_id}
                 />
               )}
             </>

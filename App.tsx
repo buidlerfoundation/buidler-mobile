@@ -9,10 +9,10 @@ import BottomActionSheet from 'components/BottomActionSheet';
 import ImageViewer from 'components/ImageViewer';
 import notifee, {EventType} from '@notifee/react-native';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
-import ModalContainer from 'components/ModalContainer';
 import ToastContainer from 'components/ToastContainer';
 import SocketUtils from 'utils/SocketUtils';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
+import ModalProvider from 'components/ModalProvider';
 
 LogBox.ignoreAllLogs();
 
@@ -61,9 +61,9 @@ const App = () => {
     <Provider store={store}>
       <View style={{flex: 1}}>
         <StatusBar barStyle="light-content" translucent />
-        <ModalContainer>
+        <ModalProvider>
           <RootNavigator />
-        </ModalContainer>
+        </ModalProvider>
         <Spinner
           visible={false}
           ref={ref => {

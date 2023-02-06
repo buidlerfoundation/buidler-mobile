@@ -1,3 +1,4 @@
+import {ReactUserApiData} from 'models';
 import ApiCaller from './ApiCaller';
 
 export const addReaction = (
@@ -7,3 +8,8 @@ export const addReaction = (
 
 export const removeReaction = (taskId: string, data: {emoji_id: string}) =>
   ApiCaller.delete(`reaction/${taskId}`, data);
+
+export const getReactionDetail = (id: string, emojiId: string) =>
+  ApiCaller.post<ReactUserApiData[]>(`reaction/${id}/users`, {
+    emoji_id: emojiId,
+  });
