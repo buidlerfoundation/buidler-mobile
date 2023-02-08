@@ -631,6 +631,14 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     selectedMessage?.task?.content,
     selectedMessage?.task?.task_id,
   ]);
+  const onCopyMessageText = useCallback(async () => {
+    await Clipboard.setString(
+      selectedMessage?.content?.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2'),
+    );
+    onCloseMenuMessage();
+    onCloseMenuPinPost();
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [onCloseMenuMessage, onCloseMenuPinPost, selectedMessage?.content]);
   const onMenuCopyMessage = useCallback(async () => {
     await Clipboard.setString(
       `${buidlerURL}/channels/${currentTeamId}/${currentChannelId}/message/${selectedMessage?.message_id}`,
@@ -844,6 +852,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             onReply={onReplyMessage}
             onEdit={onEditMessage}
             onCopyMessage={onMenuCopyMessage}
+            onCopyMessageText={onCopyMessageText}
             onDelete={openMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={

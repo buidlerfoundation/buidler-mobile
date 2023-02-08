@@ -328,6 +328,13 @@ const PinPostDetailScreen = () => {
     closeMenuDelete();
     onDeleteMessage();
   }, [closeMenuDelete, onDeleteMessage]);
+  const onCopyMessageText = useCallback(async () => {
+    await Clipboard.setString(
+      selectedMessage?.content?.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2'),
+    );
+    onCloseMenuMessage();
+    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+  }, [onCloseMenuMessage, selectedMessage?.content]);
   const onMenuCopyMessage = useCallback(async () => {
     await Clipboard.setString(
       `${buidlerURL}/channels/${communityId}/${currentChannelId}/message/${selectedMessage.message_id}`,
@@ -517,6 +524,7 @@ const PinPostDetailScreen = () => {
             onReply={onReplyMessage}
             onEdit={onEditMessage}
             onCopyMessage={onMenuCopyMessage}
+            onCopyMessageText={onCopyMessageText}
             onDelete={openMenuDelete}
             canEdit={selectedMessage?.sender_id === userData.user_id}
             canDelete={

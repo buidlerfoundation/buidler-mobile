@@ -24,6 +24,7 @@ type MenuMessageProps = {
   onEmojiSelected?: (emoji: any) => void;
   canReport?: boolean;
   onReport?: () => void;
+  onCopyMessageText?: () => void;
 };
 
 const MenuMessage = ({
@@ -39,6 +40,7 @@ const MenuMessage = ({
   onEmojiSelected,
   canReport,
   onReport,
+  onCopyMessageText,
 }: MenuMessageProps) => {
   const [history, setHistory] = useState([]);
   useEffect(() => {
@@ -128,6 +130,11 @@ const MenuMessage = ({
         {canEdit && (
           <MenuItem onPress={onEdit} Icon={SVG.IconMenuEdit} label="Edit" />
         )}
+        <MenuItem
+          onPress={onCopyMessageText}
+          Icon={SVG.IconMenuCopy}
+          label="Copy message"
+        />
         <MenuItem
           onPress={onCopyMessage}
           Icon={SVG.IconMenuCopyMessage}
