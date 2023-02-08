@@ -423,15 +423,24 @@ class SocketUtil {
     this.socket?.on('ON_NEW_NOTIFICATION', data => {
       const {userData} = store.getState().user;
       if (data.post?.task_id) {
-        const currentChannel = getCurrentChannel();
-        store.dispatch({
-          type: actionTypes.UPDATE_TASK_REQUEST,
-          payload: {
-            taskId: data.post?.task_id,
-            data: {total_unread_notifications: 1},
-            channelId: currentChannel.channel_id,
-          },
-        });
+        const {currentRouter} = NavigationServices;
+        const postId = currentRouter?.params?.postId;
+        if (
+          currentRouter?.name === ScreenID.PinPostDetailScreen &&
+          postId === data.post?.task_id
+        ) {
+          this.emitSeenPost(postId);
+        } else {
+          const currentChannel = getCurrentChannel();
+          store.dispatch({
+            type: actionTypes.UPDATE_TASK_REQUEST,
+            payload: {
+              taskId: data.post?.task_id,
+              data: {total_unread_notifications: 1},
+              channelId: currentChannel.channel_id,
+            },
+          });
+        }
       }
       store.dispatch({
         type: actionTypes.RECEIVE_NOTIFICATION,
