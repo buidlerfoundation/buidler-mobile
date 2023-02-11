@@ -90,6 +90,7 @@ import IconLogoDiscord from '../assets/images/ic_logo_discord.svg';
 import IconLogoFacebook from '../assets/images/ic_logo_facebook.svg';
 import IconLogoGoogle from '../assets/images/ic_logo_google.svg';
 import IconMenuCopy from '../assets/images/ic_menu_copy.svg';
+import IconEye from '../assets/images/ic_eye.svg';
 
 export default {
   IconExpand,
@@ -184,4 +185,5 @@ export default {
   IconLogoFacebook,
   IconLogoGoogle,
   IconMenuCopy,
+  IconEye,
 };

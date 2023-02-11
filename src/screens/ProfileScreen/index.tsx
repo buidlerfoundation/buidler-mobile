@@ -34,12 +34,18 @@ const ProfileScreen = () => {
   const [toggleBiometric, setToggleBiometric] = useState(false);
   const [isOpenConfirmLogout, setOpenConfirmLogout] = useState(false);
   const [isOpenConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [badgeBackup, setBadgeBackup] = useState(false);
   const [backupData, setBackupData] = useState(null);
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const userData = useUserData();
   const initialDataBackup = useCallback(async () => {
-    const dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedSeedKey);
+    const isBackup = await AsyncStorage.getItem(AsyncKey.isBackup);
+    let dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedSeedKey);
+    if (!dataBackup) {
+      dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedDataKey);
+    }
+    setBadgeBackup(!isBackup);
     setBackupData(dataBackup);
   }, []);
   useEffect(() => {
@@ -56,7 +62,9 @@ const ProfileScreen = () => {
   }, []);
   useEffect(() => {
     if (route.params?.seed) {
-      navigation.navigate(ScreenID.StoreSeedPhraseScreen, {
+      setBadgeBackup(false);
+      AsyncStorage.setItem(AsyncKey.isBackup, 'true');
+      navigation.navigate(ScreenID.BackupDataScreen, {
         backupSeed: route.params?.seed,
       });
     } else {
@@ -134,7 +142,9 @@ const ProfileScreen = () => {
             <Text style={[styles.actionLabel, {color: colors.text}]}>
               Backup
             </Text>
-            <View style={[styles.dot, {backgroundColor: colors.mention}]} />
+            {badgeBackup && (
+              <View style={[styles.dot, {backgroundColor: colors.mention}]} />
+            )}
             <SVG.IconArrowRight fill={colors.subtext} />
           </Touchable>
         )}

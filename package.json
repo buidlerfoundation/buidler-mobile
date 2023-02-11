@@ -18,6 +18,7 @@
     "@react-native-async-storage/async-storage": "^1.15.9",
     "@react-native-camera-roll/camera-roll": "https://github.com/HungNguyenBao/react-native-cameraroll",
     "@react-native-clipboard/clipboard": "^1.8.5",
+    "@react-native-community/blur": "^4.3.0",
     "@react-native-firebase/app": "13.0.1",
     "@react-native-firebase/crashlytics": "13.0.1",
     "@react-native-firebase/messaging": "13.0.1",

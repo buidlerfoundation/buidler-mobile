@@ -19,6 +19,7 @@ import useUserData from 'hook/useUserData';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import StoreSeedPhraseScreen from 'screens/StoreSeedPhraseScreen';
 import BackupScreen from 'screens/BackupScreen';
+import BackupDataScreen from 'screens/BackupDataScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -72,6 +73,10 @@ const RootNavigator = () => {
             component={StoreSeedPhraseScreen}
           />
           <Stack.Screen name={ScreenID.BackupScreen} component={BackupScreen} />
+          <Stack.Screen
+            name={ScreenID.BackupDataScreen}
+            component={BackupDataScreen}
+          />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
         <Stack.Screen name={StackID.AuthStack} component={AuthStack} />

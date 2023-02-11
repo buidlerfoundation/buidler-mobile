@@ -20,6 +20,7 @@ export default {
   NotificationScreen: 'NotificationScreen',
   SpaceDetailScreen: 'SpaceDetailScreen',
   DirectMessageScreen: 'DirectMessageScreen',
+  BackupDataScreen: 'BackupDataScreen',
 };
 
 export const StackID = {

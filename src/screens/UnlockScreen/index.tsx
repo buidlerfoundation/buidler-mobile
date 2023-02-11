@@ -87,7 +87,15 @@ const UnlockScreen = () => {
         biometricAuthenticate().then(async res => {
           if (res.success) {
             setLoading(true);
-            await handleAccessToHome(iv, credentialFromKeychain.password);
+            if (route.params?.backupData) {
+              await handleBackup(
+                iv,
+                route.params?.backupData,
+                credentialFromKeychain.password,
+              );
+            } else {
+              await handleAccessToHome(iv, credentialFromKeychain.password);
+            }
             setLoading(false);
           } else {
             inputRef.current?.focus?.();
@@ -97,7 +105,12 @@ const UnlockScreen = () => {
     } else {
       inputRef.current?.focus?.();
     }
-  }, [handleAccessToHome, route.params?.toggleBiometric]);
+  }, [
+    handleAccessToHome,
+    handleBackup,
+    route.params?.backupData,
+    route.params?.toggleBiometric,
+  ]);
   const handleActiveBiometric = useCallback(
     async (iv: string, password: string) => {
       try {
@@ -117,9 +130,9 @@ const UnlockScreen = () => {
     [navigation],
   );
   const handleBackup = useCallback(
-    (iv: string, encryptedStr) => {
+    (iv: string, encryptedStr, password = pass) => {
       try {
-        const decryptedStr = decryptString(encryptedStr, pass, iv);
+        const decryptedStr = decryptString(encryptedStr, password, iv);
         if (!decryptedStr) {
           alert('Invalid Password');
         } else {

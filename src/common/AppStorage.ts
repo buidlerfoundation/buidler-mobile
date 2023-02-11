@@ -17,4 +17,5 @@ export const AsyncKey = {
   emojiKey: `${PrefixKey}_emoji_key`,
   lastSyncChannelKey: `${PrefixKey}_last_sync_channel_key`,
   spaceToggleKey: `${PrefixKey}_space_toggle_key`,
+  isBackup: `${PrefixKey}_is_backup`,
 };
