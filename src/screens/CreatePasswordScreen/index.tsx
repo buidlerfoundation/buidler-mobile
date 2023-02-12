@@ -33,6 +33,7 @@ import {biometricAuthenticate, isBiometricAvailable} from 'services/biometric';
 import SwitchButton from 'components/SwitchButton';
 import AppStyles from 'common/AppStyles';
 import {removeCredentials, storeCredentials} from 'services/keychain';
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
@@ -77,6 +78,13 @@ const CreatePasswordScreen = ({route}: Props) => {
     }
   }, [dispatch, password, seed]);
   const onNextPress = useCallback(async () => {
+    if (!password) {
+      Toast.show({
+        type: 'customError',
+        props: {message: 'Password cannot be empty.'},
+      });
+      return;
+    }
     if (activeBiometric) {
       await removeCredentials();
       const res = await biometricAuthenticate();
