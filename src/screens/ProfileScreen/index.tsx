@@ -67,8 +67,6 @@ const ProfileScreen = () => {
       navigation.navigate(ScreenID.BackupDataScreen, {
         backupSeed: route.params?.seed,
       });
-    } else {
-      setBackupData(null);
     }
   }, [navigation, route.params]);
   useEffect(() => {
