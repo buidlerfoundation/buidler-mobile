@@ -60,7 +60,7 @@ const StoreSeedPhraseScreen = () => {
     if (backupSeed) {
       navigation.goBack();
     } else {
-      dispatch(accessApp?.(seed, password, true));
+      dispatch(accessApp?.(seed, password));
     }
   }, [backupSeed, dispatch, navigation, password, seed]);
   return (
