@@ -2,7 +2,14 @@ import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Space} from 'models';
 import React, {memo, useCallback, useMemo, useState} from 'react';
-import {View, StyleSheet, Text, FlatList, Alert} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  FlatList,
+  Alert,
+  ImageBackground,
+} from 'react-native';
 import SpaceItem from './SpaceItem';
 import useThemeColor from 'hook/useThemeColor';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
@@ -18,6 +25,7 @@ import api from 'services/api';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import SVG from 'common/SVG';
+import ImageHelper from 'helpers/ImageHelper';
 
 const CommunityHeader = () => {
   const {colors} = useThemeColor();
@@ -59,8 +67,8 @@ const ChannelScreen = () => {
     [communityVerified, isOwner],
   );
   const showCover = useMemo(
-    () => showBadge || community.team_cover,
-    [community.team_cover, showBadge],
+    () => showBadge || community.team_background,
+    [community.team_background, showBadge],
   );
   const [inviteLink, setInviteLink] = useState('');
   const {colors} = useThemeColor();
@@ -84,7 +92,14 @@ const ChannelScreen = () => {
         style={[styles.communityInfo, {backgroundColor: colors.background}]}
         onPress={onCommunityPress}>
         {showCover && (
-          <View
+          <ImageBackground
+            source={{
+              uri: ImageHelper.normalizeImage(
+                community.team_background,
+                community.team_id,
+              ),
+            }}
+            borderRadius={5}
             style={[
               styles.communityCoverWrap,
               {backgroundColor: colors.activeBackgroundLight},
@@ -108,7 +123,7 @@ const ChannelScreen = () => {
                 )}
               </View>
             )}
-          </View>
+          </ImageBackground>
         )}
         <View style={[styles.rowMemberWrap, {marginTop: 15}]}>
           <View style={[styles.dot, {backgroundColor: colors.lightText}]} />
@@ -143,7 +158,9 @@ const ChannelScreen = () => {
     colors.lightText,
     colors.success,
     colors.text,
+    community.team_background,
     community.team_display_name,
+    community.team_id,
     communityVerified,
     onCommunityPress,
     onInvitePress,

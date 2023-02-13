@@ -4,6 +4,7 @@ import SVG from 'common/SVG';
 import CommunityLogo from 'components/CommunityLogo';
 import RenderHTML from 'components/RenderHTML';
 import Touchable from 'components/Touchable';
+import ImageHelper from 'helpers/ImageHelper';
 import {normalizeMessageText} from 'helpers/MessageHelper';
 import useCurrentCommunity from 'hook/useCurrentCommunity';
 import useTeamUserData from 'hook/useTeamUserData';
@@ -11,7 +12,7 @@ import useThemeColor from 'hook/useThemeColor';
 import {UserRoleType} from 'models';
 import numeral from 'numeral';
 import React, {memo, useCallback, useMemo} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, ImageBackground} from 'react-native';
 
 type TabItemProps = {
   activeRole: UserRoleType;
@@ -83,7 +84,15 @@ const CommunityDetailHeader = ({
   );
   return (
     <View>
-      <View style={[styles.communityCover, {backgroundColor: colors.border}]}>
+      <ImageBackground
+        source={{
+          uri: ImageHelper.normalizeImage(
+            community.team_background,
+            community.team_id,
+          ),
+        }}
+        borderRadius={5}
+        style={[styles.communityCover, {backgroundColor: colors.border}]}>
         {showBadge && (
           <View style={styles.badgeCommunity}>
             <Text
@@ -105,7 +114,7 @@ const CommunityDetailHeader = ({
           style={[styles.communityLogo, {backgroundColor: colors.background}]}>
           <CommunityLogo community={community} size={80} borderRadius={15} />
         </View>
-      </View>
+      </ImageBackground>
       <Text
         style={[
           AppStyles.TextBold22,

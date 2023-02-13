@@ -119,6 +119,7 @@ export interface Community {
   is_verified?: boolean;
   team_cover?: string;
   seen?: boolean;
+  team_background?: string;
 }
 
 export interface NFTCollection {
