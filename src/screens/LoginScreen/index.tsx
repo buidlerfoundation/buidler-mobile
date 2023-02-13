@@ -13,19 +13,24 @@ import {buidlerHomeURL} from 'helpers/LinkHelper';
 import {removeCredentials} from 'services/keychain';
 import web3auth, {web3authRedirectUrl} from 'services/connectors/web3auth';
 import {LOGIN_PROVIDER} from '@web3auth/react-native-sdk';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {AsyncKey} from 'common/AppStorage';
 
 const LoginScreen = () => {
   const {colors} = useThemeColor();
   const onCreatePress = useCallback(() => {
     GlobalVariable.sessionExpired = false;
+    AsyncStorage.setItem(AsyncKey.isBackup, 'false');
     NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen);
   }, []);
   const onImportPress = useCallback(() => {
     GlobalVariable.sessionExpired = false;
+    AsyncStorage.setItem(AsyncKey.isBackup, 'true');
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
   }, []);
   const onSocialConnectPress = useCallback(async (provider: string) => {
     GlobalVariable.sessionExpired = false;
+    AsyncStorage.setItem(AsyncKey.isBackup, 'false');
     const res = await web3auth.login({
       redirectUrl: web3authRedirectUrl,
       loginProvider: provider,

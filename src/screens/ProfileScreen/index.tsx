@@ -17,7 +17,11 @@ import MenuConfirm from 'components/MenuConfirm';
 import MenuConfirmDeleteAccount from 'components/MenuConfirmDeleteAccount';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import AppStyles from 'common/AppStyles';
 import {
   getCredentials,
@@ -39,15 +43,6 @@ const ProfileScreen = () => {
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const userData = useUserData();
-  const initialDataBackup = useCallback(async () => {
-    const isBackup = await AsyncStorage.getItem(AsyncKey.isBackup);
-    let dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedSeedKey);
-    if (!dataBackup) {
-      dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedDataKey);
-    }
-    setBadgeBackup(!isBackup);
-    setBackupData(dataBackup);
-  }, []);
   useEffect(() => {
     getCredentials().then(res => {
       if (res) {
@@ -69,9 +64,20 @@ const ProfileScreen = () => {
       });
     }
   }, [navigation, route.params]);
-  useEffect(() => {
-    initialDataBackup();
-  }, [initialDataBackup]);
+  useFocusEffect(
+    useCallback(() => {
+      const initialDataBackup = async () => {
+        const isBackup = await AsyncStorage.getItem(AsyncKey.isBackup);
+        let dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedSeedKey);
+        if (!dataBackup) {
+          dataBackup = await AsyncStorage.getItem(AsyncKey.encryptedDataKey);
+        }
+        setBadgeBackup(isBackup === 'false');
+        setBackupData(dataBackup);
+      };
+      initialDataBackup();
+    }, []),
+  );
   useEffect(() => {
     if (route.params?.password) {
       const pass = route.params?.password;
@@ -106,7 +112,7 @@ const ProfileScreen = () => {
     onLogout();
   }, [onLogout]);
   const onBackupPress = useCallback(() => {
-    navigation.navigate(ScreenID.UnlockScreen, {backupData});
+    navigation.navigate(ScreenID.BackupDataScreen, {backupData});
   }, [backupData, navigation]);
   const onBack = useCallback(() => {
     navigation.goBack();
@@ -141,7 +147,13 @@ const ProfileScreen = () => {
               Backup
             </Text>
             {badgeBackup && (
-              <View style={[styles.dot, {backgroundColor: colors.mention}]} />
+              <Text
+                style={[
+                  AppStyles.TextMed14,
+                  {color: colors.subtext, marginRight: 5, marginLeft: 15},
+                ]}>
+                Incompleted
+              </Text>
             )}
             <SVG.IconArrowRight fill={colors.subtext} />
           </Touchable>

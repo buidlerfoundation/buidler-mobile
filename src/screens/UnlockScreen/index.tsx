@@ -138,13 +138,16 @@ const UnlockScreen = () => {
         } else {
           const json = JSON.parse(decryptedStr);
           const seed = json?.[user.user_id];
-          navigation.navigate(ScreenID.ProfileScreen, {seed});
+          navigation.navigate(ScreenID.BackupDataScreen, {
+            seed,
+            backupData: route.params?.backupData,
+          });
         }
       } catch (error) {
         alert('Invalid Password');
       }
     },
-    [navigation, pass, user.user_id],
+    [navigation, pass, route.params?.backupData, user.user_id],
   );
   const checkPassword = useCallback(async () => {
     if (loading) return;
