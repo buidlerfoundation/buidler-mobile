@@ -84,7 +84,7 @@ export const totalBalanceUSD = (userBalance?: BalanceApiData | null) => {
       price: el.price?.rate,
     });
   });
-  return res;
+  return Math.round(res * 100) / 100;
 };
 
 export const getTransactionAmount = (sendData: SendData) => {
