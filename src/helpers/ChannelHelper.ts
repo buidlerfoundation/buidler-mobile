@@ -100,7 +100,10 @@ export const getRawPrivateChannel = async () => {
   return res;
 };
 
-export const getPrivateChannel = async (privateKey: string) => {
+export const getPrivateChannel = async (
+  privateKey: string,
+  syncFromSocket?: boolean,
+) => {
   const timestamp = Math.round(new Date().getTime() / 1000);
   const lastSyncChannelKey = await AsyncStorage.getItem(
     AsyncKey.lastSyncChannelKey,
@@ -122,7 +125,8 @@ export const getPrivateChannel = async (privateKey: string) => {
     JSON.stringify({data: dataLocal}),
   );
   await AsyncStorage.setItem(AsyncKey.lastSyncChannelKey, timestamp.toString());
-  const req = dataLocal.map(el => decryptPrivateChannel(el, privateKey));
+  const dataDecrypt = syncFromSocket ? syncChannelKey : dataLocal;
+  const req = dataDecrypt.map(el => decryptPrivateChannel(el, privateKey));
   const res = await Promise.all(req);
   return res.reduce((result, val) => {
     const {channelId, key, timestamp} = val;

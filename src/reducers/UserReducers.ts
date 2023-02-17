@@ -41,7 +41,6 @@ interface UserReducerState {
   };
   apiTeamController?: AbortController | null;
   apiSpaceMemberController?: AbortController | null;
-  updateFromSocket?: boolean;
 }
 
 const defaultChannel: Channel = {
@@ -94,7 +93,6 @@ const initialState: UserReducerState = {
     },
   },
   apiTeamController: null,
-  updateFromSocket: false,
 };
 
 const userReducers: Reducer<UserReducerState, AnyAction> = (
@@ -123,10 +121,38 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     defaultChannel;
   const {type, payload} = action;
   switch (type) {
-    case actionTypes.UPDATE_TEAM_FROM_SOCKET: {
+    case actionTypes.GET_TEAM_DIRECT_USER: {
+      const {directChannelUsersRes} = payload;
       return {
         ...state,
-        updateFromSocket: payload,
+        directChannelUsers:
+          directChannelUsersRes?.data || state.directChannelUsers,
+      };
+    }
+    case actionTypes.CHANNEL_SUCCESS: {
+      const {resChannel, resSpace, teamId} = payload;
+      return {
+        ...state,
+        channelMap: {
+          ...channelMap,
+          [teamId]: resChannel.data,
+        },
+        spaceChannelMap: {
+          ...spaceChannelMap,
+          [teamId]: resSpace?.data?.map(el => {
+            el.channel_ids = resChannel.data
+              ?.filter(c => c.space_id === el.space_id)
+              .map(c => c.channel_id);
+            return el;
+          }),
+        },
+      };
+    }
+    case actionTypes.DIRECT_CHANNEL_SUCCESS: {
+      const {resDirectChannel} = payload;
+      return {
+        ...state,
+        directChannel: resDirectChannel?.data || state.directChannel,
       };
     }
     case actionTypes.SYNC_DIRECT_CHANNEL_DATA: {

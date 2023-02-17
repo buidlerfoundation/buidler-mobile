@@ -128,9 +128,107 @@ export const findUser = () => async (dispatch: Dispatch) => {
   }
 };
 
+export const fetchDataChannel =
+  (teamId: string) => async (dispatch: Dispatch) => {
+    dispatch({type: actionTypes.CHANNEL_REQUEST, payload: {teamId}});
+    const [resSpace, resChannel] = await Promise.all([
+      api.getSpaceChannel(teamId),
+      api.findChannel(teamId),
+    ]);
+    if (resChannel.statusCode === 200) {
+      dispatch({
+        type: actionTypes.CHANNEL_SUCCESS,
+        payload: {teamId, resSpace, resChannel},
+      });
+    } else {
+      dispatch({type: actionTypes.CHANNEL_FAIL, payload: resChannel});
+    }
+    dispatch({
+      type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+      payload: {channel: false},
+    });
+  };
+
+export const fetchDirectChannel = () => async (dispatch: Dispatch) => {
+  dispatch({type: actionTypes.DIRECT_CHANNEL_REQUEST});
+  const resDirectChannel = await api.findDirectChannel();
+  if (resDirectChannel.statusCode === 200) {
+    dispatch({
+      type: actionTypes.DIRECT_CHANNEL_SUCCESS,
+      payload: {resDirectChannel},
+    });
+  } else {
+    dispatch({
+      type: actionTypes.DIRECT_CHANNEL_FAIL,
+      payload: resDirectChannel,
+    });
+  }
+  dispatch({
+    type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+    payload: {directChannel: false},
+  });
+};
+
+export const fetchTeamUser = (teamId: string) => async (dispatch: Dispatch) => {
+  const teamUsersRes = await api.getTeamUsers(teamId);
+  if (teamUsersRes.statusCode === 200) {
+    dispatch({
+      type: actionTypes.GET_TEAM_USER,
+      payload: {
+        teamUsers: teamUsersRes,
+        teamId,
+      },
+    });
+  }
+};
+
+export const fetchTeamDirectUser = () => async (dispatch: Dispatch) => {
+  const directChannelUsersRes = await api.getDirectChannelUsers();
+  if (directChannelUsersRes.statusCode === 200) {
+    dispatch({
+      type: actionTypes.GET_TEAM_DIRECT_USER,
+      payload: {directChannelUsersRes},
+    });
+  }
+};
+
+export const fetchTeamData = () => async (dispatch: Dispatch) => {
+  dispatch({type: actionTypes.TEAM_REQUEST});
+  const res = await api.findTeam();
+  if (res.statusCode === 200) {
+    dispatch({type: actionTypes.TEAM_SUCCESS, payload: {team: res.data}});
+  } else {
+    dispatch({type: actionTypes.TEAM_FAIL, payload: res});
+  }
+  dispatch({
+    type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+    payload: {community: false},
+  });
+};
+
+export const syncChannelPrivateKey =
+  () => async (dispatch: Dispatch, getState: AppGetState) => {
+    const {privateKey, channelPrivateKey} = getState().configs;
+    const res = await getPrivateChannel(privateKey, true);
+    Object.keys(res).forEach(k => {
+      if (channelPrivateKey[k]) {
+        channelPrivateKey[k].push(...res[k]);
+      } else {
+        channelPrivateKey[k] = res[k];
+      }
+    });
+    dispatch({
+      type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
+      payload: channelPrivateKey,
+    });
+  };
+
 export const findTeamAndChannel =
   (initCommunityId?: string) => async (dispatch: Dispatch) => {
-    dispatch({type: actionTypes.TEAM_REQUEST, payload: {initCommunityId}});
+    dispatch({
+      type: actionTypes.TEAM_REQUEST,
+      payload: {initCommunityId},
+    });
     const res = await api.findTeam();
     let lastTeamId = '';
     if (initCommunityId && initCommunityId !== 'user') {

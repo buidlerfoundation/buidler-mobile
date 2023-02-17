@@ -40,15 +40,6 @@ import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import {API_URL} from 'react-native-dotenv';
 import Toast from 'react-native-toast-message';
 
-const syncChannelPrivateKey = async () => {
-  const {privateKey} = store.getState().configs;
-  const res = await getPrivateChannel(privateKey);
-  store.dispatch({
-    type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
-    payload: res,
-  });
-};
-
 const getTasks = async (channelId: string, dispatch: Dispatch) => {
   dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
   try {
@@ -104,80 +95,17 @@ const getTaskFromUser = async (
   }
 };
 
-const getMessages = async (
-  channelId: string,
-  channelType: string,
-  dispatch: Dispatch,
-) => {
-  dispatch({type: actionTypes.UPDATE_FROM_SOCKET, payload: true});
-  const messageRes = await api.getMessages(channelId);
-  const isPrivate = channelType === 'Private' || channelType === 'Direct';
-  const messageData = isPrivate
-    ? await normalizeMessageData(messageRes.data || [], channelId)
-    : normalizePublicMessageData(
-        messageRes.data || [],
-        messageRes.metadata?.encrypt_message_key,
-      );
-  if (messageRes.statusCode === 200) {
-    dispatch({
-      type: actionTypes.MESSAGE_SUCCESS,
-      payload: {data: messageData, channelId, reloadSocket: true},
-    });
-  }
-  dispatch({type: actionTypes.UPDATE_FROM_SOCKET, payload: false});
-};
-
-const syncCommunityList = async () => {
-  const res = await api.findTeam();
-  if (res.statusCode === 200) {
-    store.dispatch({type: actionTypes.TEAM_SUCCESS, payload: {team: res.data}});
-  }
-};
-
-const actionSetCurrentTeam = async (
-  team: any,
-  dispatch: Dispatch,
-  channelId?: string,
-) => {
-  let lastChannelId: any = null;
-  dispatch({type: actionTypes.UPDATE_TEAM_FROM_SOCKET, payload: true});
-  if (channelId) {
-    lastChannelId = channelId;
-  } else {
-    lastChannelId = await AsyncStorage.getItem(AsyncKey.lastChannelId);
-  }
-  const [
-    resSpace,
-    resChannel,
-    resDirectChannel,
-    teamUsersRes,
-    directChannelUsersRes,
-  ] = await Promise.all([
-    api.getSpaceChannel(team.team_id),
-    api.findChannel(team.team_id),
-    api.findDirectChannel(),
-    api.getTeamUsers(team.team_id),
-    api.getDirectChannelUsers(),
-  ]);
-  if (teamUsersRes.statusCode === 200) {
-    dispatch({
-      type: actionTypes.GET_TEAM_USER,
-      payload: {teamUsers: teamUsersRes, teamId: team.team_id},
-    });
-  }
-  dispatch({
-    type: actionTypes.CURRENT_TEAM_SUCCESS,
+const toggleSocketReconnect = () => {
+  store.dispatch({
+    type: actionTypes.TOGGLE_SOCKET_RECONNECT,
     payload: {
-      team,
-      resChannel,
-      resDirectChannel,
-      lastChannelId,
-      resSpace,
-      directChannelUsersRes,
+      directChannel: true,
+      directConversation: true,
+      conversation: true,
+      channel: true,
+      community: true,
     },
   });
-  AsyncStorage.setItem(AsyncKey.lastTeamId, team.team_id);
-  dispatch({type: actionTypes.UPDATE_TEAM_FROM_SOCKET, payload: false});
 };
 
 const loadMessageIfNeeded = async () => {
@@ -268,12 +196,11 @@ class SocketUtil {
       console.log('socket connected');
       if (!this.firstLoad) {
         this.reloadData();
-      } else {
-        store.dispatch({
-          type: actionTypes.UPDATE_FROM_SOCKET,
-          payload: false,
-        });
       }
+      store.dispatch({
+        type: actionTypes.UPDATE_FROM_SOCKET,
+        payload: false,
+      });
       this.firstLoad = false;
       this.removeListenSocket();
       this.listenSocket();
@@ -285,20 +212,13 @@ class SocketUtil {
           this.socket?.connect();
         }
       });
-      // this.emitOnline(teamId || store.getState().user?.currentTeamId);
     });
   }
   reloadData = async () => {
-    syncCommunityList();
+    toggleSocketReconnect();
     const currentChannel = getCurrentChannel();
-    const currentDirectChannel = getCurrentChannel(true);
     const currentTeam = getCurrentCommunity();
     if (!!currentTeam && !!currentChannel) {
-      await actionSetCurrentTeam(
-        currentTeam,
-        store.dispatch,
-        currentChannel.channel_id,
-      );
       // load pin post message
       const {currentRouter} = NavigationServices;
       if (currentRouter?.name === ScreenID.PinPostDetailScreen) {
@@ -306,19 +226,6 @@ class SocketUtil {
         if (postId) {
           store.dispatch(getPinPostMessages(postId));
         }
-      }
-      // load message
-      getMessages(
-        currentChannel?.channel_id,
-        currentChannel?.channel_type,
-        store.dispatch,
-      );
-      if (currentDirectChannel) {
-        getMessages(
-          currentDirectChannel?.channel_id,
-          currentDirectChannel?.channel_type,
-          store.dispatch,
-        );
       }
       // load task
       if (currentChannel?.user) {
@@ -331,7 +238,6 @@ class SocketUtil {
       } else {
         getTasks(currentChannel.channel_id, store.dispatch);
       }
-      syncChannelPrivateKey();
     }
   };
   handleChannelPrivateKey = async (

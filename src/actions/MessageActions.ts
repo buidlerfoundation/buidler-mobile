@@ -175,6 +175,10 @@ export const getMessages: ActionCreator<any> =
     isFresh = false,
   ) =>
   async (dispatch: Dispatch, getState: AppGetState) => {
+    const payloadUpdateSocket =
+      channelType === 'Direct'
+        ? {directConversation: false}
+        : {conversation: false};
     const {apiController, messageData} = getState().message;
     apiController?.abort?.();
     if (!before) {
@@ -235,11 +239,19 @@ export const getMessages: ActionCreator<any> =
           payload: messageRes,
         });
       }
+      dispatch({
+        type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+        payload: payloadUpdateSocket,
+      });
       return messageData;
     } catch (error) {
       dispatch({
         type: actionTypes.MESSAGE_FAIL,
         payload: {message: error},
+      });
+      dispatch({
+        type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+        payload: payloadUpdateSocket,
       });
       return false;
     }

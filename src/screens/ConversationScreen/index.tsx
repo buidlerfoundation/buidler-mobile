@@ -25,7 +25,10 @@ import {
   FlatList,
   Keyboard,
 } from 'react-native';
-import {createLoadMoreSelector} from 'reducers/selectors';
+import {
+  createLoadingSelector,
+  createLoadMoreSelector,
+} from 'reducers/selectors';
 import BottomSheetHandle from 'components/BottomSheetHandle';
 import GalleryView from 'components/GalleryView';
 import api from 'services/api';
@@ -77,6 +80,11 @@ import useDirectChannelId from 'hook/useDirectChannelId';
 import Header from './Header';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 import useChannelById from 'hook/useChannelById';
+import {
+  fetchTeamDirectUser,
+  fetchTeamUser,
+  syncChannelPrivateKey,
+} from 'actions/UserActions';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -87,10 +95,19 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const navigation = useNavigation();
   const route = useRoute();
   const messageData = useMessageData(direct);
+  const socketConversation = useAppSelector(state => state.socket.conversation);
+  const socketDirectConversation = useAppSelector(
+    state => state.socket.directConversation,
+  );
+  const socketReconnect = useMemo(() => {
+    if (direct) return socketDirectConversation;
+    return socketConversation;
+  }, [direct, socketConversation, socketDirectConversation]);
   const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
   );
+  const loadingMessage = useAppSelector(state => loadingMessageSelector(state));
   const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
   const inputRef = useRef<TextInput>();
   const messages = useMemo(() => messageData?.data, [messageData?.data]);
@@ -103,9 +120,6 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     [messageData?.canMore],
   );
   const reactData = useAppSelector(state => state.reactReducer.reactData);
-  const updateFromSocket = useAppSelector(
-    state => state.message.updateFromSocket,
-  );
   const userData = useAppSelector(state => state.user.userData);
   const userRole = useUserRole();
   const isFocused = useIsFocused();
@@ -117,7 +131,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     [currentDirectChannelId, currentPublicChannelId, direct],
   );
   const currentChannel = useChannelById(currentChannelId, direct);
-  const channelType = useMemo(() => (direct ? 'Private' : 'Public'), [direct]);
+  const channelType = useMemo(() => (direct ? 'Direct' : 'Public'), [direct]);
   const [isInputFocus, setFocus] = useState(false);
   const [messageReply, setMessageReply] = useState<MessageData>(null);
   const [messageEdit, setMessageEdit] = useState<MessageData>(null);
@@ -169,7 +183,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const handleGetLatestMessage = useCallback(async () => {
     if (currentChannelId) {
       await dispatch(
-        getMessages(currentChannelId, channelType, undefined, undefined, true),
+        getMessages(currentChannelId, channelType, undefined, undefined),
       );
     }
   }, [channelType, currentChannelId, dispatch]);
@@ -264,6 +278,37 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       uniqMessages.filter(el => el.entity_type !== 'date-title')?.[0]
         ?.message_id,
     [uniqMessages],
+  );
+  useFocusEffect(
+    useCallback(() => {
+      if (socketReconnect && !loadingMessage) {
+        if (!route.params?.fromNotification) {
+          handleGetLatestMessage();
+        } else {
+          const payloadUpdateSocket = direct
+            ? {directConversation: false}
+            : {conversation: false};
+          dispatch({
+            type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+            payload: payloadUpdateSocket,
+          });
+        }
+        if (direct) {
+          dispatch(fetchTeamDirectUser());
+          dispatch(syncChannelPrivateKey());
+        } else {
+          dispatch(fetchTeamUser(currentTeamId));
+        }
+      }
+    }, [
+      currentTeamId,
+      direct,
+      dispatch,
+      handleGetLatestMessage,
+      loadingMessage,
+      route.params?.fromNotification,
+      socketReconnect,
+    ]),
   );
   useFocusEffect(
     useCallback(() => {
@@ -398,7 +443,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         y <= 0 &&
         messageData?.canMoreAfter &&
         !loadMoreAfterMessage &&
-        !updateFromSocket
+        !socketReconnect
       ) {
         setLoadMoreAfterMessage(true);
       }
@@ -409,7 +454,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       loadMoreAfterMessage,
       messageData?.canMoreAfter,
       scrollData?.showScrollDown,
-      updateFromSocket,
+      socketReconnect,
     ],
   );
   const onScrollToIndexFailed = useCallback(
@@ -776,7 +821,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           renderItem={renderItem}
           initialNumToRender={20}
           ListHeaderComponent={
-            loadMoreAfterMessage || updateFromSocket ? (
+            loadMoreAfterMessage || socketReconnect ? (
               <View style={styles.footerMessage}>
                 <ActivityIndicator />
               </View>
@@ -1020,6 +1065,10 @@ const styles = StyleSheet.create({
 });
 
 const loadMoreMessageSelector = createLoadMoreSelector([
+  actionTypes.MESSAGE_PREFIX,
+]);
+
+const loadingMessageSelector = createLoadingSelector([
   actionTypes.MESSAGE_PREFIX,
 ]);
 

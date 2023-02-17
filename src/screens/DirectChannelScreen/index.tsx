@@ -1,10 +1,13 @@
+import {useDrawerStatus} from '@react-navigation/drawer';
+import {fetchDirectChannel} from 'actions/UserActions';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import {sortChannel} from 'helpers/ChannelHelper';
+import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
 import {Channel} from 'models';
-import React, {memo, useCallback} from 'react';
+import React, {memo, useCallback, useEffect} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -15,13 +18,20 @@ import {
 import DirectChannelItem from './DirectChannelItem';
 
 const DirectChannelScreen = () => {
+  const dispatch = useAppDispatch();
+  const drawerStatus = useDrawerStatus();
   const {colors} = useThemeColor();
   const directChannels = useAppSelector(state => state.user.directChannel);
+  const socketReconnect = useAppSelector(state => state.socket.directChannel);
   const renderItem = useCallback(
     ({item}: {item: Channel}) => <DirectChannelItem channel={item} />,
     [],
   );
-  const updateFromSocket = useAppSelector(state => state.user.updateFromSocket);
+  useEffect(() => {
+    if (drawerStatus === 'open' && socketReconnect) {
+      dispatch(fetchDirectChannel());
+    }
+  }, [dispatch, drawerStatus, socketReconnect]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
@@ -37,7 +47,7 @@ const DirectChannelScreen = () => {
         keyExtractor={item => item.channel_id}
         renderItem={renderItem}
         ListHeaderComponent={
-          updateFromSocket ? <ActivityIndicator /> : undefined
+          socketReconnect ? <ActivityIndicator /> : undefined
         }
       />
     </View>

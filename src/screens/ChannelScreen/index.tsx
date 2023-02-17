@@ -1,7 +1,7 @@
 import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Space} from 'models';
-import React, {memo, useCallback, useMemo, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -26,6 +26,10 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import SVG from 'common/SVG';
 import ImageHelper from 'helpers/ImageHelper';
+import {useDrawerStatus} from '@react-navigation/drawer';
+import useAppSelector from 'hook/useAppSelector';
+import useAppDispatch from 'hook/useAppDispatch';
+import {fetchDataChannel} from 'actions/UserActions';
 
 const CommunityHeader = () => {
   const {colors} = useThemeColor();
@@ -52,6 +56,8 @@ const CommunityHeader = () => {
 };
 
 const ChannelScreen = () => {
+  const dispatch = useAppDispatch();
+  const drawerStatus = useDrawerStatus();
   const navigation = useNavigation();
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
@@ -61,6 +67,7 @@ const ChannelScreen = () => {
     () => community.is_verified,
     [community.is_verified],
   );
+  const socketReconnect = useAppSelector(state => state.socket.channel);
   const isOwner = useMemo(() => community.role === 'Owner', [community.role]);
   const showBadge = useMemo(
     () => isOwner || communityVerified,
@@ -72,6 +79,11 @@ const ChannelScreen = () => {
   );
   const [inviteLink, setInviteLink] = useState('');
   const {colors} = useThemeColor();
+  useEffect(() => {
+    if (drawerStatus === 'open' && socketReconnect) {
+      dispatch(fetchDataChannel(communityId));
+    }
+  }, [communityId, dispatch, drawerStatus, socketReconnect]);
   const onInvitePress = useCallback(async () => {
     let link = '';
     if (!inviteLink) {

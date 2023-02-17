@@ -1,5 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import {leaveTeam, setCurrentTeam} from 'actions/UserActions';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {fetchTeamData, leaveTeam, setCurrentTeam} from 'actions/UserActions';
 import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
@@ -17,11 +17,17 @@ import {StyleSheet, Text, View, FlatList, Alert} from 'react-native';
 import api from 'services/api';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
+import {createLoadingSelector} from 'reducers/selectors';
+import {actionTypes} from 'actions/actionTypes';
+
+const teamLoadingSelector = createLoadingSelector([actionTypes.TEAM_PREFIX]);
 
 const SideBarCommunity = () => {
   const {colors} = useThemeColor();
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
+  const teamLoading = useAppSelector(state => teamLoadingSelector(state));
+  const reconnectSocket = useAppSelector(state => state.socket.community);
   const [inviteLink, setInviteLink] = useState('');
   const [isOpenMenu, setOpenMenu] = useState(false);
   const [isOpenMenuConfirmLeave, setOpenMenuConfirmLeave] = useState(false);
@@ -92,6 +98,13 @@ const SideBarCommunity = () => {
   const renderFooter = useCallback(() => {
     return <View style={{height: 10}} />;
   }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (reconnectSocket && !teamLoading) {
+        dispatch(fetchTeamData());
+      }
+    }, [dispatch, reconnectSocket, teamLoading]),
+  );
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>

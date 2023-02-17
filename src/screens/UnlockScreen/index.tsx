@@ -58,7 +58,10 @@ const UnlockScreen = () => {
             type: actionTypes.SET_PRIVATE_KEY,
             payload: privateKey,
           });
+          const start = new Date().getTime();
           const privateKeyChannel = await getPrivateChannel(privateKey);
+          const end = new Date().getTime();
+          console.log('XXX: ', end - start);
           dispatch({
             type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
             payload: privateKeyChannel,
