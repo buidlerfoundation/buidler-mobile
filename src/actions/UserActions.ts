@@ -239,6 +239,7 @@ export const findTeamAndChannel =
     if (res.statusCode === 200) {
       const communities = res.data || [];
       if (communities.length > 0) {
+        SocketUtils.init();
         const currentTeam =
           communities.find((t: Community) => t.team_id === lastTeamId) ||
           communities[0];
@@ -272,7 +273,6 @@ export const findTeamAndChannel =
             },
           });
         }
-        SocketUtils.init();
         dispatch({
           type: actionTypes.CURRENT_TEAM_SUCCESS,
           payload: {
