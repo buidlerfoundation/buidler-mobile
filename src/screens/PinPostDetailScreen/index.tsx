@@ -1,4 +1,8 @@
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {deleteMessage, getPinPostMessages} from 'actions/MessageActions';
 import AppDimension from 'common/AppDimension';
 import SVG from 'common/SVG';
@@ -52,12 +56,14 @@ import {actionTypes} from 'actions/actionTypes';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 import useUserRole from 'hook/useUserRole';
 import useLoadMoreBeforePinPostMessage from 'hook/useLoadMoreBeforePinPostMessage';
+import useLoadingPinPostMessage from 'hook/useLoadingPinPostMessage';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
   const listRef = useRef<FlatList>();
   const inputRef = useRef<TextInput>();
   const loadMoreBefore = useLoadMoreBeforePinPostMessage();
+  const loadingMessage = useLoadingPinPostMessage();
   const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const [isOpenMenuReport, setOpenMenuReport] = useState(false);
   const [isOpenMenuDelete, setOpenMenuDelete] = useState(false);
@@ -73,6 +79,9 @@ const PinPostDetailScreen = () => {
     [],
   );
   const {colors} = useThemeColor();
+  const reconnectSocket = useAppSelector(
+    state => state.socket.pinPostConversation,
+  );
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userData = useAppSelector(state => state.user.userData);
   const userRole = useUserRole();
@@ -160,6 +169,13 @@ const PinPostDetailScreen = () => {
       SocketUtils.generateId = null;
     }
   }, [dispatch, handleAroundMessage, messageId, postId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (reconnectSocket && !loadingMessage && postId && !messageId) {
+        dispatch(getPinPostMessages(postId));
+      }
+    }, [dispatch, loadingMessage, messageId, postId, reconnectSocket]),
+  );
   const openMenuMessage = useCallback(
     (message: MessageData) => {
       if (isArchived) return;

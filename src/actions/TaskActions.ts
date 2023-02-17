@@ -153,6 +153,10 @@ export const getTasks =
     } catch (e) {
       dispatch({type: actionTypes.TASK_FAIL, payload: {message: e}});
     }
+    dispatch({
+      type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+      payload: {pinPost: false},
+    });
   };
 
 export const dropTask =

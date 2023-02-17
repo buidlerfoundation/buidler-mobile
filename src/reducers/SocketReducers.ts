@@ -7,6 +7,8 @@ type SocketReducerState = {
   conversation: boolean;
   channel: boolean;
   community: boolean;
+  pinPost: boolean;
+  pinPostConversation: boolean;
 };
 
 const initialState: SocketReducerState = {
@@ -15,6 +17,8 @@ const initialState: SocketReducerState = {
   conversation: false,
   channel: false,
   community: false,
+  pinPost: false,
+  pinPostConversation: false,
 };
 
 const socketReducers: Reducer<SocketReducerState, AnyAction> = (

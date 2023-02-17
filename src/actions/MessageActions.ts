@@ -164,6 +164,10 @@ export const getPinPostMessages: ActionCreator<any> =
         payload: {message: error},
       });
     }
+    dispatch({
+      type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+      payload: {pinPostConversation: false},
+    });
   };
 
 export const getMessages: ActionCreator<any> =

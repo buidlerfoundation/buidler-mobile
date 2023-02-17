@@ -1,4 +1,3 @@
-import {Dispatch} from 'redux';
 import {
   findKey,
   getChannelPrivateKey,
@@ -25,14 +24,13 @@ import {
 import {getTransactions} from 'actions/TransactionActions';
 import {formatTokenValue} from 'helpers/TokenHelper';
 import {normalizeUserName} from 'helpers/MessageHelper';
-import {getCurrentChannel, getCurrentCommunity} from 'helpers/StoreHelper';
+import {getCurrentChannel} from 'helpers/StoreHelper';
 import {getCollectibles} from 'actions/CollectibleActions';
 import {getDeviceCode} from 'helpers/GenerateUUID';
 import {AsyncKey} from 'common/AppStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID, {StackID} from 'common/ScreenID';
-import {getPinPostMessages} from 'actions/MessageActions';
 import {Socket} from 'socket.io-client';
 import messaging from '@react-native-firebase/messaging';
 import {Platform} from 'react-native';
@@ -40,62 +38,8 @@ import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import {API_URL} from 'react-native-dotenv';
 import Toast from 'react-native-toast-message';
 
-const getTasks = async (channelId: string, dispatch: Dispatch) => {
-  dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
-  try {
-    const taskRes = await api.getTasks(channelId);
-    if (taskRes.statusCode === 200) {
-      dispatch({
-        type: actionTypes.TASK_SUCCESS,
-        payload: {
-          channelId,
-          tasks: taskRes.data,
-        },
-      });
-    } else {
-      dispatch({
-        type: actionTypes.TASK_FAIL,
-        payload: {message: 'Error', taskRes},
-      });
-    }
-  } catch (e) {
-    dispatch({type: actionTypes.TASK_FAIL, payload: {message: e}});
-  }
-};
-
-const getTaskFromUser = async (
-  userId: string,
-  channelId: string,
-  teamId: string,
-  dispatch: Dispatch,
-) => {
-  dispatch({type: actionTypes.TASK_REQUEST, payload: {channelId}});
-  try {
-    const [taskRes, archivedCountRes] = await Promise.all([
-      api.getTaskFromUser(userId, teamId),
-      api.getArchivedTaskCountFromUser(userId, teamId),
-    ]);
-    if (taskRes.statusCode === 200 && archivedCountRes.statusCode === 200) {
-      dispatch({
-        type: actionTypes.TASK_SUCCESS,
-        payload: {
-          channelId,
-          tasks: taskRes.data,
-          archivedCount: archivedCountRes.total,
-        },
-      });
-    } else {
-      dispatch({
-        type: actionTypes.TASK_FAIL,
-        payload: {message: 'Error', taskRes, archivedCountRes},
-      });
-    }
-  } catch (e) {
-    dispatch({type: actionTypes.TASK_FAIL, payload: {message: e}});
-  }
-};
-
 const toggleSocketReconnect = () => {
+  const {currentRouter} = NavigationServices;
   store.dispatch({
     type: actionTypes.TOGGLE_SOCKET_RECONNECT,
     payload: {
@@ -104,6 +48,8 @@ const toggleSocketReconnect = () => {
       conversation: true,
       channel: true,
       community: true,
+      pinPost: true,
+      pinPostConversation: currentRouter?.name === ScreenID.PinPostDetailScreen,
     },
   });
 };
@@ -195,7 +141,7 @@ class SocketUtil {
       this.connecting = false;
       console.log('socket connected');
       if (!this.firstLoad) {
-        this.reloadData();
+        toggleSocketReconnect();
       }
       store.dispatch({
         type: actionTypes.UPDATE_FROM_SOCKET,
@@ -214,32 +160,6 @@ class SocketUtil {
       });
     });
   }
-  reloadData = async () => {
-    toggleSocketReconnect();
-    const currentChannel = getCurrentChannel();
-    const currentTeam = getCurrentCommunity();
-    if (!!currentTeam && !!currentChannel) {
-      // load pin post message
-      const {currentRouter} = NavigationServices;
-      if (currentRouter?.name === ScreenID.PinPostDetailScreen) {
-        const postId = currentRouter?.params?.postId;
-        if (postId) {
-          store.dispatch(getPinPostMessages(postId));
-        }
-      }
-      // load task
-      if (currentChannel?.user) {
-        getTaskFromUser(
-          currentChannel.user.user_id,
-          currentChannel.channel_id || currentChannel.user.user_id,
-          currentTeam?.team_id,
-          store.dispatch,
-        );
-      } else {
-        getTasks(currentChannel.channel_id, store.dispatch);
-      }
-    }
-  };
   handleChannelPrivateKey = async (
     channel_id: string,
     key: string,

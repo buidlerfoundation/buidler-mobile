@@ -1,4 +1,4 @@
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {actionTypes} from 'actions/actionTypes';
 import {
   deleteTask,
@@ -58,6 +58,7 @@ const PinPostScreen = () => {
   const [isOpenMenuDelete, setOpenMenuDelete] = useState(false);
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenModalEmoji, setOpenModalEmoji] = useState(false);
+  const reconnectSocket = useAppSelector(state => state.socket.pinPost);
   const userData = useAppSelector(state => state.user.userData);
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userRole = useUserRole();
@@ -71,6 +72,13 @@ const PinPostScreen = () => {
     setOpenMenuPinPost(false);
   }, []);
   const onBack = useCallback(() => navigation.goBack(), [navigation]);
+  useFocusEffect(
+    useCallback(() => {
+      if (reconnectSocket && !loadingTask && currentChannelId) {
+        dispatch(getTasks(currentChannelId));
+      }
+    }, [currentChannelId, dispatch, loadingTask, reconnectSocket]),
+  );
   useEffect(() => {
     if (currentChannelId) {
       dispatch(getTasks(currentChannelId));
