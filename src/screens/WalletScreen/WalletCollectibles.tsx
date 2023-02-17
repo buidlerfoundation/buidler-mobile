@@ -1,8 +1,9 @@
+import {useNavigation} from '@react-navigation/native';
 import {getCollectibles} from 'actions/CollectibleActions';
 import AppStyles from 'common/AppStyles';
+import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import CollectibleLayoutProvider from 'components/CollectibleLayoutProvider';
-import SvgUri from 'components/SvgUri';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
@@ -60,7 +61,55 @@ const CollectibleHeader = memo(
   },
 );
 
+type CollectionItemProps = {
+  data: any;
+  itemSize: number;
+  onItemPress: (data: any) => void;
+};
+
+const CollectionItem = memo(
+  ({data, itemSize, onItemPress}: CollectionItemProps) => {
+    const {colors} = useThemeColor();
+    const onPress = useCallback(() => onItemPress(data), [data, onItemPress]);
+    return (
+      <Touchable
+        style={[
+          styles.collectionItemContainer,
+          data.index % 3 === 0 && {paddingLeft: 20},
+          data.index % 3 === 2 && {paddingRight: 20},
+        ]}
+        onPress={onPress}>
+        {data.image_url?.includes('.svg') ? (
+          <View
+            style={[
+              styles.collectionItemImage,
+              {
+                backgroundColor: colors.border,
+                width: itemSize,
+                height: itemSize,
+              },
+            ]}
+          />
+        ) : (
+          <FastImage
+            source={{uri: data.image_url}}
+            style={[
+              styles.collectionItemImage,
+              {
+                backgroundColor: colors.border,
+                width: itemSize,
+                height: itemSize,
+              },
+            ]}
+          />
+        )}
+      </Touchable>
+    );
+  },
+);
+
 const WalletCollectibles = () => {
+  const navigation = useNavigation();
   const {colors} = useThemeColor();
   const dispatch = useAppDispatch();
   const {width} = useWindowDimensions();
@@ -80,7 +129,7 @@ const WalletCollectibles = () => {
     return collectibles.reduce((res, val) => {
       const nfts = collectibleToggle?.[val.contract_address]
         ? []
-        : val.nft.map((el, idx) => ({
+        : val.nfts.map((el, idx) => ({
             ...el,
             key: el.token_id,
             type: 'collection-item',
@@ -92,7 +141,7 @@ const WalletCollectibles = () => {
             key: val.contract_address,
             image: val.image_url,
             name: val.name,
-            count: val.nft.length,
+            count: val.nfts.length,
             type: 'collection',
           },
           ...nfts,
@@ -120,47 +169,26 @@ const WalletCollectibles = () => {
       })),
     [],
   );
+  const onItemPress = useCallback(
+    (data: any) => {
+      navigation.navigate(ScreenID.NFTDetailScreen, {
+        contractAddress: data.contract_address,
+        tokenId: data.token_id,
+        network: data.network,
+      });
+    },
+    [navigation],
+  );
   const renderRow = useCallback(
     (type, data) => {
       if (type === 'error') return <View />;
       if (type === 'collection-item') {
         return (
-          <View
-            style={[
-              styles.collectionItemContainer,
-              data.index % 3 === 0 && {paddingLeft: 20},
-              data.index % 3 === 2 && {paddingRight: 20},
-            ]}>
-            {data.image_url.includes('.svg') ? (
-              <View
-                style={[
-                  styles.collectionItemImage,
-                  {
-                    backgroundColor: colors.border,
-                    width: itemSize,
-                    height: itemSize,
-                  },
-                ]}>
-                {/* <SvgUri
-                  uri={data.image_url}
-                  width={itemSize}
-                  height={itemSize}
-                /> */}
-              </View>
-            ) : (
-              <FastImage
-                source={{uri: data.image_url}}
-                style={[
-                  styles.collectionItemImage,
-                  {
-                    backgroundColor: colors.border,
-                    width: itemSize,
-                    height: itemSize,
-                  },
-                ]}
-              />
-            )}
-          </View>
+          <CollectionItem
+            data={data}
+            itemSize={itemSize}
+            onItemPress={onItemPress}
+          />
         );
       }
       return (
@@ -171,7 +199,7 @@ const WalletCollectibles = () => {
         />
       );
     },
-    [collectibleToggle, colors.border, itemSize, onHeaderPress],
+    [collectibleToggle, itemSize, onHeaderPress, onItemPress],
   );
   const renderFooter = useCallback(() => <View style={{height: 7.5}} />, []);
   if (dataCollectibles.length === 0) {

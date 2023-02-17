@@ -20,6 +20,7 @@ import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import StoreSeedPhraseScreen from 'screens/StoreSeedPhraseScreen';
 import BackupScreen from 'screens/BackupScreen';
 import BackupDataScreen from 'screens/BackupDataScreen';
+import NFTDetailScreen from 'screens/NFTDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -76,6 +77,10 @@ const RootNavigator = () => {
           <Stack.Screen
             name={ScreenID.BackupDataScreen}
             component={BackupDataScreen}
+          />
+          <Stack.Screen
+            name={ScreenID.NFTDetailScreen}
+            component={NFTDetailScreen}
           />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />

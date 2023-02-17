@@ -21,6 +21,7 @@ export default {
   SpaceDetailScreen: 'SpaceDetailScreen',
   DirectMessageScreen: 'DirectMessageScreen',
   BackupDataScreen: 'BackupDataScreen',
+  NFTDetailScreen: 'NFTDetailScreen',
 };
 
 export const StackID = {
