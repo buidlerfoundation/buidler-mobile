@@ -507,4 +507,5 @@ export type NFTDetailDataApi = {
     value: string;
     network: string;
   }[];
+  collection: NFTCollectionDataApi;
 };
