@@ -29,6 +29,13 @@ export const getAroundMessage =
           getState().configs.privateKey,
           channelId,
         );
+        dispatch({
+          type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
+          payload: {
+            ...getState().configs.channelPrivateKey,
+            [channelId]: privateChannelKeys,
+          },
+        });
         messageData = await normalizeMessageData(
           messageRes.data || [],
           privateChannelKeys,
@@ -236,6 +243,13 @@ export const getMessages: ActionCreator<any> =
           getState().configs.privateKey,
           channelId,
         );
+        dispatch({
+          type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
+          payload: {
+            ...getState().configs.channelPrivateKey,
+            [channelId]: privateChannelKeys,
+          },
+        });
         messageData = await normalizeMessageData(
           messageRes.data || [],
           privateChannelKeys,
