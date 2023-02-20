@@ -80,11 +80,7 @@ import useDirectChannelId from 'hook/useDirectChannelId';
 import Header from './Header';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 import useChannelById from 'hook/useChannelById';
-import {
-  fetchTeamDirectUser,
-  fetchTeamUser,
-  syncChannelPrivateKey,
-} from 'actions/UserActions';
+import {fetchTeamDirectUser, fetchTeamUser} from 'actions/UserActions';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -295,7 +291,6 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         }
         if (direct) {
           dispatch(fetchTeamDirectUser());
-          dispatch(syncChannelPrivateKey());
         } else {
           dispatch(fetchTeamUser(currentTeamId));
         }

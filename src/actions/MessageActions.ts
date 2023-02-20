@@ -1,4 +1,5 @@
 import {
+  getPrivateChannelKeys,
   normalizeMessageData,
   normalizePublicMessageData,
 } from 'helpers/ChannelHelper';
@@ -22,12 +23,22 @@ export const getAroundMessage =
     const isPrivate = channelType === 'Private' || channelType === 'Direct';
     try {
       const messageRes = await api.getAroundMessageById(messageId);
-      const messageData = isPrivate
-        ? await normalizeMessageData(messageRes.data || [], channelId)
-        : normalizePublicMessageData(
-            messageRes.data || [],
-            messageRes.metadata?.encrypt_message_key,
-          );
+      let messageData = [];
+      if (isPrivate) {
+        const privateChannelKeys = await getPrivateChannelKeys(
+          getState().configs.privateKey,
+          channelId,
+        );
+        messageData = await normalizeMessageData(
+          messageRes.data || [],
+          privateChannelKeys,
+        );
+      } else {
+        messageData = normalizePublicMessageData(
+          messageRes.data || [],
+          messageRes.metadata?.encrypt_message_key,
+        );
+      }
       if (messageRes.statusCode === 200) {
         dispatch({
           type: actionTypes.MESSAGE_SUCCESS,
@@ -219,12 +230,22 @@ export const getMessages: ActionCreator<any> =
         );
       }
       const isPrivate = channelType === 'Private' || channelType === 'Direct';
-      const messageData = isPrivate
-        ? await normalizeMessageData(messageRes.data || [], channelId)
-        : normalizePublicMessageData(
-            messageRes.data || [],
-            messageRes.metadata?.encrypt_message_key,
-          );
+      let messageData = [];
+      if (isPrivate) {
+        const privateChannelKeys = await getPrivateChannelKeys(
+          getState().configs.privateKey,
+          channelId,
+        );
+        messageData = await normalizeMessageData(
+          messageRes.data || [],
+          privateChannelKeys,
+        );
+      } else {
+        messageData = normalizePublicMessageData(
+          messageRes.data || [],
+          messageRes.metadata?.encrypt_message_key,
+        );
+      }
       if (messageRes.statusCode === 200) {
         dispatch({
           type: actionTypes.MESSAGE_SUCCESS,

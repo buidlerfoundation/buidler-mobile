@@ -54,7 +54,7 @@ class ImageHelper {
 
   shouldUseOrigin = (name?: string) => {
     if (!name) return false;
-    return !/.{0,}(\.jpeg|\.png|\.gif|\.jpg)$/g.test(name);
+    return !/.{0,}(\.jpeg|\.png|\.jpg)$/g.test(name);
   };
 
   normalizeImage = (

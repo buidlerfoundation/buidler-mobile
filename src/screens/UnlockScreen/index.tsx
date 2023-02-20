@@ -12,7 +12,6 @@ import {decryptString, getIV} from 'utils/DataCrypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import {actionTypes} from 'actions/actionTypes';
-import {getPrivateChannel} from 'helpers/ChannelHelper';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
 import useAppSelector from 'hook/useAppSelector';
@@ -57,14 +56,6 @@ const UnlockScreen = () => {
           dispatch({
             type: actionTypes.SET_PRIVATE_KEY,
             payload: privateKey,
-          });
-          const start = new Date().getTime();
-          const privateKeyChannel = await getPrivateChannel(privateKey);
-          const end = new Date().getTime();
-          console.log('XXX: ', end - start);
-          dispatch({
-            type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
-            payload: privateKeyChannel,
           });
           dispatch(initialSpaceToggle());
           await dispatch(accessToHome());

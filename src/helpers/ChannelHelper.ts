@@ -100,6 +100,48 @@ export const getRawPrivateChannel = async () => {
   return res;
 };
 
+export const getPrivateChannelKeys = async (
+  privateKey: string,
+  channelId: string,
+) => {
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const lastSyncChannelKey = await AsyncStorage.getItem(
+    AsyncKey.lastSyncChannelKey,
+  );
+  const channelKeyRes = await api.getChannelKey(lastSyncChannelKey || 0);
+  const syncChannelKey = channelKeyRes.data?.map(el => ({
+    channelId: el.channel_id,
+    key: el.key,
+    timestamp: el.timestamp,
+  }));
+  const current = await AsyncStorage.getItem(AsyncKey.channelPrivateKey);
+  let dataLocal: any = {data: []};
+  if (typeof current === 'string') {
+    dataLocal = JSON.parse(current);
+  }
+  dataLocal = uniqBy([...dataLocal.data, ...syncChannelKey], 'key');
+  await AsyncStorage.setItem(
+    AsyncKey.channelPrivateKey,
+    JSON.stringify({data: dataLocal}),
+  );
+  await AsyncStorage.setItem(AsyncKey.lastSyncChannelKey, timestamp.toString());
+  const req = dataLocal
+    .filter(el => el.channelId === channelId)
+    .map(el => decryptPrivateChannel(el, privateKey));
+  const res = await Promise.all(req);
+  return res.reduce((result, val) => {
+    const {channelId, key, timestamp} = val;
+    if (result[channelId]) {
+      const prev = result[channelId];
+      prev[prev.length - 1] = {...prev[prev.length - 1], expire: timestamp};
+      result[channelId] = [...prev, {key, timestamp}];
+    } else {
+      result[channelId] = [{key, timestamp}];
+    }
+    return result;
+  }, {})[channelId];
+};
+
 export const getPrivateChannel = async (
   privateKey: string,
   syncFromSocket?: boolean,
@@ -141,11 +183,7 @@ export const getPrivateChannel = async (
   }, {});
 };
 
-export const normalizeMessageItem = async (
-  item: any,
-  key: string,
-  channelId: string,
-) => {
+export const normalizeMessageItem = async (item: any, key: string) => {
   let content = '';
   try {
     content = item.content
@@ -158,7 +196,6 @@ export const normalizeMessageItem = async (
     item.conversation_data = await normalizeMessageItem(
       item.conversation_data,
       key,
-      channelId,
     );
   }
   return {
@@ -203,17 +240,13 @@ export const normalizePublicMessageData = (
 
 export const normalizeMessageData = async (
   messages: Array<any>,
-  channelId: string,
+  keys: any[],
 ) => {
-  const configs = store.getState()?.configs;
-  const {channelPrivateKey} = configs;
-  const keys = channelPrivateKey?.[channelId] || [];
   if (keys.length === 0) return [];
   const req = messages.map(el =>
     normalizeMessageItem(
       el,
       findKey(keys, Math.round(new Date(el.createdAt).getTime() / 1000)).key,
-      channelId,
     ),
   );
   const res = await Promise.all(req);

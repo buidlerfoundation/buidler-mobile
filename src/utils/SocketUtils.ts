@@ -1,11 +1,8 @@
 import {
   findKey,
   getChannelPrivateKey,
-  getPrivateChannel,
   getRawPrivateChannel,
-  normalizeMessageData,
   normalizeMessageItem,
-  normalizePublicMessageData,
 } from 'helpers/ChannelHelper';
 import {io} from 'socket.io-client/dist/socket.io';
 import {uniqBy} from 'lodash';
@@ -14,7 +11,6 @@ import {utils} from 'ethers';
 import {actionTypes} from 'actions/actionTypes';
 import store from 'store';
 import api from 'services/api';
-import {createRefreshSelector} from 'reducers/selectors';
 import {
   actionFetchWalletBalance,
   logout,
@@ -52,40 +48,6 @@ const toggleSocketReconnect = () => {
       pinPostConversation: currentRouter?.name === ScreenID.PinPostDetailScreen,
     },
   });
-};
-
-const loadMessageIfNeeded = async () => {
-  const refreshSelector = createRefreshSelector([actionTypes.MESSAGE_PREFIX]);
-  const currentChannel = getCurrentChannel();
-  const refresh = refreshSelector(store.getState());
-  if (!currentChannel || refresh || currentChannel?.channel_type === 'Public')
-    return;
-  store.dispatch({
-    type: actionTypes.MESSAGE_FRESH,
-    payload: {channelId: currentChannel.channel_id},
-  });
-  const messageRes = await api.getMessages(currentChannel.channel_id);
-  const messageData =
-    currentChannel?.channel_type === 'Private' ||
-    currentChannel?.channel_type === 'Direct'
-      ? await normalizeMessageData(
-          messageRes.data || [],
-          currentChannel.channel_id,
-        )
-      : normalizePublicMessageData(
-          messageRes.data || [],
-          messageRes.metadata?.encrypt_message_key,
-        );
-  if (messageRes.statusCode === 200) {
-    store.dispatch({
-      type: actionTypes.MESSAGE_SUCCESS,
-      payload: {
-        data: messageData,
-        channelId: currentChannel.channel_id,
-        isFresh: true,
-      },
-    });
-  }
 };
 
 class SocketUtil {
@@ -200,7 +162,6 @@ class SocketUtil {
     this.socket?.off('ON_ADD_NEW_MEMBER_TO_PRIVATE_CHANNEL');
     this.socket?.off('ON_REMOVE_NEW_MEMBER_FROM_PRIVATE_CHANNEL');
     this.socket?.off('ON_UPDATE_MEMBER_IN_PRIVATE_CHANNEL');
-    this.socket?.off('ON_CHANNEL_KEY_SEND');
     this.socket?.off('ON_VERIFY_DEVICE_OTP_SEND');
     this.socket?.off('ON_SYNC_DATA_SEND');
     this.socket?.off('ON_UPDATE_CHANNEL');
@@ -477,38 +438,6 @@ class SocketUtil {
           });
         }
       }
-    });
-    this.socket?.on('ON_CHANNEL_KEY_SEND', async (data: any) => {
-      const configs: any = store.getState()?.configs;
-      const {privateKey} = configs;
-      const current = await AsyncStorage.getItem(AsyncKey.channelPrivateKey);
-      let dataLocal: any = {};
-      if (typeof current === 'string') {
-        dataLocal = JSON.parse(current);
-      }
-      const dataKeys = Object.keys(data);
-      if (dataKeys.length === 0) {
-        return null;
-      }
-      dataKeys.forEach(k => {
-        const arr = data[k];
-        dataLocal[k] = uniqBy([...(dataLocal?.[k] || []), ...arr], 'key');
-        arr.forEach((el: any) => {
-          const {timestamp} = el;
-          this.emitReceivedKey(k, timestamp);
-        });
-      });
-      await AsyncStorage.setItem(
-        AsyncKey.channelPrivateKey,
-        JSON.stringify(dataLocal),
-      );
-      const res = await getPrivateChannel(privateKey);
-      store.dispatch({
-        type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
-        payload: res,
-      });
-      loadMessageIfNeeded();
-      return null;
     });
     this.socket?.on(
       'ON_UPDATE_MEMBER_IN_PRIVATE_CHANNEL',

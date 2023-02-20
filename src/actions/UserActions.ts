@@ -464,11 +464,6 @@ export const accessApp =
             AsyncKey.refreshTokenExpire,
             res.refresh_token_expire_at?.toString(),
           );
-          const privateKeyChannel = await getPrivateChannel(private_key);
-          dispatch({
-            type: actionTypes.SET_CHANNEL_PRIVATE_KEY,
-            payload: privateKeyChannel,
-          });
           dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
           NavigationServices.reset(ScreenID.SplashScreen);
         } else {
