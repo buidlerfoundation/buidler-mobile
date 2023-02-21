@@ -89,6 +89,7 @@ const CommunityDetailHeader = ({
           uri: ImageHelper.normalizeImage(
             community.team_background,
             community.team_id,
+            {h: 200},
           ),
         }}
         borderRadius={5}

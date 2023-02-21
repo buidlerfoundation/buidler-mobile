@@ -109,6 +109,7 @@ const ChannelScreen = () => {
               uri: ImageHelper.normalizeImage(
                 community.team_background,
                 community.team_id,
+                {h: 100},
               ),
             }}
             borderRadius={5}
