@@ -255,7 +255,7 @@ const UserScreen = () => {
         </Touchable>
       </View>
       <Body />
-      {!isMine && (
+      {!isMine && !loading && (
         <View style={styles.bottom}>
           <Touchable
             useReactNative
