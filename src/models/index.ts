@@ -380,8 +380,11 @@ export interface NFTCollectionDataApi {
   external_url: string;
   symbol: string;
   network: string;
-  nft: Array<UserNFTCollection>;
+  nfts: Array<UserNFTCollection>;
   slug: string;
+  marketplaces: {
+    [key: string]: {marketplace: string; last_ingested_at: string};
+  };
 }
 
 export interface NFTAsset {
@@ -484,4 +487,25 @@ export type ChannelKeyApiData = {
   timestamp: number;
   updatedAt: string;
   user_id: string;
+};
+
+export type NFTDetailDataApi = {
+  _id: string;
+  contract_address: string;
+  token_id: string;
+  user_id: string;
+  name: string;
+  token_type: string;
+  image_url: string;
+  background_image_url: string;
+  network: string;
+  attributes: {
+    _id: string;
+    contract_address: string;
+    token_id: string;
+    trait_type: string;
+    value: string;
+    network: string;
+  }[];
+  collection: NFTCollectionDataApi;
 };

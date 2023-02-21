@@ -6,6 +6,7 @@ import {
   ENSAsset,
   InitialApiData,
   NFTCollectionDataApi,
+  NFTDetailDataApi,
   NotificationData,
   Space,
   SpaceCollectionData,
@@ -230,3 +231,17 @@ export const configNotificationFromTask = (
   pinPostId: string,
   data: ConfigNotificationRequestBody,
 ) => ApiCaller.post(`notifications/task/${pinPostId}`, data);
+
+export const getNFTsDetails = (
+  contractAddresses: string[],
+  tokenIds: string[],
+  networks: string[],
+) => {
+  let uri = 'user/nft?';
+  contractAddresses.forEach(
+    address => (uri += `contract_addresses[]=${address}&`),
+  );
+  tokenIds.forEach(id => (uri += `token_ids[]=${id}&`));
+  networks.forEach(network => (uri += `networks[]=${network}&`));
+  return ApiCaller.get<NFTDetailDataApi[]>(uri);
+};
