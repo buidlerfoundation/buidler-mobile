@@ -7,7 +7,7 @@ type NetworkReducerState = {
 };
 
 const initialState: NetworkReducerState = {
-  chainId: ChainId.EthereumGoerli,
+  chainId: ChainId.EthereumMainnet,
 };
 
 const networkReducers: Reducer<NetworkReducerState, AnyAction> = (

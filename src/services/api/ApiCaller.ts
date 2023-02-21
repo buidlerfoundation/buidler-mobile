@@ -10,9 +10,7 @@ import NavigationServices from 'services/NavigationServices';
 import ScreenID, {StackID} from 'common/ScreenID';
 import SocketUtils from 'utils/SocketUtils';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
-// import {API_URL} from 'react-native-dotenv';
-
-const API_URL = 'https://staging.api.buidler.app/';
+import {API_URL} from 'react-native-dotenv';
 
 const METHOD_GET = 'get';
 const METHOD_POST = 'post';

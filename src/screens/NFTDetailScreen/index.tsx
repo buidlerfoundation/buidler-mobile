@@ -65,7 +65,10 @@ const NFTDetailScreen = () => {
         </Text>
       </View>
       {nft && (
-        <ScrollView style={{paddingHorizontal: 20}}>
+        <ScrollView
+          style={{
+            paddingHorizontal: 20,
+          }}>
           <FastImage
             source={{uri: nft.image_url}}
             style={{
@@ -140,6 +143,7 @@ const NFTDetailScreen = () => {
               </View>
             ))}
           </View>
+          <View style={{height: AppDimension.extraBottom + 20}} />
         </ScrollView>
       )}
     </View>
