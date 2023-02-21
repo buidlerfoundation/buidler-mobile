@@ -94,7 +94,7 @@ class SocketUtil {
           props: {message},
         });
         store.dispatch({
-          type: actionTypes.UPDATE_FROM_SOCKET,
+          type: actionTypes.SOCKET_CONNECTING,
           payload: false,
         });
       }
@@ -106,7 +106,7 @@ class SocketUtil {
         toggleSocketReconnect();
       }
       store.dispatch({
-        type: actionTypes.UPDATE_FROM_SOCKET,
+        type: actionTypes.SOCKET_CONNECTING,
         payload: false,
       });
       this.firstLoad = false;
@@ -821,7 +821,7 @@ class SocketUtil {
   };
   reconnectIfNeeded = () => {
     if (!this.socket?.connected) {
-      store.dispatch({type: actionTypes.UPDATE_FROM_SOCKET, payload: true});
+      store.dispatch({type: actionTypes.SOCKET_CONNECTING, payload: true});
       this.socket?.connect?.();
     }
   };

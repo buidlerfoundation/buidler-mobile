@@ -56,60 +56,59 @@ class PushNotificationHelper {
   }
 
   notificationTapped = async ({data, type}: NotificationPayload) => {
-    if (type === 'message') {
-      const {
-        currentTeamId,
-        currentChannelId,
-        currentDirectChannelId,
-        team,
-        channelMap,
-        directChannel,
-      } = store.getState()?.user;
-      const channel = channelMap?.[currentTeamId];
-      const {team_id, channel_type} = data.notification_data;
-      const {entity_id, entity_type, message_id} = data.message_data;
-      const direct = channel_type === 'Direct';
-      const channelId = direct ? currentDirectChannelId : currentChannelId;
-      const teamNotification = team.find(t => t.team_id === team_id);
-      const channelNotification = channel.find(c => c.channel_id === entity_id);
-      if (direct) {
-        if (!directChannel.find(el => el.channel_id === entity_id)) {
-          const success = await store.dispatch(syncDirectChannelData());
-          if (!success) {
-            return;
-          }
-        }
-        store.dispatch(setCurrentDirectChannel({channel_id: entity_id}));
-      } else {
-        if (channelId === entity_id) {
-          // Do nothing
-        } else if (currentTeamId === team_id) {
-          if (channelNotification) {
-            store.dispatch(setCurrentChannel(channelNotification));
-          }
-        } else if (teamNotification && !direct) {
-          store.dispatch(setCurrentTeam(teamNotification, entity_id));
+    NavigationServices.closeImageViewer();
+    const {
+      currentTeamId,
+      currentChannelId,
+      currentDirectChannelId,
+      team,
+      channelMap,
+      directChannel,
+    } = store.getState()?.user;
+    const channel = channelMap?.[currentTeamId];
+    const {team_id, channel_type} = data.notification_data;
+    const {entity_id, entity_type, message_id} = data.message_data;
+    const direct = channel_type === 'Direct';
+    const channelId = direct ? currentDirectChannelId : currentChannelId;
+    const teamNotification = team.find(t => t.team_id === team_id);
+    const channelNotification = channel.find(c => c.channel_id === entity_id);
+    if (direct) {
+      if (!directChannel.find(el => el.channel_id === entity_id)) {
+        const success = await store.dispatch(syncDirectChannelData());
+        if (!success) {
+          return;
         }
       }
-      if (entity_type === 'post') {
-        NavigationServices.pushToScreen(ScreenID.PinPostDetailScreen, {
-          postId: entity_id,
-          messageId: message_id,
+      store.dispatch(setCurrentDirectChannel({channel_id: entity_id}));
+    } else {
+      if (channelId === entity_id) {
+        // Do nothing
+      } else if (currentTeamId === team_id) {
+        if (channelNotification) {
+          store.dispatch(setCurrentChannel(channelNotification));
+        }
+      } else if (teamNotification && !direct) {
+        store.dispatch(setCurrentTeam(teamNotification, entity_id));
+      }
+    }
+    if (entity_type === 'post') {
+      NavigationServices.pushToScreen(ScreenID.PinPostDetailScreen, {
+        postId: entity_id,
+        messageId: message_id,
+      });
+    } else {
+      if (direct) {
+        NavigationServices.pushToScreen(StackID.DirectMessageStack, {
+          fromNotification: true,
+          jumpMessageId: message_id,
+          channelId: entity_id,
         });
       } else {
-        if (direct) {
-          NavigationServices.pushToScreen(StackID.DirectMessageStack, {
-            fromNotification: true,
-            jumpMessageId: message_id,
-            channelId: entity_id,
-          });
-        } else {
-          NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
-            fromNotification: true,
-            jumpMessageId: message_id,
-            channelId: entity_id,
-          });
-        }
+        NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+          fromNotification: true,
+          jumpMessageId: message_id,
+          channelId: entity_id,
+        });
       }
     }
   };

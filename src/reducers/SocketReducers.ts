@@ -9,6 +9,7 @@ type SocketReducerState = {
   community: boolean;
   pinPost: boolean;
   pinPostConversation: boolean;
+  socketConnecting: boolean;
 };
 
 const initialState: SocketReducerState = {
@@ -19,6 +20,7 @@ const initialState: SocketReducerState = {
   community: false,
   pinPost: false,
   pinPostConversation: false,
+  socketConnecting: false,
 };
 
 const socketReducers: Reducer<SocketReducerState, AnyAction> = (
@@ -27,6 +29,12 @@ const socketReducers: Reducer<SocketReducerState, AnyAction> = (
 ) => {
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.SOCKET_CONNECTING: {
+      return {
+        ...state,
+        socketConnecting: payload,
+      };
+    }
     case actionTypes.TOGGLE_SOCKET_RECONNECT: {
       return {
         ...state,

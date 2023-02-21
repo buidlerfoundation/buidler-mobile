@@ -91,6 +91,9 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const navigation = useNavigation();
   const route = useRoute();
   const messageData = useMessageData(direct);
+  const socketConnecting = useAppSelector(
+    state => state.socket.socketConnecting,
+  );
   const socketConversation = useAppSelector(state => state.socket.conversation);
   const socketDirectConversation = useAppSelector(
     state => state.socket.directConversation,
@@ -160,6 +163,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   useEffect(() => {
     if (route.params?.fromNotification) {
       navigation.closeDrawer();
+      navigation.setParams({fromNotification: false});
     }
   }, [navigation, route.params?.fromNotification]);
   useEffect(() => {
@@ -228,7 +232,8 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     if (!route.params?.fromNotification) {
       handleGetLatestMessage();
     }
-  }, [handleGetLatestMessage, route.params?.fromNotification]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleGetLatestMessage]);
   useEffect(() => {
     if (currentChannelId) {
       dispatch(
@@ -816,7 +821,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           renderItem={renderItem}
           initialNumToRender={20}
           ListHeaderComponent={
-            loadMoreAfterMessage || socketReconnect ? (
+            loadMoreAfterMessage || socketConnecting || socketReconnect ? (
               <View style={styles.footerMessage}>
                 <ActivityIndicator />
               </View>
