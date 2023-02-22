@@ -92,7 +92,7 @@ const CollectionItem = memo(
           />
         ) : (
           <FastImage
-            source={{uri: data.image_url}}
+            source={{uri: data.background_image_url}}
             style={[
               styles.collectionItemImage,
               {
