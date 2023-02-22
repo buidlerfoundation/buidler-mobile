@@ -1,3 +1,4 @@
+import ErrorBoundary from 'components/ErrorBoundary';
 import React, {memo, useEffect, useState} from 'react';
 import {UriProps, SvgXml} from 'react-native-svg';
 
@@ -19,7 +20,11 @@ const SvgUri = (props: UriProps) => {
     },
     [props.uri],
   );
-  return <SvgXml xml={xml} override={props} />;
+  return (
+    <ErrorBoundary>
+      <SvgXml xml={xml} override={props} />
+    </ErrorBoundary>
+  );
 };
 
 export default memo(SvgUri);
