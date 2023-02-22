@@ -24,6 +24,9 @@ export default class CollectibleLayoutProvider extends GridLayoutProvider {
         const itemHeight = Math.floor(
           Dimensions.get('screen').width / MAX_SPAN,
         );
+        if (props.getDataForIndex(index).toggle && type === 'collection-item') {
+          return 0;
+        }
         switch (type) {
           case 'error':
             return 0;

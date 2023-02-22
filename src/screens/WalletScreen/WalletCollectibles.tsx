@@ -127,14 +127,13 @@ const WalletCollectibles = () => {
   }, [dispatch, fetchCollectible]);
   const dataCollectibles = useMemo(() => {
     return collectibles.reduce((res, val) => {
-      const nfts = collectibleToggle?.[val.contract_address]
-        ? []
-        : val.nfts.map((el, idx) => ({
-            ...el,
-            key: el.token_id,
-            type: 'collection-item',
-            index: idx,
-          }));
+      const nfts = val.nfts.map((el, idx) => ({
+        ...el,
+        key: el.token_id,
+        type: 'collection-item',
+        index: idx,
+        toggle: collectibleToggle?.[val.contract_address],
+      }));
       res.push(
         ...[
           {
@@ -157,10 +156,11 @@ const WalletCollectibles = () => {
       }).cloneWithRows(dataCollectibles),
     [dataCollectibles],
   );
-  const layoutProvider = useMemo(
-    () => new CollectibleLayoutProvider(dataProvider),
-    [dataProvider],
-  );
+  const layoutProvider = useCallback(() => {
+    const lp = new CollectibleLayoutProvider(dataProvider);
+    lp.shouldRefreshWithAnchoring = false;
+    return lp;
+  }, [dataProvider]);
   const onHeaderPress = useCallback(
     item =>
       setCollectibleToggle(current => ({
@@ -183,6 +183,9 @@ const WalletCollectibles = () => {
     (type, data) => {
       if (type === 'error') return <View />;
       if (type === 'collection-item') {
+        if (data.toggle) {
+          return <View />;
+        }
         return (
           <CollectionItem
             data={data}
@@ -219,8 +222,9 @@ const WalletCollectibles = () => {
     <RecyclerListView
       rowRenderer={renderRow}
       dataProvider={dataProvider}
-      layoutProvider={layoutProvider}
+      layoutProvider={layoutProvider()}
       renderFooter={renderFooter}
+      canChangeSize
     />
   );
 };
