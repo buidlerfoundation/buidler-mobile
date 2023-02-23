@@ -91,6 +91,7 @@ import IconLogoFacebook from '../assets/images/ic_logo_facebook.svg';
 import IconLogoGoogle from '../assets/images/ic_logo_google.svg';
 import IconMenuCopy from '../assets/images/ic_menu_copy.svg';
 import IconEye from '../assets/images/ic_eye.svg';
+import IconOpenSea from '../assets/images/ic_opensea.svg';
 
 export default {
   IconExpand,
@@ -186,4 +187,5 @@ export default {
   IconLogoGoogle,
   IconMenuCopy,
   IconEye,
+  IconOpenSea,
 };

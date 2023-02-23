@@ -1,3 +1,5 @@
+export const OpenSeaUrl = 'https://opensea.io';
+
 export const buildLinkOpenSea = (slugName: string) =>
   `https://opensea.io/collection/${slugName}`;
 

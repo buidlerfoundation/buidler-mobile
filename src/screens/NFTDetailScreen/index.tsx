@@ -15,9 +15,12 @@ import {
 import {NFTDetailDataApi} from 'models';
 import api from 'services/api';
 import FastImage from 'react-native-fast-image';
+import ModalBottom from 'components/ModalBottom';
+import MenuNFTDetail from 'components/MenuNFTDetail';
 
 const NFTDetailScreen = () => {
   const route = useRoute();
+  const [openMenu, setOpenMenu] = useState(false);
   const [nft, setNft] = useState<null | NFTDetailDataApi>(null);
   const {width} = useWindowDimensions();
   const imageSize = useMemo(() => width - 40, [width]);
@@ -27,6 +30,7 @@ const NFTDetailScreen = () => {
   );
   const navigation = useNavigation();
   const {colors} = useThemeColor();
+  const toggleMenu = useCallback(() => setOpenMenu(current => !current), []);
   const onBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
@@ -63,22 +67,33 @@ const NFTDetailScreen = () => {
           style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}>
           {!nft ? 'Loading...' : nft.name}
         </Text>
+        <Touchable onPress={toggleMenu}>
+          <SVG.IconMore fill={colors.text} />
+        </Touchable>
       </View>
       {nft && (
         <ScrollView
           style={{
             paddingHorizontal: 20,
           }}>
-          <FastImage
-            source={{uri: nft.image_url}}
+          <View
             style={{
               width: imageSize,
               height: imageSize,
               borderRadius: 10,
-              marginTop: 20,
-            }}
-            resizeMode="contain"
-          />
+              overflow: 'hidden',
+            }}>
+            <FastImage
+              source={{uri: nft.image_url}}
+              style={{
+                width: imageSize,
+                height: imageSize,
+                borderRadius: 10,
+                marginTop: 20,
+              }}
+              resizeMode="contain"
+            />
+          </View>
           <Text
             style={[AppStyles.TextBold22, {color: colors.text, marginTop: 20}]}>
             {nft.name}
@@ -146,6 +161,12 @@ const NFTDetailScreen = () => {
           <View style={{height: AppDimension.extraBottom + 20}} />
         </ScrollView>
       )}
+      <ModalBottom
+        isVisible={openMenu}
+        onSwipeComplete={toggleMenu}
+        onBackdropPress={toggleMenu}>
+        <MenuNFTDetail onClose={toggleMenu} nft={nft} />
+      </ModalBottom>
     </View>
   );
 };
