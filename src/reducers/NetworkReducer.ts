@@ -1,13 +1,13 @@
 import {actionTypes} from 'actions/actionTypes';
+import {CHAIN_ID} from 'react-native-dotenv';
 import {AnyAction, Reducer} from 'redux';
-import ChainId from 'services/connectors/ChainId';
 
 type NetworkReducerState = {
   chainId: number | string;
 };
 
 const initialState: NetworkReducerState = {
-  chainId: ChainId.EthereumMainnet,
+  chainId: CHAIN_ID,
 };
 
 const networkReducers: Reducer<NetworkReducerState, AnyAction> = (
