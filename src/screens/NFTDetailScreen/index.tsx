@@ -82,6 +82,7 @@ const NFTDetailScreen = () => {
               height: imageSize,
               borderRadius: 10,
               overflow: 'hidden',
+              backgroundColor: colors.border,
             }}>
             <FastImage
               source={{uri: nft.image_url}}
@@ -139,6 +140,7 @@ const NFTDetailScreen = () => {
                   backgroundColor: colors.activeBackgroundLight,
                   justifyContent: 'center',
                   paddingHorizontal: 10,
+                  marginBottom: 15,
                 }}>
                 <Text
                   numberOfLines={1}
