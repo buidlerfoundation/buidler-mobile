@@ -11,6 +11,8 @@ export default class CollectibleLayoutProvider extends GridLayoutProvider {
       index => {
         const type = props.getDataForIndex(index).type;
         switch (type) {
+          case 'token-item':
+            return MAX_SPAN;
           case 'collection':
             return MAX_SPAN;
           case 'collection-item':
@@ -30,8 +32,10 @@ export default class CollectibleLayoutProvider extends GridLayoutProvider {
         switch (type) {
           case 'error':
             return 0;
+          case 'token-item':
+            return 66;
           case 'collection':
-            return 55;
+            return 45;
           case 'collection-item':
             return itemHeight;
           default:

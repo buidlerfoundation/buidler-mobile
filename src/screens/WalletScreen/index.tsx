@@ -1,32 +1,58 @@
 import React, {memo} from 'react';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import WalletTokens from './WalletTokens';
 import WalletCollectibles from './WalletCollectibles';
 import useThemeColor from 'hook/useThemeColor';
 import AppStyles from 'common/AppStyles';
+import useWalletBalance from 'hook/useWalletBalance';
+import FastImage from 'react-native-fast-image';
 
 const Tab = createMaterialTopTabNavigator();
 
 const WalletScreen = () => {
   const {colors} = useThemeColor();
+  const walletBalance = useWalletBalance();
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarItemStyle: {width: 'auto', padding: 10},
+        tabBarScrollEnabled: true,
+        tabBarItemStyle: {
+          width: 'auto',
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 0,
+          marginHorizontal: 5,
+        },
         tabBarStyle: {
           backgroundColor: colors.background,
-          paddingHorizontal: 10,
           marginTop: 40,
           shadowOffset: {width: 0, height: 0},
           elevation: 0,
+          marginHorizontal: 10,
         },
-        tabBarLabelStyle: [AppStyles.TextSemi16, {textTransform: 'none'}],
+        tabBarLabelStyle: [
+          AppStyles.TextSemi15,
+          {textTransform: 'none', marginTop: 0, marginLeft: 0},
+        ],
         tabBarInactiveTintColor: colors.subtext,
         tabBarActiveTintColor: colors.text,
         tabBarIndicator: () => null,
       }}>
-      <Tab.Screen name="Tokens" component={WalletTokens} />
-      <Tab.Screen name="NFT collections" component={WalletCollectibles} />
+      {walletBalance.coins?.map(el => (
+        <Tab.Screen
+          key={el.contract.network}
+          name={el.contract.name}
+          component={WalletCollectibles}
+          initialParams={{token: el}}
+          options={{
+            tabBarIcon: () => (
+              <FastImage
+                style={{width: 20, height: 20}}
+                source={{uri: el.contract.logo}}
+              />
+            ),
+          }}
+        />
+      ))}
     </Tab.Navigator>
   );
 };

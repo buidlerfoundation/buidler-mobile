@@ -1,13 +1,16 @@
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import {getCollectibles} from 'actions/CollectibleActions';
 import AppStyles from 'common/AppStyles';
 import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import CollectibleLayoutProvider from 'components/CollectibleLayoutProvider';
+import TokenItem from 'components/TokenItem';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
+import useWalletBalance from 'hook/useWalletBalance';
+import {Token} from 'models';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {View, StyleSheet, Text, useWindowDimensions} from 'react-native';
 import FastImage from 'react-native-fast-image';
@@ -28,7 +31,20 @@ const CollectibleHeader = memo(
         style={[styles.collectionContainer]}
         onPress={handlePress}
         useReactNative>
-        <FastImage source={{uri: item.image}} style={styles.collectionImage} />
+        {item.image ? (
+          <FastImage
+            source={{uri: item.image}}
+            style={styles.collectionImage}
+          />
+        ) : (
+          <View style={styles.collectionImage}>
+            <SVG.IconImageDefault
+              width={25}
+              height={25}
+              fill={colors.subtext}
+            />
+          </View>
+        )}
         <Text
           style={[
             styles.collectionName,
@@ -79,17 +95,31 @@ const CollectionItem = memo(
           data.index % 3 === 2 && {paddingRight: 20},
         ]}
         onPress={onPress}>
-        <FastImage
-          source={{uri: data?.media?.[0]?.thumbnail}}
-          style={[
-            styles.collectionItemImage,
-            {
-              backgroundColor: colors.border,
-              width: itemSize,
-              height: itemSize,
-            },
-          ]}
-        />
+        {data?.media?.[0]?.thumbnail ? (
+          <FastImage
+            source={{uri: data?.media?.[0]?.thumbnail}}
+            style={[
+              styles.collectionItemImage,
+              {
+                backgroundColor: colors.border,
+                width: itemSize,
+                height: itemSize,
+              },
+            ]}
+          />
+        ) : (
+          <View
+            style={[
+              styles.collectionItemImage,
+              {width: itemSize, height: itemSize},
+            ]}>
+            <SVG.IconImageDefault
+              width={itemSize}
+              height={itemSize}
+              fill={colors.subtext}
+            />
+          </View>
+        )}
       </Touchable>
     );
   },
@@ -97,10 +127,16 @@ const CollectionItem = memo(
 
 const WalletCollectibles = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   const {colors} = useThemeColor();
   const dispatch = useAppDispatch();
   const {width} = useWindowDimensions();
   const collectibles = useAppSelector(state => state.collectible.data);
+  const token = useMemo<Token>(
+    () => route.params?.token,
+    [route.params?.token],
+  );
+  const walletBalance = useWalletBalance();
   const itemSize = useMemo(() => Math.floor((width - 70) / 3), [width]);
   const [collectibleToggle, setCollectibleToggle] = useState({});
   const [loading, setLoading] = useState(false);
@@ -112,36 +148,57 @@ const WalletCollectibles = () => {
   useEffect(() => {
     fetchCollectible();
   }, [dispatch, fetchCollectible]);
+  const dataToken = useMemo(() => {
+    if (!token) return [];
+    return walletBalance
+      ? [
+          token,
+          ...walletBalance.tokens.filter(
+            el => el.contract.network === token.contract.network,
+          ),
+        ].map(el => ({
+          ...el,
+          type: 'token-item',
+          key: `${el.contract.contract_address}-${el.contract.network}`,
+        }))
+      : [];
+  }, [token, walletBalance]);
   const dataCollectibles = useMemo(() => {
-    return collectibles.reduce((res, val) => {
-      const nfts = val.nfts.map((el, idx) => ({
-        ...el,
-        key: el.token_id,
-        type: 'collection-item',
-        index: idx,
-        toggle: collectibleToggle?.[val.contract_address],
-      }));
-      res.push(
-        ...[
-          {
-            key: val.contract_address,
-            image: val.image_url,
-            name: val.name,
-            count: val.nfts.length,
-            type: 'collection',
-          },
-          ...nfts,
-        ],
-      );
-      return res;
-    }, []);
-  }, [collectibleToggle, collectibles]);
+    return collectibles
+      .filter(el => el.network === token.contract.network)
+      .reduce((res, val) => {
+        const nfts = val.nfts.map((el, idx) => ({
+          ...el,
+          key: el.token_id,
+          type: 'collection-item',
+          index: idx,
+          toggle: collectibleToggle?.[val.contract_address],
+        }));
+        res.push(
+          ...[
+            {
+              key: val.contract_address,
+              image: val.image_url,
+              name: val.name,
+              count: val.nfts.length,
+              type: 'collection',
+            },
+            ...nfts,
+          ],
+        );
+        return res;
+      }, []);
+  }, [collectibleToggle, collectibles, token.contract.network]);
+  const list = useMemo(
+    () => [...dataToken, ...dataCollectibles],
+    [dataCollectibles, dataToken],
+  );
   const dataProvider = useMemo(
     () =>
       new DataProvider((r1, r2) => {
         return r1.key !== r2.key;
-      }).cloneWithRows(dataCollectibles),
-    [dataCollectibles],
+      }).cloneWithRows(list),
+    [list],
   );
   const layoutProvider = useCallback(() => {
     const lp = new CollectibleLayoutProvider(dataProvider);
@@ -169,6 +226,9 @@ const WalletCollectibles = () => {
   const renderRow = useCallback(
     (type, data) => {
       if (type === 'error') return <View />;
+      if (type === 'token-item') {
+        return <TokenItem item={data} />;
+      }
       if (type === 'collection-item') {
         if (data.toggle) {
           return <View />;
@@ -212,6 +272,7 @@ const WalletCollectibles = () => {
       layoutProvider={layoutProvider()}
       renderFooter={renderFooter}
       canChangeSize
+      showsVerticalScrollIndicator={false}
     />
   );
 };
@@ -221,13 +282,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     paddingHorizontal: 20,
-    marginTop: 15,
+    marginTop: 5,
     alignItems: 'center',
   },
   collectionImage: {
     width: 25,
     height: 25,
     borderRadius: 12.5,
+    overflow: 'hidden',
   },
   collectionName: {
     marginLeft: 8,
