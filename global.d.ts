@@ -5,4 +5,5 @@ declare module 'react-native-dotenv' {
   export const IMAGE_KEY: string;
   export const IMAGE_SALT: string;
   export const WEB3_AUTH_CLIENT_ID: string;
+  export const PROFILE_BASE_URL: string;
 }

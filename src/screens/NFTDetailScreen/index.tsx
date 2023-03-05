@@ -17,6 +17,8 @@ import api from 'services/api';
 import FastImage from 'react-native-fast-image';
 import ModalBottom from 'components/ModalBottom';
 import MenuNFTDetail from 'components/MenuNFTDetail';
+import WebView from 'react-native-webview';
+import {PROFILE_BASE_URL} from 'react-native-dotenv';
 
 const NFTDetailScreen = () => {
   const route = useRoute();
@@ -34,6 +36,9 @@ const NFTDetailScreen = () => {
   const onBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
+  const nftMedia = useMemo(() => {
+    return nft?.media?.[0];
+  }, [nft?.media]);
   useEffect(() => {
     if (
       route.params?.contractAddress &&
@@ -84,16 +89,24 @@ const NFTDetailScreen = () => {
               overflow: 'hidden',
               backgroundColor: colors.border,
             }}>
-            <FastImage
-              source={{uri: nft.image_url}}
-              style={{
-                width: imageSize,
-                height: imageSize,
-                borderRadius: 10,
-                marginTop: 20,
-              }}
-              resizeMode="contain"
-            />
+            {nftMedia?.format?.includes('svg') ? (
+              <WebView
+                source={{
+                  uri: `${PROFILE_BASE_URL}/img?source=${nftMedia?.gateway}&width=${imageSize}&height=${imageSize}`,
+                }}
+                style={{width: imageSize, height: imageSize}}
+              />
+            ) : (
+              <FastImage
+                source={{uri: nftMedia?.gateway}}
+                style={{
+                  width: imageSize,
+                  height: imageSize,
+                  borderRadius: 10,
+                }}
+                resizeMode="contain"
+              />
+            )}
           </View>
           <Text
             style={[AppStyles.TextBold22, {color: colors.text, marginTop: 20}]}>
@@ -107,8 +120,10 @@ const NFTDetailScreen = () => {
             <Text
               style={[
                 AppStyles.TextMed15,
-                {color: colors.text, marginLeft: 10},
-              ]}>
+                {color: colors.text, marginLeft: 10, flex: 1},
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
               {nft.collection.name}
             </Text>
           </View>

@@ -71,17 +71,13 @@ export const tokenSymbol = (params: {symbol?: string}) => {
 
 export const totalBalanceUSD = (userBalance?: BalanceApiData | null) => {
   if (!userBalance) return 0;
-  const {ETH, tokens} = userBalance;
-  let res = formatUSDValue({
-    value: ETH.balance,
-    decimal: ETH.contract.decimals,
-    price: ETH.price?.rate,
-  });
-  tokens.forEach(el => {
+  const {coins, tokens} = userBalance;
+  let res = 0;
+  [...coins, ...tokens].forEach(el => {
     res += formatUSDValue({
       value: el.balance,
       decimal: el.contract.decimals,
-      price: el.price?.rate,
+      price: el.price?.current_price,
     });
   });
   return Math.round(res * 100) / 100;
@@ -136,7 +132,7 @@ export const getEstimateTransaction = (
     gasPrice: sendData.gasPrice?.toHexString(),
   };
   if (typeId === '1') {
-    if (sendData.asset?.contract.contract_address === 'eth') {
+    if (sendData.asset?.contract.contract_address === 'coin') {
       res.to = sendData.recipientAddress;
       res.value = getTransactionAmount(sendData)
         .toHexString()

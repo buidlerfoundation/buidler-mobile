@@ -15,7 +15,7 @@ const TokenItem = ({item}: TokenItemProps) => {
   return (
     <View style={styles.container}>
       <FastImage
-        source={{uri: item.contract.logo_url}}
+        source={{uri: item.contract.logo}}
         style={[styles.tokenLogo, {backgroundColor: colors.border}]}
       />
       <View style={{flex: 1, marginLeft: 15}}>
@@ -36,7 +36,7 @@ const TokenItem = ({item}: TokenItemProps) => {
         <Text style={[styles.name, {color: colors.subtext}]}>
           {formatUSD({
             value: item.balance,
-            price: item?.price?.rate,
+            price: item?.price?.current_price,
             decimal: item?.contract?.decimals,
           })}
         </Text>

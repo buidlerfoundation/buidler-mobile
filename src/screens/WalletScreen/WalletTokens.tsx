@@ -8,7 +8,9 @@ const WalletTokens = () => {
   const renderSeparate = useCallback(() => <View style={{height: 5}} />, []);
   return (
     <FlatList
-      data={walletBalance ? [walletBalance.ETH, ...walletBalance.tokens] : []}
+      data={
+        walletBalance ? [...walletBalance.coins, ...walletBalance.tokens] : []
+      }
       keyExtractor={item => item.contract.contract_address}
       renderItem={({item}) => <TokenItem item={item} />}
       ItemSeparatorComponent={renderSeparate}

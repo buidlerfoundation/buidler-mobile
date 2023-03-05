@@ -79,30 +79,17 @@ const CollectionItem = memo(
           data.index % 3 === 2 && {paddingRight: 20},
         ]}
         onPress={onPress}>
-        {data.image_url?.includes('.svg') ? (
-          <View
-            style={[
-              styles.collectionItemImage,
-              {
-                backgroundColor: colors.border,
-                width: itemSize,
-                height: itemSize,
-              },
-            ]}
-          />
-        ) : (
-          <FastImage
-            source={{uri: data.background_image_url}}
-            style={[
-              styles.collectionItemImage,
-              {
-                backgroundColor: colors.border,
-                width: itemSize,
-                height: itemSize,
-              },
-            ]}
-          />
-        )}
+        <FastImage
+          source={{uri: data?.media?.[0]?.thumbnail}}
+          style={[
+            styles.collectionItemImage,
+            {
+              backgroundColor: colors.border,
+              width: itemSize,
+              height: itemSize,
+            },
+          ]}
+        />
       </Touchable>
     );
   },

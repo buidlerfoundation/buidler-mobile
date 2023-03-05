@@ -1,10 +1,11 @@
+import Clipboard from '@react-native-clipboard/clipboard';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {actionTypes} from 'actions/actionTypes';
 import {setCurrentDirectChannel} from 'actions/UserActions';
 import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
-import {StackID} from 'common/ScreenID';
+import ScreenID, {StackID} from 'common/ScreenID';
 import SVG from 'common/SVG';
 import MenuConfirm from 'components/MenuConfirm';
 import MenuConfirmStartDM from 'components/MenuConfirmStartDM';
@@ -12,36 +13,37 @@ import MenuUser from 'components/MenuUser';
 import ModalBottom from 'components/ModalBottom';
 import Spinner from 'components/Spinner';
 import Touchable from 'components/Touchable';
-import UserInfo from 'components/UserInfo';
 import {createMemberChannelData} from 'helpers/ChannelHelper';
 import useAppDispatch from 'hook/useAppDispatch';
 import useCommunityId from 'hook/useCommunityId';
 import useDirectUser from 'hook/useDirectUser';
 import useThemeColor from 'hook/useThemeColor';
 import useUserData from 'hook/useUserData';
-import {NFTCollection, UserData} from 'models';
+import {UserData} from 'models';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import {Linking, StyleSheet, Text, View} from 'react-native';
+import {PROFILE_BASE_URL} from 'react-native-dotenv';
 import Toast from 'react-native-toast-message';
+import WebView, {WebViewMessageEvent} from 'react-native-webview';
+import {ShouldStartLoadRequest} from 'react-native-webview/lib/WebViewTypes';
 import api from 'services/api';
 import SocketUtils from 'utils/SocketUtils';
 
-type VerifyItemProps = {
-  item: NFTCollection;
-};
+// type VerifyItemProps = {
+//   item: NFTCollection;
+// };
 
-const VerifyItem = memo(({item}: VerifyItemProps) => {
-  const {colors} = useThemeColor();
-  return (
-    <View style={styles.verifyItem}>
-      <FastImage style={styles.verifyIcon} source={{uri: item.image_url}} />
-      <Text style={[AppStyles.TextMed15, {color: colors.text, marginLeft: 8}]}>
-        {item.name}
-      </Text>
-    </View>
-  );
-});
+// const VerifyItem = memo(({item}: VerifyItemProps) => {
+//   const {colors} = useThemeColor();
+//   return (
+//     <View style={styles.verifyItem}>
+//       <FastImage style={styles.verifyIcon} source={{uri: item.image_url}} />
+//       <Text style={[AppStyles.TextMed15, {color: colors.text, marginLeft: 8}]}>
+//         {item.name}
+//       </Text>
+//     </View>
+//   );
+// });
 
 const UserScreen = () => {
   const navigation = useNavigation();
@@ -51,6 +53,7 @@ const UserScreen = () => {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const [loaded, setLoaded] = useState(false);
   const route = useRoute();
   const direct = useMemo(() => route.params?.direct, [route.params?.direct]);
   const communityId = useCommunityId(direct);
@@ -180,66 +183,67 @@ const UserScreen = () => {
     }
   }, [onCloseMenu, onUnblock, userProfile?.is_blocked]);
   const onEditPress = useCallback(() => {}, []);
-  const isVerifiedAccount = useMemo(
-    () => userProfile?.is_verified_avatar || userProfile?.is_verified_username,
-    [userProfile?.is_verified_avatar, userProfile?.is_verified_username],
+  // const isVerifiedAccount = useMemo(
+  //   () => userProfile?.is_verified_avatar || userProfile?.is_verified_username,
+  //   [userProfile?.is_verified_avatar, userProfile?.is_verified_username],
+  // );
+  // const verifyContent = useMemo(() => {
+  //   if (userProfile?.is_verified_avatar && userProfile?.is_verified_username) {
+  //     return 'It is verified that the account owns this ENS domain and NFT profile picture.';
+  //   }
+  //   if (userProfile?.is_verified_avatar) {
+  //     return 'It is verified that the account owns this NFT profile picture.';
+  //   }
+  //   if (userProfile?.is_verified_username) {
+  //     return 'It is verified that the account owns this ENS domain.';
+  //   }
+  //   return '';
+  // }, [userProfile?.is_verified_avatar, userProfile?.is_verified_username]);
+  const handleMessage = useCallback(
+    async (event: WebViewMessageEvent) => {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === 'direct_message') {
+        onDirectMessage();
+      }
+      if (data.type === 'send_crypto') {
+        onSendCrypto();
+      }
+      if (data.type === 'view_avatar') {
+        if (data.payload) {
+          navigation.navigate(ScreenID.NFTDetailScreen, {
+            contractAddress: data.payload.contract_address,
+            tokenId: data.payload.token_id,
+            network: data.payload.network,
+          });
+        }
+      }
+      if (data.type === 'view_nft') {
+        navigation.navigate(ScreenID.NFTDetailScreen, {
+          contractAddress: data.payload.contract_address,
+          tokenId: data.payload.token_id,
+          network: data.payload.network,
+        });
+      }
+      if (data.type === 'copy') {
+        await Clipboard.setString(data.payload);
+        Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+      }
+    },
+    [navigation, onDirectMessage, onSendCrypto],
   );
-  const verifyContent = useMemo(() => {
-    if (userProfile?.is_verified_avatar && userProfile?.is_verified_username) {
-      return 'It is verified that the account owns this ENS domain and NFT profile picture.';
-    }
-    if (userProfile?.is_verified_avatar) {
-      return 'It is verified that the account owns this NFT profile picture.';
-    }
-    if (userProfile?.is_verified_username) {
-      return 'It is verified that the account owns this ENS domain.';
-    }
-    return '';
-  }, [userProfile?.is_verified_avatar, userProfile?.is_verified_username]);
-  const Body = useCallback(() => {
-    if (loading)
-      return (
-        <View style={{flex: 1}}>
-          <Spinner />
-        </View>
-      );
-    if (userProfile) {
-      return (
-        <View style={{flex: 1}}>
-          <UserInfo
-            userData={userProfile}
-            userInfoStyle={styles.userInfoWrap}
-          />
-          {isVerifiedAccount && (
-            <View
-              style={[styles.verifyContainer, {borderColor: colors.border}]}>
-              <Text style={[AppStyles.TextMed15, {color: colors.text}]}>
-                {verifyContent}
-              </Text>
-              {userProfile?.is_verified_avatar && (
-                <VerifyItem
-                  item={userProfile.verified_avatar_asset_collection}
-                />
-              )}
-              {userProfile?.is_verified_username && (
-                <VerifyItem
-                  item={userProfile.verified_username_asset_collection}
-                />
-              )}
-            </View>
-          )}
-        </View>
-      );
-    }
-    return null;
-  }, [
-    colors.border,
-    colors.text,
-    isVerifiedAccount,
-    loading,
-    userProfile,
-    verifyContent,
-  ]);
+  const onShouldStartLoadWithRequest = useCallback(
+    (evt: ShouldStartLoadRequest) => {
+      if (evt.url.includes(PROFILE_BASE_URL)) return true;
+      Linking.openURL(evt.url);
+      return false;
+    },
+    [],
+  );
+  const onWVLoadEnd = useCallback(() => {
+    setTimeout(() => {
+      setLoaded(true);
+    }, 200);
+  }, []);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -254,28 +258,28 @@ const UserScreen = () => {
           <SVG.IconMore fill={colors.text} />
         </Touchable>
       </View>
-      <Body />
-      {!isMine && !loading && (
-        <View style={styles.bottom}>
-          <Touchable
-            useReactNative
-            style={[styles.bottomButton, {backgroundColor: colors.border}]}
-            onPress={onSendCrypto}>
-            <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-              Send Crypto
-            </Text>
-          </Touchable>
-          <Touchable
-            useReactNative
-            style={[
-              styles.bottomButton,
-              {backgroundColor: colors.blue, marginLeft: 10},
-            ]}
-            onPress={onDirectMessage}>
-            <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-              Direct Message
-            </Text>
-          </Touchable>
+      {userProfile && (
+        <WebView
+          source={{
+            uri: `${PROFILE_BASE_URL}/${userProfile.user_name}?embedded=true&mine=${isMine}&bottom=${AppDimension.extraBottom}`,
+          }}
+          style={{backgroundColor: colors.background}}
+          onMessage={handleMessage}
+          onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+          onLoadEnd={onWVLoadEnd}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+      {(!loaded || loading) && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: colors.background,
+              top: AppDimension.headerHeight + AppDimension.extraTop,
+            },
+          ]}>
+          <Spinner />
         </View>
       )}
       <ModalBottom
