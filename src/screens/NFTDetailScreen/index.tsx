@@ -1,10 +1,9 @@
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {useRoute} from '@react-navigation/native';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
 import SVG from 'common/SVG';
-import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
-import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
+import React, {memo, useEffect, useMemo, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -15,14 +14,11 @@ import {
 import {NFTDetailDataApi} from 'models';
 import api from 'services/api';
 import FastImage from 'react-native-fast-image';
-import ModalBottom from 'components/ModalBottom';
-import MenuNFTDetail from 'components/MenuNFTDetail';
 import WebView from 'react-native-webview';
 import {PROFILE_BASE_URL} from 'react-native-dotenv';
 
 const NFTDetailScreen = () => {
   const route = useRoute();
-  const [openMenu, setOpenMenu] = useState(false);
   const [nft, setNft] = useState<null | NFTDetailDataApi>(null);
   const {width} = useWindowDimensions();
   const imageSize = useMemo(() => width - 40, [width]);
@@ -30,12 +26,7 @@ const NFTDetailScreen = () => {
     () => Math.floor((width - 55) / 2),
     [width],
   );
-  const navigation = useNavigation();
   const {colors} = useThemeColor();
-  const toggleMenu = useCallback(() => setOpenMenu(current => !current), []);
-  const onBack = useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
   const nftMedia = useMemo(() => {
     return nft?.media?.[0];
   }, [nft?.media]);
@@ -64,22 +55,11 @@ const NFTDetailScreen = () => {
   ]);
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Touchable onPress={onBack}>
-          <SVG.IconArrowBack fill={colors.text} />
-        </Touchable>
-        <Text
-          style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}>
-          {!nft ? 'Loading...' : nft.name}
-        </Text>
-        <Touchable onPress={toggleMenu}>
-          <SVG.IconMore fill={colors.text} />
-        </Touchable>
-      </View>
       {nft && (
         <ScrollView
           style={{
             paddingHorizontal: 20,
+            paddingTop: 20,
           }}>
           <View
             style={{
@@ -113,10 +93,20 @@ const NFTDetailScreen = () => {
             {nft.name}
           </Text>
           <View style={styles.collectionView}>
-            <FastImage
-              source={{uri: nft.collection.image_url}}
-              style={styles.collectionLogo}
-            />
+            {nft.collection.image_url ? (
+              <FastImage
+                source={{uri: nft.collection.image_url}}
+                style={styles.collectionLogo}
+              />
+            ) : (
+              <View style={styles.collectionLogo}>
+                <SVG.IconImageDefault
+                  width={25}
+                  height={25}
+                  fill={colors.subtext}
+                />
+              </View>
+            )}
             <Text
               style={[
                 AppStyles.TextMed15,
@@ -152,7 +142,8 @@ const NFTDetailScreen = () => {
                   height: 60,
                   marginLeft: index % 2 === 0 ? 0 : 15,
                   borderRadius: 5,
-                  backgroundColor: colors.activeBackgroundLight,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   justifyContent: 'center',
                   paddingHorizontal: 10,
                   marginBottom: 15,
@@ -178,12 +169,6 @@ const NFTDetailScreen = () => {
           <View style={{height: AppDimension.extraBottom + 20}} />
         </ScrollView>
       )}
-      <ModalBottom
-        isVisible={openMenu}
-        onSwipeComplete={toggleMenu}
-        onBackdropPress={toggleMenu}>
-        <MenuNFTDetail onClose={toggleMenu} nft={nft} />
-      </ModalBottom>
     </View>
   );
 };
@@ -191,7 +176,6 @@ const NFTDetailScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: AppDimension.extraTop,
   },
   header: {
     flexDirection: 'row',
@@ -213,6 +197,7 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
     borderRadius: 12.5,
+    overflow: 'hidden',
   },
   nftProperties: {
     flexWrap: 'wrap',

@@ -81,6 +81,7 @@ const RootNavigator = () => {
           <Stack.Screen
             name={ScreenID.NFTDetailScreen}
             component={NFTDetailScreen}
+            options={{presentation: 'modal'}}
           />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />

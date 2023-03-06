@@ -20,10 +20,11 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
   const {colors} = useThemeColor();
   const link = useMemo(() => {
     if (item.nft_collection) {
-      if (item.nft_collection?.slug) {
-        return buildLinkOpenSea(item.nft_collection.slug);
+      const slug = item.nft_collection?.marketplaces?.opensea?.slug;
+      if (slug) {
+        return buildLinkOpenSea(slug);
       }
-      return item.nft_collection.external_url;
+      return item.nft_collection.external_url || '';
     }
     if (item.token_type === 'ERC20') {
       return buildLinkUniSwap({
@@ -39,6 +40,7 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
     item.token_type,
   ]);
   const onGetCondition = useCallback(() => {
+    if (!link) return;
     Linking.openURL(link);
   }, [link]);
   return (
