@@ -29,22 +29,6 @@ import {ShouldStartLoadRequest} from 'react-native-webview/lib/WebViewTypes';
 import api from 'services/api';
 import SocketUtils from 'utils/SocketUtils';
 
-// type VerifyItemProps = {
-//   item: NFTCollection;
-// };
-
-// const VerifyItem = memo(({item}: VerifyItemProps) => {
-//   const {colors} = useThemeColor();
-//   return (
-//     <View style={styles.verifyItem}>
-//       <FastImage style={styles.verifyIcon} source={{uri: item.image_url}} />
-//       <Text style={[AppStyles.TextMed15, {color: colors.text, marginLeft: 8}]}>
-//         {item.name}
-//       </Text>
-//     </View>
-//   );
-// });
-
 const UserScreen = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
@@ -183,22 +167,6 @@ const UserScreen = () => {
     }
   }, [onCloseMenu, onUnblock, userProfile?.is_blocked]);
   const onEditPress = useCallback(() => {}, []);
-  // const isVerifiedAccount = useMemo(
-  //   () => userProfile?.is_verified_avatar || userProfile?.is_verified_username,
-  //   [userProfile?.is_verified_avatar, userProfile?.is_verified_username],
-  // );
-  // const verifyContent = useMemo(() => {
-  //   if (userProfile?.is_verified_avatar && userProfile?.is_verified_username) {
-  //     return 'It is verified that the account owns this ENS domain and NFT profile picture.';
-  //   }
-  //   if (userProfile?.is_verified_avatar) {
-  //     return 'It is verified that the account owns this NFT profile picture.';
-  //   }
-  //   if (userProfile?.is_verified_username) {
-  //     return 'It is verified that the account owns this ENS domain.';
-  //   }
-  //   return '';
-  // }, [userProfile?.is_verified_avatar, userProfile?.is_verified_username]);
   const handleMessage = useCallback(
     async (event: WebViewMessageEvent) => {
       const data = JSON.parse(event.nativeEvent.data);
