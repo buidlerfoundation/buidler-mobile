@@ -251,9 +251,8 @@ const WalletCollectibles = () => {
     },
     [collectibleToggle, itemSize, onHeaderPress, onItemPress],
   );
-  const renderFooter = useCallback(() => <View style={{height: 7.5}} />, []);
-  if (dataCollectibles.length === 0) {
-    if (!loading)
+  const renderFooter = useCallback(() => {
+    if (dataCollectibles.length === 0 && !loading) {
       return (
         <Text
           style={[
@@ -263,8 +262,9 @@ const WalletCollectibles = () => {
           No NFT in your collection yet
         </Text>
       );
-    return null;
-  }
+    }
+    return <View style={{height: 7.5}} />;
+  }, [colors.subtext, dataCollectibles.length, loading]);
   return (
     <RecyclerListView
       rowRenderer={renderRow}
