@@ -11,6 +11,7 @@ const Tab = createMaterialTopTabNavigator();
 const WalletScreen = () => {
   const {colors} = useThemeColor();
   const walletBalance = useWalletBalance();
+  if (!walletBalance?.coins || walletBalance?.coins?.length === 0) return null;
   return (
     <Tab.Navigator
       screenOptions={{
@@ -37,7 +38,7 @@ const WalletScreen = () => {
         tabBarActiveTintColor: colors.text,
         tabBarIndicator: () => null,
       }}>
-      {walletBalance.coins?.map(el => (
+      {walletBalance?.coins?.map(el => (
         <Tab.Screen
           key={el.contract.network}
           name={el.contract.name}
