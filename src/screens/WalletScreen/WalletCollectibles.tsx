@@ -143,7 +143,7 @@ const WalletCollectibles = () => {
   const fetchCollectible = useCallback(async () => {
     setLoading(true);
     await dispatch(getCollectibles());
-    setLoading(false);
+    setTimeout(() => setLoading(false), 150);
   }, [dispatch]);
   useEffect(() => {
     fetchCollectible();
@@ -265,13 +265,13 @@ const WalletCollectibles = () => {
     }
     return <View style={{height: 7.5}} />;
   }, [colors.subtext, dataCollectibles.length, loading]);
+  if (loading) return null;
   return (
     <RecyclerListView
       rowRenderer={renderRow}
       dataProvider={dataProvider}
       layoutProvider={layoutProvider()}
       renderFooter={renderFooter}
-      canChangeSize
       showsVerticalScrollIndicator={false}
     />
   );
