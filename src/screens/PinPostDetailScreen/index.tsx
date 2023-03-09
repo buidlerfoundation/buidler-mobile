@@ -374,21 +374,24 @@ const PinPostDetailScreen = () => {
   }, [onSelectPhoto]);
   const onReactPress = useCallback(
     (name: string) => {
-      const reacts = reactData[selectedMessage?.message_id];
+      const contentId = selectedMessage?.message_id || pinPost?.data?.task_id;
+      const reacts = reactData[contentId];
       const isExisted = !!reacts?.find(
         (react: any) => react.reactName === name && react?.isReacted,
       );
       if (isExisted) {
-        dispatch(
-          removeReact(selectedMessage?.message_id, name, userData?.user_id),
-        );
+        dispatch(removeReact(contentId, name, userData?.user_id));
       } else {
-        dispatch(
-          addReact(selectedMessage?.message_id, name, userData?.user_id),
-        );
+        dispatch(addReact(contentId, name, userData?.user_id));
       }
     },
-    [dispatch, reactData, selectedMessage?.message_id, userData?.user_id],
+    [
+      dispatch,
+      pinPost?.data?.task_id,
+      reactData,
+      selectedMessage?.message_id,
+      userData?.user_id,
+    ],
   );
   const openMenuReport = useCallback(() => {
     onCloseMenuMessage();
@@ -434,6 +437,10 @@ const PinPostDetailScreen = () => {
       }),
     );
   }, [communityId, currentChannelId, dispatch, pinPost?.data?.task_id]);
+  const handleOpenReactView = useCallback(() => {
+    setSelectedMessage(null);
+    setOpenModalEmoji(true);
+  }, []);
   if (!pinPost.data) return null;
   return (
     <KeyboardLayout
@@ -461,7 +468,11 @@ const PinPostDetailScreen = () => {
           ListHeaderComponent={<View style={{height: 20}} />}
           ListFooterComponent={
             <View>
-              <PinPostItem pinPost={pinPost.data} detail />
+              <PinPostItem
+                pinPost={pinPost.data}
+                detail
+                openReactView={handleOpenReactView}
+              />
               {messages?.length > 0 && (
                 <View
                   style={[styles.separate, {backgroundColor: colors.border}]}
