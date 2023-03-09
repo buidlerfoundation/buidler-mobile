@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     height: 66,
+    width: '100%',
   },
   tokenLogo: {
     width: 35,
