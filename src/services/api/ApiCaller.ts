@@ -214,8 +214,8 @@ async function requestAPI<T = any>(
 }
 
 const ApiCaller = {
-  get<T>(url: string, baseUrl?: string, controller?: AbortController) {
-    return requestAPI<T>(METHOD_GET, url, undefined, baseUrl, controller);
+  get<T>(url: string, baseUrl?: string, controller?: AbortController, h?: any) {
+    return requestAPI<T>(METHOD_GET, url, undefined, baseUrl, controller, h);
   },
 
   post<T>(

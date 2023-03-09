@@ -92,8 +92,11 @@ const CollectionItem = memo(
         style={[
           styles.collectionItemContainer,
           data.index % 3 === 0 && {paddingLeft: 20},
+          data.index % 3 === 1 && {paddingLeft: 10},
           data.index % 3 === 2 && {paddingRight: 20},
+          data.index > 2 && {paddingTop: 5},
         ]}
+        useReactNative
         onPress={onPress}>
         {data?.media?.[0]?.thumbnail ? (
           <FastImage
@@ -143,7 +146,7 @@ const WalletCollectibles = () => {
   const fetchCollectible = useCallback(async () => {
     setLoading(true);
     await dispatch(getCollectibles());
-    setTimeout(() => setLoading(false), 150);
+    setLoading(false);
   }, [dispatch]);
   useEffect(() => {
     fetchCollectible();
@@ -272,6 +275,8 @@ const WalletCollectibles = () => {
       dataProvider={dataProvider}
       layoutProvider={layoutProvider()}
       renderFooter={renderFooter}
+      canChangeSize
+      forceNonDeterministicRendering
       showsVerticalScrollIndicator={false}
     />
   );
@@ -282,7 +287,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     paddingHorizontal: 20,
-    marginTop: 5,
     alignItems: 'center',
   },
   collectionImage: {

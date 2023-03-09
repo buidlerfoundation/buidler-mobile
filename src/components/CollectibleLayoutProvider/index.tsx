@@ -35,7 +35,7 @@ export default class CollectibleLayoutProvider extends GridLayoutProvider {
           case 'token-item':
             return 66;
           case 'collection':
-            return 45;
+            return 40;
           case 'collection-item':
             return itemHeight;
           default:

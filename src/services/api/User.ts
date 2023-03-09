@@ -92,7 +92,7 @@ export const removeDevice = (body: any) =>
   ApiCaller.delete('user/device', body);
 
 export const getNFTCollection = () =>
-  ApiCaller.get<Array<UserNFTCollection>>('user/nft-collection');
+  ApiCaller.get<NFTCollectionDataApi[]>('user/nft-collection');
 
 export const getSpaceMembers = (id: string, controller?: AbortController) =>
   ApiCaller.get<Array<UserData>>(`space/${id}/member`, undefined, controller);
