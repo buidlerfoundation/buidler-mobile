@@ -64,7 +64,7 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
         }}
       />
       <FastImage
-        source={{uri: item.nft_collection.image_url}}
+        source={{uri: item.nft_collection?.image_url}}
         style={styles.logoContract}
       />
       <Text
@@ -74,7 +74,7 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
         ]}
         numberOfLines={1}
         ellipsizeMode="tail">
-        {item.nft_collection.name}
+        {item.nft_collection?.name}
       </Text>
       <Touchable style={styles.btnGet} useReactNative onPress={onGetCondition}>
         <Text style={[AppStyles.TextSemi16, {color: colors.mention}]}>Get</Text>
