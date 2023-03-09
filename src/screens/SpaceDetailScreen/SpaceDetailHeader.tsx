@@ -26,7 +26,7 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
       }
       return item.nft_collection.external_url || '';
     }
-    if (item.token_type === 'ERC20') {
+    if (item.token_type === 'erc20') {
       return buildLinkUniSwap({
         amount: item.amount,
         contract_address: item.contract_address,
@@ -64,7 +64,9 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
         }}
       />
       <FastImage
-        source={{uri: item.nft_collection?.image_url}}
+        source={{
+          uri: item.nft_collection?.image_url || item.token_contract?.logo,
+        }}
         style={styles.logoContract}
       />
       <Text
@@ -74,7 +76,7 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
         ]}
         numberOfLines={1}
         ellipsizeMode="tail">
-        {item.nft_collection?.name}
+        {item.nft_collection?.name || item.token_contract?.symbol}
       </Text>
       <Touchable style={styles.btnGet} useReactNative onPress={onGetCondition}>
         <Text style={[AppStyles.TextSemi16, {color: colors.mention}]}>Get</Text>
