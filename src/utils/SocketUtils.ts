@@ -81,17 +81,22 @@ class SocketUtil {
       const message = err.message || err;
       MixpanelAnalytics.tracking('Socket error: ', {message: `${message}`});
       if (message === 'Authentication error') {
-        const res = await store.dispatch(refreshToken());
-        if (res) {
+        const res: any = await store.dispatch(refreshToken());
+        if (res.success) {
           this.init(true);
-        } else {
+        } else if (res.message === 'Failed to authenticate refresh token') {
           await store.dispatch(logout());
           NavigationServices.reset(StackID.AuthStack);
+        } else {
+          Toast.show({
+            type: 'customError',
+            props: {message: res.message},
+          });
         }
       } else {
         Toast.show({
           type: 'customError',
-          props: {message},
+          props: {message: 'Network error'},
         });
         store.dispatch({
           type: actionTypes.SOCKET_CONNECTING,

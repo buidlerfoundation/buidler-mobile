@@ -75,7 +75,9 @@ export const refreshToken = () => async (dispatch: Dispatch) => {
         type: actionTypes.REFRESH_TOKEN_SUCCESS,
         payload: refreshTokenRes,
       });
-    } else {
+    } else if (
+      refreshTokenRes.message === 'Failed to authenticate refresh token'
+    ) {
       MixpanelAnalytics.tracking('Refresh failed', {
         message: refreshTokenRes.message || 'Some thing wrong',
       });
@@ -84,13 +86,17 @@ export const refreshToken = () => async (dispatch: Dispatch) => {
         payload: refreshTokenRes,
       });
     }
-    return refreshTokenRes.success;
+    return refreshTokenRes;
   } catch (error) {
+    const errMessage = error.message || error;
     MixpanelAnalytics.tracking('Refresh failed', {
-      message: error.message || error,
+      message: errMessage,
     });
     dispatch({type: actionTypes.REFRESH_TOKEN_FAIL, payload: error});
-    return false;
+    return {
+      success: false,
+      message: errMessage,
+    };
   }
 };
 
