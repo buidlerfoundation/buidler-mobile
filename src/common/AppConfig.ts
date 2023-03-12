@@ -16,6 +16,11 @@ export const whiteListRefreshTokenApis = [
   'post-user',
 ];
 
+export const ignoreMessageErrorApis = [
+  'delete-user/device',
+  'post-user/refresh',
+];
+
 export const emojiDefault = [
   {
     name: 'HEAVY BLACK HEART',

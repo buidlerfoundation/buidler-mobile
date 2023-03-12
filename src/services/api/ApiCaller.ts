@@ -1,6 +1,9 @@
 import {BaseDataApi} from 'models';
 import store from 'store';
-import {whiteListRefreshTokenApis} from 'common/AppConfig';
+import AppConfig, {
+  ignoreMessageErrorApis,
+  whiteListRefreshTokenApis,
+} from 'common/AppConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import GlobalVariable from 'services/GlobalVariable';
@@ -24,6 +27,17 @@ const sleep = (timeout = 1000) => {
   });
 };
 
+const handleError = (message: string, apiData: any) => {
+  const {uri, fetchOptions} = apiData;
+  const compareUri = `${fetchOptions.method}-${uri}`;
+  if (!ignoreMessageErrorApis.includes(compareUri)) {
+    Toast.show({
+      type: 'customError',
+      props: {message},
+    });
+  }
+};
+
 const getRequestBody = (data: any) => {
   try {
     const body = JSON.parse(data);
@@ -39,7 +53,18 @@ const logger = (...arg) => {
   }
 };
 
-const fetchWithRetry = (apiUrl: string, fetchOptions = {}, retries = 0) => {
+const fetchWithRetry = (
+  uri: string,
+  fetchOptions: any = {},
+  retries = 0,
+  serviceBaseUrl?: string,
+) => {
+  let apiUrl = '';
+  if (serviceBaseUrl) {
+    apiUrl = serviceBaseUrl + uri;
+  } else {
+    apiUrl = AppConfig.baseUrl + uri;
+  }
   const reqTime = new Date().getTime();
   logger('Request: ', {
     apiUrl,
@@ -63,10 +88,17 @@ const fetchWithRetry = (apiUrl: string, fetchOptions = {}, retries = 0) => {
             if (data.message === 'Network request failed') {
               if (retries > 0) {
                 await sleep();
-                return fetchWithRetry(apiUrl, fetchOptions, retries - 1);
+                return fetchWithRetry(
+                  uri,
+                  fetchOptions,
+                  retries - 1,
+                  serviceBaseUrl,
+                );
               } else {
                 NavigationServices.reset(ScreenID.SplashScreen);
               }
+            } else {
+              handleError(data.message || data, {uri, fetchOptions});
             }
           }
           if (data.data) {
@@ -122,25 +154,31 @@ async function requestAPI<T = any>(
   if (!whiteListRefreshTokenApis.includes(`${method}-${uri}`)) {
     const expireTokenTime = await AsyncStorage.getItem(AsyncKey.tokenExpire);
     if (!expireTokenTime || new Date().getTime() / 1000 > expireTokenTime) {
-      const success = await store.dispatch(refreshToken());
-      if (!success) {
-        if (!GlobalVariable.sessionExpired) {
-          GlobalVariable.sessionExpired = true;
+      const res: any = await store.dispatch(refreshToken());
+      if (!res.success) {
+        if (res.message === 'Failed to authenticate refresh token') {
+          if (!GlobalVariable.sessionExpired) {
+            GlobalVariable.sessionExpired = true;
+            Toast.show({
+              type: 'customError',
+              props: {message: 'Session expired'},
+            });
+            await store.dispatch(logout());
+            NavigationServices.reset(StackID.AuthStack);
+          }
+        } else {
           Toast.show({
             type: 'customError',
-            props: {message: 'Session expired'},
+            props: {message: res.message},
           });
-          await store.dispatch(logout());
-          NavigationServices.reset(StackID.AuthStack);
         }
         return {
           success: false,
           statusCode: 403,
           message: 'Refresh token failed',
         };
-      } else {
-        SocketUtils.init();
       }
+      SocketUtils.init();
     }
   }
   // Build API header
@@ -153,14 +191,6 @@ async function requestAPI<T = any>(
     // headers = {};
   } else {
     headers['Content-Type'] = 'application/json';
-  }
-
-  // Build API url
-  let apiUrl = '';
-  if (serviceBaseUrl) {
-    apiUrl = serviceBaseUrl + uri;
-  } else {
-    apiUrl = API_URL + uri;
   }
 
   // Get access token and attach it to API request's header
@@ -210,7 +240,12 @@ async function requestAPI<T = any>(
     fetchOptions.signal = controller.signal;
   }
   // Run the fetching
-  return fetchWithRetry(apiUrl, fetchOptions, uri === 'user/refresh' ? 5 : 0);
+  return fetchWithRetry(
+    uri,
+    fetchOptions,
+    uri === 'user/refresh' ? 5 : 0,
+    serviceBaseUrl,
+  );
 }
 
 const ApiCaller = {
