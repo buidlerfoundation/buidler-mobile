@@ -66,11 +66,11 @@ const LoginScreen = () => {
     <View style={styles.container}>
       <SVG.Logo width={90} height={90} />
       <Text style={[styles.title, {color: colors.text}]}>
-        {'A new home\nfor your community\nto buidl together'}
+        Release the on-chain superpower to buidl a trustless community
       </Text>
       <Text style={[styles.description, {color: colors.text}]}>
-        Web3 application for your community, teams, and supporters to connect,
-        communicate and collaborate.
+        The web3 messaging platform offers wallet-to-wallet messaging,
+        token-based membership, and on-chain verification.
       </Text>
       <Touchable
         useReactNative
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     marginLeft: 32,
   },
   title: {
-    fontSize: 31,
+    fontSize: 28,
     lineHeight: 38,
     fontFamily: Fonts.Bold,
     marginTop: 25,
