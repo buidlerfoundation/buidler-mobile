@@ -22,6 +22,8 @@ export default {
   DirectMessageScreen: 'DirectMessageScreen',
   BackupDataScreen: 'BackupDataScreen',
   NFTDetailScreen: 'NFTDetailScreen',
+  DAPPBrowserScreen: 'DAPPBrowserScreen',
+  DAPPSignMessageScreen: 'DAPPSignMessageScreen',
 };
 
 export const StackID = {

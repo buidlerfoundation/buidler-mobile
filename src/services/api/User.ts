@@ -12,7 +12,6 @@ import {
   SpaceCollectionData,
   TransactionApiData,
   UserData,
-  UserNFTCollection,
 } from 'models';
 import {ConfigNotificationRequestBody} from 'models/request';
 import ApiCaller from './ApiCaller';
@@ -245,3 +244,5 @@ export const getNFTsDetails = (
   networks.forEach(network => (uri += `networks[]=${network}&`));
   return ApiCaller.get<NFTDetailDataApi[]>(uri);
 };
+
+export const requestOTT = () => ApiCaller.get<string>('authentication/ott');

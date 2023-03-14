@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* notableTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* notableTests.m */; };
+		0E4F675D29BD7713003FBB92 /* trust-min.js in Resources */ = {isa = PBXBuildFile; fileRef = 0E4F675C29BD7713003FBB92 /* trust-min.js */; };
 		0EC38C7028E2BC7200718318 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0EC38C6F28E2BC7200718318 /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -37,6 +38,7 @@
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* notableTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = notableTests.m; sourceTree = "<group>"; };
 		0BE0247DA2B6BAD837B8DF93 /* libPods-notable-notableTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-notable-notableTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E4F675C29BD7713003FBB92 /* trust-min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "trust-min.js"; sourceTree = "<group>"; };
 		0EC38C6F28E2BC7200718318 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = notable/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Buidler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Buidler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = notable/AppDelegate.h; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 		13B07FAE1A68108700A75B9A /* notable */ = {
 			isa = PBXGroup;
 			children = (
+				0E4F675C29BD7713003FBB92 /* trust-min.js */,
 				FA6AFAFA27429B100006BA87 /* notable.entitlements */,
 				FA1091DD2738DB4D00252ACB /* GoogleService-Info.plist */,
 				0EC38C6F28E2BC7200718318 /* AppDelegate.mm */,
@@ -281,6 +284,7 @@
 				55F56729643441B186A3BEAE /* SFUIText-Bold.ttf in Resources */,
 				7DD49F8614F043E6A92045D6 /* SFUIText-Medium.ttf in Resources */,
 				AF934285110146FD83C4876C /* SFUIText-Regular.ttf in Resources */,
+				0E4F675D29BD7713003FBB92 /* trust-min.js in Resources */,
 				828C3B14EF7E46738E7E116E /* SFUIText-Semibold.ttf in Resources */,
 				FA1091DE2738DB4D00252ACB /* GoogleService-Info.plist in Resources */,
 				16C1ECA0366E4EDE85E4205D /* Helvetica-Bold.ttf in Resources */,

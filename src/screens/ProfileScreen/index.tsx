@@ -111,6 +111,13 @@ const ProfileScreen = () => {
     api.deleteUser();
     onLogout();
   }, [onLogout]);
+  const onUpdateProfilePress = useCallback(async () => {
+    const res = await api.requestOTT();
+    if (res.success) {
+      const url = `http://localhost:3006/user/${userData.user_id}?ott=${res.data}`;
+      navigation.navigate(ScreenID.DAPPBrowserScreen, {url});
+    }
+  }, [navigation, userData.user_id]);
   const onBackupPress = useCallback(() => {
     navigation.navigate(ScreenID.BackupDataScreen, {backupData});
   }, [backupData, navigation]);
@@ -135,6 +142,18 @@ const ProfileScreen = () => {
       </View>
       <UserInfo userData={userData} />
       <View style={styles.userActionWrap}>
+        <Touchable
+          style={[
+            styles.actionItem,
+            {backgroundColor: colors.activeBackgroundLight},
+          ]}
+          onPress={onUpdateProfilePress}>
+          <SVG.IconMenuEdit />
+          <Text style={[styles.actionLabel, {color: colors.text}]}>
+            Update Profile
+          </Text>
+          <SVG.IconArrowRight fill={colors.subtext} />
+        </Touchable>
         {backupData && (
           <Touchable
             style={[

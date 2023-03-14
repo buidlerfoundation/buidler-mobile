@@ -133,6 +133,7 @@ PODS:
   - GoogleUtilities/UserDefaults (7.10.0):
     - GoogleUtilities/Logger
   - hermes-engine (0.70.4)
+  - HTMLReader (2.2.1)
   - libevent (2.1.12)
   - libwebp (1.2.4):
     - libwebp/demux (= 1.2.4)
@@ -143,6 +144,11 @@ PODS:
   - libwebp/mux (1.2.4):
     - libwebp/demux
   - libwebp/webp (1.2.4)
+  - LinkPreviewKit (0.4.1):
+    - HTMLReader
+  - lowkey-react-native-link-preview (0.2.2):
+    - LinkPreviewKit
+    - React-Core
   - Mixpanel-swift (4.0.2):
     - Mixpanel-swift/Complete (= 4.0.2)
   - Mixpanel-swift/Complete (4.0.2)
@@ -512,6 +518,8 @@ PODS:
     - Firebase/Messaging (= 8.9.1)
     - React-Core
     - RNFBApp
+  - RNFS (2.20.0):
+    - React-Core
   - RNGestureHandler (1.10.3):
     - React-Core
   - RNKeychain (8.1.1):
@@ -598,6 +606,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
+  - "lowkey-react-native-link-preview (from `../node_modules/@lowkey/react-native-link-preview`)"
   - MixpanelReactNative (from `../node_modules/mixpanel-react-native`)
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Notifications (from `../node_modules/react-native-permissions/ios/Notifications`)
@@ -652,6 +661,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
+  - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
@@ -683,8 +693,10 @@ SPEC REPOS:
     - fmt
     - GoogleDataTransport
     - GoogleUtilities
+    - HTMLReader
     - libevent
     - libwebp
+    - LinkPreviewKit
     - Mixpanel-swift
     - nanopb
     - OpenSSL-Universal
@@ -709,6 +721,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes/hermes-engine.podspec"
+  lowkey-react-native-link-preview:
+    :path: "../node_modules/@lowkey/react-native-link-preview"
   MixpanelReactNative:
     :path: "../node_modules/mixpanel-react-native"
   Permission-Notifications:
@@ -811,6 +825,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/crashlytics"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
+  RNFS:
+    :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNKeychain:
@@ -856,8 +872,11 @@ SPEC CHECKSUMS:
   GoogleDataTransport: 1c8145da7117bd68bbbed00cf304edb6a24de00f
   GoogleUtilities: bad72cb363809015b1f7f19beb1f1cd23c589f95
   hermes-engine: 3623325e0d0676a45fbc544d72c57dd79fce7446
+  HTMLReader: 1839a8505df3fb7a833e767759a799ce8e210de1
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: f62cb61d0a484ba548448a4bd52aabf150ff6eef
+  LinkPreviewKit: d16933bdb90ad21bde386285abcb9dc207fabfdb
+  lowkey-react-native-link-preview: 4b0bad3690a743bedc0242bbb9c4d86dbd5aa482
   Mixpanel-swift: 91fc28834402720682f4cce760e95571fbb388c3
   MixpanelReactNative: f509f0674e7f80a7a294ff5afa88ac1e8ec61640
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
@@ -914,6 +933,7 @@ SPEC CHECKSUMS:
   RNFBApp: dda844e7084b590eb3d9bec1b2115cabbe4bc40e
   RNFBCrashlytics: 425c8b11415495c7e771745ca0ab1142ed0bd5b2
   RNFBMessaging: 037ec36b58b6f68e9b2ae83c189eb388eaf48822
+  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNNotifee: c1d164933c68654e1fb2c843118506751ad4578c

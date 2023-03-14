@@ -21,6 +21,7 @@ import StoreSeedPhraseScreen from 'screens/StoreSeedPhraseScreen';
 import BackupScreen from 'screens/BackupScreen';
 import BackupDataScreen from 'screens/BackupDataScreen';
 import NFTDetailScreen from 'screens/NFTDetailScreen';
+import DAppBrowserScreen from 'screens/DAppBrowserScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -82,6 +83,10 @@ const RootNavigator = () => {
             name={ScreenID.NFTDetailScreen}
             component={NFTDetailScreen}
             options={{presentation: 'modal'}}
+          />
+          <Stack.Screen
+            name={ScreenID.DAPPBrowserScreen}
+            component={DAppBrowserScreen}
           />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
