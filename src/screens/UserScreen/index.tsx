@@ -236,6 +236,7 @@ const UserScreen = () => {
           onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
           onLoadEnd={onWVLoadEnd}
           showsVerticalScrollIndicator={false}
+          decelerationRate={1}
         />
       )}
       {(!loaded || loading) && (
