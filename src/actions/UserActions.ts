@@ -235,6 +235,7 @@ export const findTeamAndChannel =
       type: actionTypes.TEAM_REQUEST,
       payload: {initCommunityId},
     });
+    await SocketUtils.init();
     const res = await api.findTeam();
     let lastTeamId = '';
     if (initCommunityId && initCommunityId !== 'user') {
@@ -245,7 +246,6 @@ export const findTeamAndChannel =
     if (res.statusCode === 200) {
       const communities = res.data || [];
       if (communities.length > 0) {
-        SocketUtils.init();
         const currentTeam =
           communities.find((t: Community) => t.team_id === lastTeamId) ||
           communities[0];
@@ -292,8 +292,6 @@ export const findTeamAndChannel =
             lastDirectChannelId,
           },
         });
-      } else {
-        SocketUtils.init();
       }
       dispatch({type: actionTypes.TEAM_SUCCESS, payload: {team: res.data}});
     } else {
