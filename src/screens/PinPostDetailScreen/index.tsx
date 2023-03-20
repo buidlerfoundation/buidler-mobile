@@ -107,6 +107,10 @@ const PinPostDetailScreen = () => {
     () => messageData[postId]?.data,
     [messageData, postId],
   );
+  const revertMessages = useMemo(() => {
+    if (!messages) return [];
+    return [...messages].reverse();
+  }, [messages]);
   useEffect(() => {
     if (isReply) {
       setTimeout(() => {
@@ -298,12 +302,12 @@ const PinPostDetailScreen = () => {
   );
   const onSent = useCallback(() => {
     setTimeout(() => {
-      listRef.current?.scrollToIndex?.({index: 0});
+      listRef.current?.scrollToEnd();
     }, 300);
   }, []);
   const onKeyboardShow = useCallback(() => {
     setTimeout(() => {
-      if (messages?.length > 0) listRef.current?.scrollToIndex?.({index: 0});
+      if (messages?.length > 0) listRef.current?.scrollToEnd();
     }, 300);
   }, [messages?.length]);
   const onReplyMessage = useCallback(() => {
@@ -476,15 +480,14 @@ const PinPostDetailScreen = () => {
         <FlatList
           style={{flex: 1}}
           ref={listRef}
-          contentContainerStyle={{flexDirection: 'column-reverse'}}
-          data={messages}
+          data={revertMessages}
           onEndReached={onEndReached}
           initialNumToRender={20}
           onEndReachedThreshold={0.5}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          ListHeaderComponent={<View style={{height: 20}} />}
-          ListFooterComponent={
+          ListFooterComponent={<View style={{height: 20}} />}
+          ListHeaderComponent={
             <View>
               <PinPostItem
                 pinPost={pinPost.data}

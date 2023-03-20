@@ -22,6 +22,10 @@ export const getNotifications: ActionCreator<any> =
           filterType,
         },
       });
+      dispatch({
+        type: actionTypes.TOGGLE_SOCKET_RECONNECT,
+        payload: {notificationCenter: false},
+      });
     } else {
       dispatch({
         type: actionTypes.NOTIFICATION_FAIL,

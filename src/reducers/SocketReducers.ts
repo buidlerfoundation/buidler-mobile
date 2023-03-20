@@ -10,6 +10,7 @@ type SocketReducerState = {
   pinPost: boolean;
   pinPostConversation: boolean;
   socketConnecting: boolean;
+  notificationCenter: boolean;
 };
 
 const initialState: SocketReducerState = {
@@ -20,6 +21,7 @@ const initialState: SocketReducerState = {
   community: false,
   pinPost: false,
   pinPostConversation: false,
+  notificationCenter: false,
   socketConnecting: false,
 };
 
