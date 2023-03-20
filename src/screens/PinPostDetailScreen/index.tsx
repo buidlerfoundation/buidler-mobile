@@ -57,6 +57,7 @@ import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 import useUserRole from 'hook/useUserRole';
 import useLoadMoreBeforePinPostMessage from 'hook/useLoadMoreBeforePinPostMessage';
 import useLoadingPinPostMessage from 'hook/useLoadingPinPostMessage';
+import {MessageData} from 'models';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -441,6 +442,22 @@ const PinPostDetailScreen = () => {
     setSelectedMessage(null);
     setOpenModalEmoji(true);
   }, []);
+  const onPressMessageReply = useCallback(
+    async (replyMessage: MessageData) => {
+      const message = messages.find(
+        el => el.message_id === replyMessage.message_id,
+      );
+      if (message) {
+        onScrollToMessage(replyMessage);
+      } else {
+        await dispatch(getPinPostMessages(postId, replyMessage.message_id));
+        setTimeout(() => {
+          onScrollToMessage(replyMessage);
+        }, 200);
+      }
+    },
+    [messages, onScrollToMessage, dispatch, postId],
+  );
   if (!pinPost.data) return null;
   return (
     <KeyboardLayout
@@ -462,6 +479,7 @@ const PinPostDetailScreen = () => {
           contentContainerStyle={{flexDirection: 'column-reverse'}}
           data={messages}
           onEndReached={onEndReached}
+          initialNumToRender={20}
           onEndReachedThreshold={0.5}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -506,6 +524,7 @@ const PinPostDetailScreen = () => {
               onLongPress={openMenuMessage}
               contentId={postId}
               openReactView={openReactView}
+              onPressMessageReply={onPressMessageReply}
             />
           )}
           onScrollToIndexFailed={onScrollToIndexFailed}

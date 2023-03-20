@@ -577,7 +577,12 @@ export const accessToHome =
           await dispatch(setCurrentChannel(channelNotification));
         }
       } else if (teamNotification) {
-        await dispatch(setCurrentTeam(teamNotification, entity_id));
+        await dispatch(
+          setCurrentTeam(
+            teamNotification,
+            entity_type === 'channel' ? entity_id : undefined,
+          ),
+        );
       }
       PushNotificationHelper.reset();
     }

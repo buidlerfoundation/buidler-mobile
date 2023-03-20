@@ -163,7 +163,7 @@ export const getPinPostMessages: ActionCreator<any> =
             channelId: postId,
             before,
             isFresh,
-            reloadSocket: !before && !after,
+            reloadSocket: !before && !after && !messageId,
             messageId,
             after,
             canMoreAfter: messageRes.metadata?.can_loadmore_message_after,

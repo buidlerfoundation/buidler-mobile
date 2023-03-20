@@ -2,9 +2,6 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {getPinPostDetail} from 'actions/TaskActions';
 import {TaskData} from 'models';
 import useAppDispatch from './useAppDispatch';
-import useAppSelector from './useAppSelector';
-import useArchivedPinPosts from './useArchivedPinPosts';
-import usePinPosts from './usePinPosts';
 
 const usePostData = (postId: string) => {
   const [data, setData] = useState<{
@@ -13,9 +10,6 @@ const usePostData = (postId: string) => {
     errorPost?: string;
   }>({data: null, fetchingPost: false, errorPost: ''});
   const dispatch = useAppDispatch();
-  const posts = usePinPosts();
-  const archivedPosts = useArchivedPinPosts();
-  const pinPostDetail = useAppSelector(state => state.task.pinPostDetail);
   const fetchPost = useCallback(async () => {
     if (!postId) return;
     setData({data: null, fetchingPost: true, errorPost: ''});
@@ -28,17 +22,8 @@ const usePostData = (postId: string) => {
   }, [dispatch, postId]);
   useEffect(() => {
     if (!postId) return;
-    const post =
-      posts.find(el => el.task_id === postId) ||
-      archivedPosts.find(el => el.task_id === postId);
-    if (post) {
-      setData({data: post, fetchingPost: false, errorPost: ''});
-    } else if (postId === pinPostDetail?.task_id) {
-      setData({data: pinPostDetail, fetchingPost: false, errorPost: ''});
-    } else {
-      fetchPost();
-    }
-  }, [fetchPost, postId, posts, archivedPosts, pinPostDetail]);
+    fetchPost();
+  }, [fetchPost, postId]);
   return useMemo(() => data, [data]);
 };
 
