@@ -19,9 +19,15 @@ type SpaceItemProps = {
   item: Space;
   isOwner?: boolean;
   onCreateChannel: () => void;
+  onPressChannel: () => void;
 };
 
-const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
+const SpaceItem = ({
+  item,
+  isOwner,
+  onCreateChannel,
+  onPressChannel,
+}: SpaceItemProps) => {
   const navigation = useNavigation();
   const isCollapsed = useSpaceCollapsed(item.space_id);
   const currentChannel = useCurrentChannel();
@@ -93,6 +99,7 @@ const SpaceItem = ({item, isOwner, onCreateChannel}: SpaceItemProps) => {
           isActive={currentChannel.channel_id === el.channel_id}
           key={el.channel_id}
           isFirst={idx === 0}
+          onPressChannel={onPressChannel}
         />
       ))}
       {isOwner && (

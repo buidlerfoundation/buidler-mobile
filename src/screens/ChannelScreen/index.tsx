@@ -26,7 +26,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import SVG from 'common/SVG';
 import ImageHelper from 'helpers/ImageHelper';
-import {useDrawerStatus} from '@react-navigation/drawer';
 import useAppSelector from 'hook/useAppSelector';
 import useAppDispatch from 'hook/useAppDispatch';
 import {fetchDataChannel} from 'actions/UserActions';
@@ -55,9 +54,13 @@ const CommunityHeader = () => {
   );
 };
 
-const ChannelScreen = () => {
+type ChannelScreenProps = {
+  open?: boolean;
+  onClose: () => void;
+};
+
+const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
   const dispatch = useAppDispatch();
-  const drawerStatus = useDrawerStatus();
   const navigation = useNavigation();
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
@@ -80,10 +83,10 @@ const ChannelScreen = () => {
   const [inviteLink, setInviteLink] = useState('');
   const {colors} = useThemeColor();
   useEffect(() => {
-    if (drawerStatus === 'open' && socketReconnect) {
+    if (open && socketReconnect) {
       dispatch(fetchDataChannel(communityId));
     }
-  }, [communityId, dispatch, drawerStatus, socketReconnect]);
+  }, [communityId, dispatch, open, socketReconnect]);
   const onInvitePress = useCallback(async () => {
     let link = '';
     if (!inviteLink) {
@@ -209,10 +212,11 @@ const ChannelScreen = () => {
           item={item}
           isOwner={isOwner}
           onCreateChannel={onCreateChannel}
+          onPressChannel={onClose}
         />
       );
     },
-    [isOwner, onCreateChannel],
+    [isOwner, onClose, onCreateChannel],
   );
 
   const renderItemSeparate = useCallback(() => {

@@ -93,6 +93,7 @@ import IconMenuCopy from '../assets/images/ic_menu_copy.svg';
 import IconEye from '../assets/images/ic_eye.svg';
 import IconOpenSea from '../assets/images/ic_opensea.svg';
 import IconImageDefault from '../assets/images/ic_image_default.svg';
+import IconBrowser from '../assets/images/ic_browser.svg';
 
 export default {
   IconExpand,
@@ -190,4 +191,5 @@ export default {
   IconEye,
   IconOpenSea,
   IconImageDefault,
+  IconBrowser,
 };

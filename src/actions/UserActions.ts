@@ -304,7 +304,7 @@ export const findTeamAndChannel =
 
 export const setCurrentChannel =
   (channel: any) => async (dispatch: Dispatch) => {
-    await AsyncStorage.setItem(AsyncKey.lastChannelId, channel.channel_id);
+    AsyncStorage.setItem(AsyncKey.lastChannelId, channel.channel_id);
     dispatch({
       type: actionTypes.SET_CURRENT_CHANNEL,
       payload: {channel},

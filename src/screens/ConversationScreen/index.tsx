@@ -24,6 +24,7 @@ import {
   NativeScrollEvent,
   FlatList,
   Keyboard,
+  useWindowDimensions,
 } from 'react-native';
 import {
   createLoadingSelector,
@@ -66,7 +67,6 @@ import MenuPinPost from 'components/MenuPinPost';
 import HapticUtils from 'utils/HapticUtils';
 import useCommunityId from 'hook/useCommunityId';
 import useChannelId from 'hook/useChannelId';
-import {useDrawerStatus} from '@react-navigation/drawer';
 import AppConfig from 'common/AppConfig';
 import AppStyles from 'common/AppStyles';
 import EmojiPicker from 'components/EmojiPicker';
@@ -81,6 +81,10 @@ import Header from './Header';
 import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 import useChannelById from 'hook/useChannelById';
 import {fetchTeamDirectUser, fetchTeamUser} from 'actions/UserActions';
+import {Drawer} from 'components/RNDrawerLayout';
+import ChannelScreen from 'screens/ChannelScreen';
+import DirectChannelScreen from 'screens/DirectChannelScreen';
+import DAppBrowserScreen from 'screens/DAppBrowserScreen';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -102,6 +106,21 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     if (direct) return socketDirectConversation;
     return socketConversation;
   }, [direct, socketConversation, socketDirectConversation]);
+  const [openLeft, setOpenLeft] = useState(false);
+  const onOpenLeft = useCallback(() => setOpenLeft(true), []);
+  const onCloseLeft = useCallback(() => setOpenLeft(false), []);
+  const [openRight, setOpenRight] = useState(false);
+  const onOpenRight = useCallback(() => setOpenRight(true), []);
+  const onCloseRight = useCallback(() => setOpenRight(false), []);
+  const renderChannel = useCallback(
+    () =>
+      direct ? (
+        <DirectChannelScreen open={openLeft} onClose={onCloseLeft} />
+      ) : (
+        <ChannelScreen open={openLeft} onClose={onCloseLeft} />
+      ),
+    [direct, onCloseLeft, openLeft],
+  );
   const [loadMoreAfterMessage, setLoadMoreAfterMessage] = useState(false);
   const loadMoreMessage = useAppSelector(state =>
     loadMoreMessageSelector(state),
@@ -142,12 +161,20 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const [isOpenMenuPinPost, setOpenMenuPinPost] = useState(false);
   const [isOpenGallery, setOpenGallery] = useState(false);
   const [attachments, setAttachments] = useState([]);
-  const drawerStatus = useDrawerStatus();
+  const {width} = useWindowDimensions();
   const dispatch = useAppDispatch();
   const toggleGallery = useCallback(
     () => setOpenGallery(current => !current),
     [],
   );
+  const renderBrowser = useCallback(() => {
+    return (
+      <DAppBrowserScreen
+        url={currentChannel?.dapp_integration_url}
+        onBack={onCloseRight}
+      />
+    );
+  }, [currentChannel?.dapp_integration_url, onCloseRight]);
   useScrollToTop(
     useRef({
       scrollToTop: () => {
@@ -157,29 +184,29 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   );
   useEffect(() => {
     if (!isFocused) {
-      navigation.closeDrawer();
+      onCloseLeft();
     }
-  }, [isFocused, navigation]);
+  }, [isFocused, onCloseLeft]);
   useEffect(() => {
     if (route.params?.fromNotification) {
-      navigation.closeDrawer();
+      onCloseLeft();
       navigation.setParams({fromNotification: false});
     }
-  }, [navigation, route.params?.fromNotification]);
+  }, [navigation, onCloseLeft, route.params?.fromNotification]);
   useEffect(() => {
     if (currentTeamId) {
       if (route.params?.openDrawer) {
         navigation.setParams({openDrawer: false});
-        navigation?.openDrawer?.();
+        onOpenLeft();
       }
     }
-  }, [currentTeamId, navigation, route.params?.openDrawer]);
+  }, [currentTeamId, navigation, onOpenLeft, route.params?.openDrawer]);
   useEffect(() => {
-    if (drawerStatus === 'open') {
+    if (openLeft) {
       Keyboard.dismiss();
     }
-    navigation.setParams({drawerStatus});
-  }, [drawerStatus, navigation]);
+    navigation.setParams({drawerStatus: openLeft ? 'open' : 'close'});
+  }, [navigation, openLeft]);
   const handleGetLatestMessage = useCallback(async () => {
     if (currentChannelId) {
       await dispatch(
@@ -807,205 +834,235 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   }, [currentChannel?.is_chat_deactivated, userRole]);
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
-      <View
-        style={[
-          styles.container,
-          direct && {backgroundColor: colors.backgroundHeader},
-        ]}>
-        <Header direct={direct} />
-        <FlatList
-          data={uniqMessages}
-          ref={listRef}
-          inverted
-          keyExtractor={item => item.message_id}
-          renderItem={renderItem}
-          initialNumToRender={20}
-          ListHeaderComponent={
-            loadMoreAfterMessage || socketConnecting || socketReconnect ? (
-              <View style={styles.footerMessage}>
-                <ActivityIndicator />
+      <Drawer
+        drawerType="back"
+        open={openLeft}
+        onOpen={onOpenLeft}
+        onClose={onCloseLeft}
+        openRight={openRight}
+        onOpenRight={onOpenRight}
+        onCloseRight={onCloseRight}
+        swipeMinDistance={0.1}
+        swipeEdgeWidth={width}
+        drawerStyle={{width: width - 80}}
+        renderDrawerContent={renderChannel}
+        renderDrawerContentRight={
+          currentChannel?.dapp_integration_url ? renderBrowser : undefined
+        }
+        overlayStyle={{backgroundColor: '#19191980'}}>
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: direct
+                ? colors.backgroundHeader
+                : colors.background,
+            },
+          ]}>
+          <Header
+            direct={direct}
+            onOpen={onOpenLeft}
+            showDAppBrowser={!!currentChannel.dapp_integration_url}
+            onOpenRight={onOpenRight}
+          />
+          <FlatList
+            data={uniqMessages}
+            ref={listRef}
+            inverted
+            keyExtractor={item => item.message_id}
+            renderItem={renderItem}
+            initialNumToRender={10}
+            windowSize={2}
+            ListHeaderComponent={
+              loadMoreAfterMessage || socketConnecting || socketReconnect ? (
+                <View style={styles.footerMessage}>
+                  <ActivityIndicator />
+                </View>
+              ) : (
+                <View style={{height: 15}} />
+              )
+            }
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+            onScroll={onListScroll}
+            onScrollToIndexFailed={onScrollToIndexFailed}
+            onMomentumScrollEnd={onMomentumScrollEnd}
+            maintainVisibleContentPosition={
+              messageData?.canMoreAfter
+                ? {
+                    minIndexForVisible: 1,
+                  }
+                : undefined
+            }
+            ListFooterComponent={
+              loadMoreMessage ? (
+                <View style={styles.footerMessage}>
+                  <ActivityIndicator />
+                </View>
+              ) : (
+                <View />
+              )
+            }
+          />
+          {((!isInputFocus && scrollData?.showScrollDown) ||
+            messageData?.canMoreAfter) && (
+            <View style={styles.scrollDownWrap}>
+              <View style={styles.scrollDownAbs}>
+                <Touchable
+                  style={[
+                    styles.iconScrollDown,
+                    {backgroundColor: colors.activeBackground},
+                  ]}
+                  onPress={onScrollDownPress}>
+                  <SVG.IconScrollDown fill={colors.text} />
+                </Touchable>
               </View>
-            ) : (
-              <View style={{height: 15}} />
-            )
-          }
-          onEndReached={onEndReached}
-          onEndReachedThreshold={0.5}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="handled"
-          onScroll={onListScroll}
-          onScrollToIndexFailed={onScrollToIndexFailed}
-          onMomentumScrollEnd={onMomentumScrollEnd}
-          maintainVisibleContentPosition={
-            messageData?.canMoreAfter
-              ? {
-                  minIndexForVisible: 1,
-                }
-              : undefined
-          }
-          ListFooterComponent={
-            loadMoreMessage ? (
-              <View style={styles.footerMessage}>
-                <ActivityIndicator />
-              </View>
-            ) : (
-              <View />
-            )
-          }
-        />
-        {((!isInputFocus && scrollData?.showScrollDown) ||
-          messageData?.canMoreAfter) && (
-          <View style={styles.scrollDownWrap}>
-            <View style={styles.scrollDownAbs}>
-              <Touchable
-                style={[
-                  styles.iconScrollDown,
-                  {backgroundColor: colors.activeBackground},
-                ]}
-                onPress={onScrollDownPress}>
-                <SVG.IconScrollDown fill={colors.text} />
-              </Touchable>
             </View>
-          </View>
-        )}
-        <View style={styles.bottomView}>
-          {canChat ? (
-            <MessageInput
-              openGallery={toggleGallery}
-              onRemoveAttachment={onRemoveAttachment}
-              attachments={attachments}
-              onClearAttachment={onClearAttachment}
-              messageReply={messageReply}
-              messageEdit={messageEdit}
-              onClearReply={onClearReply}
-              inputRef={inputRef}
-              onFocusChanged={setFocus}
-              canMoreAfter={messageData?.canMoreAfter}
-              scrollDown={scrollDown}
-              direct={direct}
-            />
-          ) : (
-            <View style={{height: 1, backgroundColor: colors.border}} />
           )}
+          <View style={styles.bottomView}>
+            {canChat ? (
+              <MessageInput
+                openGallery={toggleGallery}
+                onRemoveAttachment={onRemoveAttachment}
+                attachments={attachments}
+                onClearAttachment={onClearAttachment}
+                messageReply={messageReply}
+                messageEdit={messageEdit}
+                onClearReply={onClearReply}
+                inputRef={inputRef}
+                onFocusChanged={setFocus}
+                canMoreAfter={messageData?.canMoreAfter}
+                scrollDown={scrollDown}
+                direct={direct}
+              />
+            ) : (
+              <View style={{height: 1, backgroundColor: colors.border}} />
+            )}
+          </View>
+          <ModalBottom
+            isVisible={isOpenMenuMessage}
+            onSwipeComplete={onCloseMenuMessage}
+            onBackdropPress={onCloseMenuMessage}>
+            <MenuMessage
+              onPin={onMenuPin}
+              onReply={onReplyMessage}
+              onEdit={onEditMessage}
+              onCopyMessage={onMenuCopyMessage}
+              onCopyMessageText={onCopyMessageText}
+              onDelete={openMenuDelete}
+              canEdit={selectedMessage?.sender_id === userData.user_id}
+              canDelete={
+                selectedMessage?.sender_id === userData.user_id ||
+                (!direct && (userRole === 'Admin' || userRole === 'Owner'))
+              }
+              canReport={selectedMessage?.sender_id !== userData.user_id}
+              canPin={(userRole === 'Admin' || userRole === 'Owner') && !direct}
+              openModalEmoji={openModalEmoji}
+              onEmojiSelected={onEmojiSelected}
+              onReport={openMenuReport}
+            />
+          </ModalBottom>
+          <ModalBottom
+            isVisible={isOpenMenuPinPost}
+            onSwipeComplete={onCloseMenuPinPost}
+            onBackdropPress={onCloseMenuPinPost}>
+            <MenuPinPost
+              onReply={onReplyPinPost}
+              onCopyMessage={onMenuCopyMessage}
+              onCopyPostLink={onMenuCopyPinPost}
+              onDelete={openMenuDelete}
+              canDelete={
+                selectedMessage?.sender_id === userData.user_id ||
+                userRole === 'Admin' ||
+                userRole === 'Owner'
+              }
+              onArchive={onArchive}
+              onUnarchive={onUnarchive}
+              onUploadToIPFS={onUploadToIPFS}
+              canUploadToIPFS={
+                selectedMessage?.sender_id === userData.user_id &&
+                !selectedMessage?.task?.cid
+              }
+              canUnarchive={
+                (userRole === 'Admin' ||
+                  userRole === 'Owner' ||
+                  selectedMessage?.sender_id === userData.user_id) &&
+                selectedMessage?.task?.status === 'archived'
+              }
+              canArchive={
+                (userRole === 'Admin' ||
+                  userRole === 'Owner' ||
+                  selectedMessage?.sender_id === userData.user_id) &&
+                selectedMessage?.task?.status !== 'archived'
+              }
+              openModalEmoji={openModalEmoji}
+              onEmojiSelected={onEmojiSelected}
+              canReport={selectedMessage?.sender_id !== userData.user_id}
+              onReport={openMenuReport}
+            />
+          </ModalBottom>
+          <ModalBottom
+            isVisible={isOpenGallery}
+            onSwipeComplete={toggleGallery}
+            onBackdropPress={toggleGallery}>
+            <View
+              style={[
+                styles.galleryView,
+                {backgroundColor: colors.background},
+              ]}>
+              <BottomSheetHandle
+                title="Photos"
+                onClosePress={toggleGallery}
+                renderRight={<ViewAllButton onPress={openGallery} />}
+              />
+              <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
+            </View>
+          </ModalBottom>
+          <ModalBottom
+            isVisible={isOpenModalEmoji}
+            onSwipeComplete={closeModalEmoji}>
+            <View
+              style={[styles.emojiView, {backgroundColor: colors.background}]}>
+              <BottomSheetHandle
+                title="Reaction"
+                onClosePress={closeModalEmoji}
+              />
+              <EmojiPicker onEmojiSelected={onEmojiSelected} />
+            </View>
+          </ModalBottom>
+          <ModalBottom
+            isVisible={isOpenMenuReport}
+            onSwipeComplete={closeMenuReport}
+            onBackdropPress={closeMenuReport}>
+            <MenuReport
+              onClose={closeMenuReport}
+              selectedMessage={selectedMessage}
+            />
+          </ModalBottom>
+          <ModalBottom
+            isVisible={isOpenMenuDelete}
+            onSwipeComplete={closeMenuDelete}
+            onBackdropPress={closeMenuDelete}>
+            <MenuConfirmDeleteMessage
+              onClose={closeMenuDelete}
+              selectedMessage={selectedMessage}
+              handleDelete={onMenuDelete}
+            />
+          </ModalBottom>
+          <ModalBottom
+            isVisible={isOpenMenuConfirmPin}
+            onSwipeComplete={closeMenuConfirmPin}
+            onBackdropPress={closeMenuConfirmPin}>
+            <MenuConfirmPin
+              message={selectedMessage}
+              onClose={closeMenuConfirmPin}
+              onPin={onCreatePinPost}
+            />
+          </ModalBottom>
         </View>
-        <ModalBottom
-          isVisible={isOpenMenuMessage}
-          onSwipeComplete={onCloseMenuMessage}
-          onBackdropPress={onCloseMenuMessage}>
-          <MenuMessage
-            onPin={onMenuPin}
-            onReply={onReplyMessage}
-            onEdit={onEditMessage}
-            onCopyMessage={onMenuCopyMessage}
-            onCopyMessageText={onCopyMessageText}
-            onDelete={openMenuDelete}
-            canEdit={selectedMessage?.sender_id === userData.user_id}
-            canDelete={
-              selectedMessage?.sender_id === userData.user_id ||
-              (!direct && (userRole === 'Admin' || userRole === 'Owner'))
-            }
-            canReport={selectedMessage?.sender_id !== userData.user_id}
-            canPin={(userRole === 'Admin' || userRole === 'Owner') && !direct}
-            openModalEmoji={openModalEmoji}
-            onEmojiSelected={onEmojiSelected}
-            onReport={openMenuReport}
-          />
-        </ModalBottom>
-        <ModalBottom
-          isVisible={isOpenMenuPinPost}
-          onSwipeComplete={onCloseMenuPinPost}
-          onBackdropPress={onCloseMenuPinPost}>
-          <MenuPinPost
-            onReply={onReplyPinPost}
-            onCopyMessage={onMenuCopyMessage}
-            onCopyPostLink={onMenuCopyPinPost}
-            onDelete={openMenuDelete}
-            canDelete={
-              selectedMessage?.sender_id === userData.user_id ||
-              userRole === 'Admin' ||
-              userRole === 'Owner'
-            }
-            onArchive={onArchive}
-            onUnarchive={onUnarchive}
-            onUploadToIPFS={onUploadToIPFS}
-            canUploadToIPFS={
-              selectedMessage?.sender_id === userData.user_id &&
-              !selectedMessage?.task?.cid
-            }
-            canUnarchive={
-              (userRole === 'Admin' ||
-                userRole === 'Owner' ||
-                selectedMessage?.sender_id === userData.user_id) &&
-              selectedMessage?.task?.status === 'archived'
-            }
-            canArchive={
-              (userRole === 'Admin' ||
-                userRole === 'Owner' ||
-                selectedMessage?.sender_id === userData.user_id) &&
-              selectedMessage?.task?.status !== 'archived'
-            }
-            openModalEmoji={openModalEmoji}
-            onEmojiSelected={onEmojiSelected}
-            canReport={selectedMessage?.sender_id !== userData.user_id}
-            onReport={openMenuReport}
-          />
-        </ModalBottom>
-        <ModalBottom
-          isVisible={isOpenGallery}
-          onSwipeComplete={toggleGallery}
-          onBackdropPress={toggleGallery}>
-          <View
-            style={[styles.galleryView, {backgroundColor: colors.background}]}>
-            <BottomSheetHandle
-              title="Photos"
-              onClosePress={toggleGallery}
-              renderRight={<ViewAllButton onPress={openGallery} />}
-            />
-            <GalleryView useFlatList onSelectPhoto={onSelectPhoto} />
-          </View>
-        </ModalBottom>
-        <ModalBottom
-          isVisible={isOpenModalEmoji}
-          onSwipeComplete={closeModalEmoji}>
-          <View
-            style={[styles.emojiView, {backgroundColor: colors.background}]}>
-            <BottomSheetHandle
-              title="Reaction"
-              onClosePress={closeModalEmoji}
-            />
-            <EmojiPicker onEmojiSelected={onEmojiSelected} />
-          </View>
-        </ModalBottom>
-        <ModalBottom
-          isVisible={isOpenMenuReport}
-          onSwipeComplete={closeMenuReport}
-          onBackdropPress={closeMenuReport}>
-          <MenuReport
-            onClose={closeMenuReport}
-            selectedMessage={selectedMessage}
-          />
-        </ModalBottom>
-        <ModalBottom
-          isVisible={isOpenMenuDelete}
-          onSwipeComplete={closeMenuDelete}
-          onBackdropPress={closeMenuDelete}>
-          <MenuConfirmDeleteMessage
-            onClose={closeMenuDelete}
-            selectedMessage={selectedMessage}
-            handleDelete={onMenuDelete}
-          />
-        </ModalBottom>
-        <ModalBottom
-          isVisible={isOpenMenuConfirmPin}
-          onSwipeComplete={closeMenuConfirmPin}
-          onBackdropPress={closeMenuConfirmPin}>
-          <MenuConfirmPin
-            message={selectedMessage}
-            onClose={closeMenuConfirmPin}
-            onPin={onCreatePinPost}
-          />
-        </ModalBottom>
-      </View>
+      </Drawer>
     </KeyboardLayout>
   );
 };

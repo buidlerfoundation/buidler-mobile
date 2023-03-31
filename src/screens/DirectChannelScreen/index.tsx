@@ -1,4 +1,3 @@
-import {useDrawerStatus} from '@react-navigation/drawer';
 import {fetchDirectChannel} from 'actions/UserActions';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
@@ -17,21 +16,27 @@ import {
 } from 'react-native';
 import DirectChannelItem from './DirectChannelItem';
 
-const DirectChannelScreen = () => {
+type DirectChannelScreenProps = {
+  open?: boolean;
+  onClose: () => void;
+};
+
+const DirectChannelScreen = ({open, onClose}: DirectChannelScreenProps) => {
   const dispatch = useAppDispatch();
-  const drawerStatus = useDrawerStatus();
   const {colors} = useThemeColor();
   const directChannels = useAppSelector(state => state.user.directChannel);
   const socketReconnect = useAppSelector(state => state.socket.directChannel);
   const renderItem = useCallback(
-    ({item}: {item: Channel}) => <DirectChannelItem channel={item} />,
-    [],
+    ({item}: {item: Channel}) => (
+      <DirectChannelItem channel={item} onPressChannel={onClose} />
+    ),
+    [onClose],
   );
   useEffect(() => {
-    if (drawerStatus === 'open' && socketReconnect) {
+    if (open && socketReconnect) {
       dispatch(fetchDirectChannel());
     }
-  }, [dispatch, drawerStatus, socketReconnect]);
+  }, [dispatch, open, socketReconnect]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>

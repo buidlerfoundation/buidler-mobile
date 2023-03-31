@@ -1,7 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
 import {setCurrentChannel} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
-import ScreenID from 'common/ScreenID';
 import ChannelIcon from 'components/ChannelIcon';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
@@ -10,25 +8,28 @@ import {Channel} from 'models';
 import React, {memo, useMemo} from 'react';
 import {useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {runOnJS} from 'react-native-reanimated';
 
 type ChannelItemProps = {
   c: Channel;
   isActive: boolean;
   isFirst?: boolean;
+  onPressChannel: () => void;
 };
 
-const ChannelItem = ({isActive, c, isFirst}: ChannelItemProps) => {
+const ChannelItem = ({
+  isActive,
+  c,
+  isFirst,
+  onPressChannel,
+}: ChannelItemProps) => {
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
   const {colors} = useThemeColor();
 
   const handlePress = useCallback(() => {
+    runOnJS(onPressChannel)();
     dispatch(setCurrentChannel(c));
-    navigation.navigate(ScreenID.ConversationScreen, {
-      fromNotification: false,
-      jumpMessageId: null,
-    });
-  }, [c, dispatch, navigation]);
+  }, [c, dispatch, onPressChannel]);
   const isUnSeen = useMemo(() => !c?.seen, [c?.seen]);
   const isQuiet = useMemo(
     () => c?.notification_type === 'Quiet',

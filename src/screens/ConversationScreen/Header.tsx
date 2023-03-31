@@ -11,28 +11,44 @@ import {View, StyleSheet} from 'react-native';
 
 type HeaderProps = {
   direct?: boolean;
+  onOpen: () => void;
+  showDAppBrowser?: boolean;
+  onOpenRight?: () => void;
 };
 
-const Header = ({direct}: HeaderProps) => {
+const Header = ({
+  direct,
+  onOpen,
+  onOpenRight,
+  showDAppBrowser,
+}: HeaderProps) => {
   const {colors} = useThemeColor();
   const navigation = useNavigation();
-  const openSideMenu = useCallback(() => {
-    navigation.openDrawer();
-  }, [navigation]);
   const onPinPress = useCallback(() => {
     navigation.navigate(ScreenID.PinPostScreen);
   }, [navigation]);
+  const renderRight = useCallback(() => {
+    if (direct) return null;
+    if (showDAppBrowser) {
+      return (
+        <Touchable onPress={onOpenRight}>
+          <SVG.IconBrowser fill={colors.text} />
+        </Touchable>
+      );
+    }
+    return (
+      <Touchable onPress={onPinPress}>
+        <SVG.IconPin fill={colors.text} />
+      </Touchable>
+    );
+  }, [colors.text, direct, onOpenRight, onPinPress, showDAppBrowser]);
   return (
     <View style={styles.container}>
-      <Touchable onPress={openSideMenu}>
+      <Touchable onPress={onOpen}>
         <SVG.IconSideMenu fill={colors.text} />
       </Touchable>
       {direct ? <DirectChannelTitle /> : <ChannelTitle />}
-      {!direct && (
-        <Touchable onPress={onPinPress}>
-          <SVG.IconPin fill={colors.text} />
-        </Touchable>
-      )}
+      {renderRight()}
     </View>
   );
 };

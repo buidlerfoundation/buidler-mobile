@@ -97,6 +97,7 @@ export interface Channel {
   attachment?: any;
   updatedAt?: string;
   is_chat_deactivated?: boolean;
+  dapp_integration_url?: string;
 }
 
 export interface Space {

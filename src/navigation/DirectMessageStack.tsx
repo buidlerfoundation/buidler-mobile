@@ -1,8 +1,8 @@
 import React, {memo, useCallback, useEffect} from 'react';
-import {DrawerID} from 'common/ScreenID';
+import ScreenID from 'common/ScreenID';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import DirectMessageDrawer from './DirectMessageDrawer';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import DirectMessageScreen from 'screens/DirectMessageScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,11 +23,11 @@ const DirectMessageStack = () => {
   }, [navigation, route.params]);
   return (
     <Stack.Navigator
-      initialRouteName={DrawerID.DirectMessageDrawer}
+      initialRouteName={ScreenID.DirectMessageScreen}
       screenOptions={screenOptions}>
       <Stack.Screen
-        name={DrawerID.DirectMessageDrawer}
-        component={DirectMessageDrawer}
+        name={ScreenID.DirectMessageScreen}
+        component={DirectMessageScreen}
         initialParams={route.params}
       />
     </Stack.Navigator>

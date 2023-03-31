@@ -1,7 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
 import {setCurrentDirectChannel} from 'actions/UserActions';
 import AppStyles from 'common/AppStyles';
-import ScreenID from 'common/ScreenID';
 import AvatarView from 'components/AvatarView';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
@@ -12,14 +10,18 @@ import useUserData from 'hook/useUserData';
 import {Channel} from 'models';
 import React, {memo, useCallback, useMemo} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {runOnJS} from 'react-native-reanimated';
 
 type DirectChannelItemProps = {
   channel: Channel;
+  onPressChannel: () => void;
 };
 
-const DirectChannelItem = ({channel}: DirectChannelItemProps) => {
+const DirectChannelItem = ({
+  channel,
+  onPressChannel,
+}: DirectChannelItemProps) => {
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
   const directChannelId = useDirectChannelId();
   const {colors} = useThemeColor();
   const user = useUserData();
@@ -37,12 +39,9 @@ const DirectChannelItem = ({channel}: DirectChannelItemProps) => {
     [channel.seen, isActive],
   );
   const handlePress = useCallback(() => {
+    runOnJS(onPressChannel)();
     dispatch(setCurrentDirectChannel(channel));
-    navigation.navigate(ScreenID.DirectMessageScreen, {
-      fromNotification: false,
-      jumpMessageId: null,
-    });
-  }, [channel, dispatch, navigation]);
+  }, [channel, dispatch, onPressChannel]);
   return (
     <Touchable
       style={[styles.container, isActive && {backgroundColor: colors.border}]}

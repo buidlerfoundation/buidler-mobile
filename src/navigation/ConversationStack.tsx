@@ -1,10 +1,10 @@
 import React, {memo, useCallback} from 'react';
-import ScreenID, {DrawerID} from 'common/ScreenID';
+import ScreenID from 'common/ScreenID';
 import PinPostScreen from 'screens/PinPostScreen';
-import ChannelDrawer from './ChannelDrawer';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SpaceDetailScreen from 'screens/SpaceDetailScreen';
 import {useRoute} from '@react-navigation/native';
+import ConversationScreen from 'screens/ConversationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,11 +19,11 @@ const ConversationStack = () => {
   );
   return (
     <Stack.Navigator
-      initialRouteName={DrawerID.ChannelDrawer}
+      initialRouteName={ScreenID.ConversationScreen}
       screenOptions={screenOptions}>
       <Stack.Screen
-        name={DrawerID.ChannelDrawer}
-        component={ChannelDrawer}
+        name={ScreenID.ConversationScreen}
+        component={ConversationScreen}
         initialParams={route.params}
       />
       <Stack.Screen name={ScreenID.PinPostScreen} component={PinPostScreen} />
