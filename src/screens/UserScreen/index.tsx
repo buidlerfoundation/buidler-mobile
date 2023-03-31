@@ -212,6 +212,13 @@ const UserScreen = () => {
       setLoaded(true);
     }, 200);
   }, []);
+  const handleError = useCallback(() => {
+    navigation.goBack();
+    Toast.show({
+      type: 'customError',
+      props: {message: 'Something went wrong, please try again later.'},
+    });
+  }, [navigation]);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -236,6 +243,8 @@ const UserScreen = () => {
           onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
           onLoadEnd={onWVLoadEnd}
           showsVerticalScrollIndicator={false}
+          decelerationRate={1}
+          onError={handleError}
         />
       )}
       {(!loaded || loading) && (

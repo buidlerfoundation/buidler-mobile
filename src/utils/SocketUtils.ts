@@ -46,6 +46,7 @@ const toggleSocketReconnect = () => {
       community: true,
       pinPost: true,
       pinPostConversation: currentRouter?.name === ScreenID.PinPostDetailScreen,
+      notificationCenter: true,
     },
   });
 };

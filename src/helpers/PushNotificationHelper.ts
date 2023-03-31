@@ -88,7 +88,12 @@ class PushNotificationHelper {
           store.dispatch(setCurrentChannel(channelNotification));
         }
       } else if (teamNotification && !direct) {
-        store.dispatch(setCurrentTeam(teamNotification, entity_id));
+        store.dispatch(
+          setCurrentTeam(
+            teamNotification,
+            entity_type === 'channel' ? entity_id : undefined,
+          ),
+        );
       }
     }
     if (entity_type === 'post') {

@@ -14,7 +14,7 @@ import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
 import {NotificationData, NotificationFilterType} from 'models';
-import React, {memo, useCallback, useMemo, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -49,20 +49,28 @@ const NotificationTabItem = ({type}: NotificationTabItemProps) => {
     useState<NotificationData | null>(null);
   const loadMore = useAppSelector(state => loadMoreSelector(state));
   const loading = useAppSelector(state => loadingSelector(state));
+  const reconnectSocket = useAppSelector(
+    state => state.socket.notificationCenter,
+  );
   const fetchNotification = useCallback(
     async (before?: string) => {
       dispatch(getNotifications(type, before));
     },
     [dispatch, type],
   );
+  useEffect(() => {
+    fetchNotification();
+  }, [fetchNotification]);
   useFocusEffect(
     useCallback(() => {
-      dispatch({
-        type: actionTypes.UPDATE_ACTIVE_NOTIFICATION_FILTER,
-        payload: type,
-      });
-      fetchNotification();
-    }, [dispatch, fetchNotification, type]),
+      if (reconnectSocket && !loading) {
+        dispatch({
+          type: actionTypes.UPDATE_ACTIVE_NOTIFICATION_FILTER,
+          payload: type,
+        });
+        fetchNotification();
+      }
+    }, [dispatch, fetchNotification, loading, reconnectSocket, type]),
   );
   const notifications = useMemo(() => data[type], [type, data]);
   const notificationData = useMemo(

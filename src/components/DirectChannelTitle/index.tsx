@@ -1,5 +1,7 @@
+import {useNavigation} from '@react-navigation/native';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
+import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import AvatarView from 'components/AvatarView';
 import ModalBottom from 'components/ModalBottom';
@@ -10,6 +12,7 @@ import React, {memo, useCallback, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 const DirectChannelTitle = () => {
+  const navigation = useNavigation();
   const [openTooltip, setOpenTooltip] = useState(false);
   const {colors} = useThemeColor();
   const otherUser = useDirectChannelUser();
@@ -17,15 +20,22 @@ const DirectChannelTitle = () => {
     () => setOpenTooltip(current => !current),
     [],
   );
+  const onProfilePress = useCallback(() => {
+    navigation.navigate(ScreenID.UserScreen, {userId: otherUser.user_id});
+  }, [navigation, otherUser.user_id]);
   return (
     <View style={styles.titleWrap}>
-      <AvatarView user={otherUser} />
-      <Text
-        style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}
-        ellipsizeMode="tail"
-        numberOfLines={1}>
-        {otherUser?.user_name}
-      </Text>
+      <Touchable
+        style={{flexDirection: 'row', alignItems: 'center'}}
+        onPress={onProfilePress}>
+        <AvatarView user={otherUser} />
+        <Text
+          style={[styles.title, AppStyles.TextBold17, {color: colors.text}]}
+          ellipsizeMode="tail"
+          numberOfLines={1}>
+          {otherUser?.user_name}
+        </Text>
+      </Touchable>
       <Touchable
         useReactNative
         style={{padding: 10}}

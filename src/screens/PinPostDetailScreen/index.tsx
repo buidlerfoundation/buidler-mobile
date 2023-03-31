@@ -57,6 +57,7 @@ import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 import useUserRole from 'hook/useUserRole';
 import useLoadMoreBeforePinPostMessage from 'hook/useLoadMoreBeforePinPostMessage';
 import useLoadingPinPostMessage from 'hook/useLoadingPinPostMessage';
+import {MessageData} from 'models';
 
 const PinPostDetailScreen = () => {
   const dispatch = useAppDispatch();
@@ -106,6 +107,10 @@ const PinPostDetailScreen = () => {
     () => messageData[postId]?.data,
     [messageData, postId],
   );
+  const revertMessages = useMemo(() => {
+    if (!messages) return [];
+    return [...messages].reverse();
+  }, [messages]);
   useEffect(() => {
     if (isReply) {
       setTimeout(() => {
@@ -297,12 +302,12 @@ const PinPostDetailScreen = () => {
   );
   const onSent = useCallback(() => {
     setTimeout(() => {
-      listRef.current?.scrollToIndex?.({index: 0});
+      listRef.current?.scrollToEnd();
     }, 300);
   }, []);
   const onKeyboardShow = useCallback(() => {
     setTimeout(() => {
-      if (messages?.length > 0) listRef.current?.scrollToIndex?.({index: 0});
+      if (messages?.length > 0) listRef.current?.scrollToEnd();
     }, 300);
   }, [messages?.length]);
   const onReplyMessage = useCallback(() => {
@@ -441,6 +446,22 @@ const PinPostDetailScreen = () => {
     setSelectedMessage(null);
     setOpenModalEmoji(true);
   }, []);
+  const onPressMessageReply = useCallback(
+    async (replyMessage: MessageData) => {
+      const message = messages.find(
+        el => el.message_id === replyMessage.message_id,
+      );
+      if (message) {
+        onScrollToMessage(replyMessage);
+      } else {
+        await dispatch(getPinPostMessages(postId, replyMessage.message_id));
+        setTimeout(() => {
+          onScrollToMessage(replyMessage);
+        }, 200);
+      }
+    },
+    [messages, onScrollToMessage, dispatch, postId],
+  );
   if (!pinPost.data) return null;
   return (
     <KeyboardLayout
@@ -459,14 +480,14 @@ const PinPostDetailScreen = () => {
         <FlatList
           style={{flex: 1}}
           ref={listRef}
-          contentContainerStyle={{flexDirection: 'column-reverse'}}
-          data={messages}
+          data={revertMessages}
           onEndReached={onEndReached}
+          initialNumToRender={20}
           onEndReachedThreshold={0.5}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          ListHeaderComponent={<View style={{height: 20}} />}
-          ListFooterComponent={
+          ListFooterComponent={<View style={{height: 20}} />}
+          ListHeaderComponent={
             <View>
               <PinPostItem
                 pinPost={pinPost.data}
@@ -506,6 +527,7 @@ const PinPostDetailScreen = () => {
               onLongPress={openMenuMessage}
               contentId={postId}
               openReactView={openReactView}
+              onPressMessageReply={onPressMessageReply}
             />
           )}
           onScrollToIndexFailed={onScrollToIndexFailed}
