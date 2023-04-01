@@ -1,5 +1,8 @@
+import AppDimension from 'common/AppDimension';
+import Spinner from 'components/Spinner';
 import {utils} from 'ethers';
 import useAppSelector from 'hook/useAppSelector';
+import useThemeColor from 'hook/useThemeColor';
 import useUserAddress from 'hook/useUserAddress';
 import React, {
   memo,
@@ -9,7 +12,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {Platform} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 import RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
 
@@ -18,6 +21,8 @@ type DAppBrowserProps = {
 };
 
 const DAppBrowser = ({url}: DAppBrowserProps) => {
+  const [loading, setLoading] = useState(false);
+  const {colors} = useThemeColor();
   const privateKey = useAppSelector(state => state.configs.privateKey);
   const webviewRef = useRef<WebView>();
   const address = useUserAddress();
@@ -31,6 +36,11 @@ const DAppBrowser = ({url}: DAppBrowserProps) => {
       setJSContent(content);
     });
   }, []);
+  useEffect(() => {
+    if (url) {
+      setLoading(true);
+    }
+  }, [url]);
   const scriptInject = useMemo(() => {
     if (!jsContent) return '';
     return `
@@ -127,15 +137,34 @@ const DAppBrowser = ({url}: DAppBrowserProps) => {
     },
     [address, privateKey],
   );
+  const onWVLoadEnd = useCallback(() => {
+    setTimeout(() => setLoading(false), 200);
+  }, []);
   if (!scriptInject || !url) return null;
   return (
-    <WebView
-      ref={webviewRef}
-      source={{uri: url}}
-      injectedJavaScriptBeforeContentLoaded={scriptInject}
-      onMessage={onMessage}
-      originWhitelist={['*']}
-    />
+    <>
+      <WebView
+        ref={webviewRef}
+        source={{uri: url}}
+        injectedJavaScriptBeforeContentLoaded={scriptInject}
+        onMessage={onMessage}
+        originWhitelist={['*']}
+        allowsInlineMediaPlayback
+        onLoadEnd={onWVLoadEnd}
+      />
+      {loading && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: colors.background,
+              top: AppDimension.headerHeight + AppDimension.extraTop,
+            },
+          ]}>
+          <Spinner />
+        </View>
+      )}
+    </>
   );
 };
 

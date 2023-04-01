@@ -76,6 +76,7 @@ export function Drawer({
   renderDrawerContentRight,
   children,
 }: Props) {
+  const [onGestureActive, setGestureActive] = React.useState(false);
   const getDrawerWidth = (): number => {
     const {width = DEFAULT_DRAWER_WIDTH} =
       StyleSheet.flatten(drawerStyle) || {};
@@ -152,11 +153,13 @@ export function Drawer({
     startInteraction();
     hideKeyboard();
     hideStatusBar(true);
+    setGestureActive(true);
   };
 
   const onGestureFinish = () => {
     onGestureEnd?.();
     endInteraction();
+    setGestureActive(false);
   };
 
   // FIXME: Currently hitSlop is broken when on Android when drawer is on right
@@ -268,24 +271,43 @@ export function Drawer({
     },
     onEnd: (event, ctx) => {
       gestureState.value = event.state;
-      const nextOpen =
-        Math.round(ctx.startX) === -drawerWidth - drawerRightWidth
-          ? false
-          : (Math.abs(event.translationX) > SWIPE_MIN_OFFSET &&
-              Math.abs(event.translationX) > swipeMinVelocity) ||
-            Math.abs(event.translationX) > swipeMinDistance
-          ? // If swiped to right, open the drawer, otherwise close it
-            (event.velocityX === 0 ? event.translationX : event.velocityX) > 0
-          : open;
-      const nextOpenRight =
-        Math.round(ctx.startX) === 0
-          ? false
-          : (Math.abs(event.translationX) > SWIPE_MIN_OFFSET &&
-              Math.abs(event.translationX) > swipeMinVelocity) ||
-            Math.abs(event.translationX) > swipeMinDistance
-          ? // If swiped to left, open the drawer, otherwise close it
-            (event.velocityX === 0 ? event.translationX : event.velocityX) < 0
-          : openRight;
+      // log for debugging
+      // console.log(
+      //   'XXX: ',
+      //   ctx,
+      //   `translationX: ${event.translationX}\n`,
+      //   `velocityX: ${event.velocityX}\n`,
+      //   `swipeMinOffset: ${SWIPE_MIN_OFFSET}\n`,
+      //   `swipeMinVelocity: ${swipeMinVelocity}\n`,
+      //   `swipeMinDistance: ${swipeMinDistance}\n`,
+      //   `open: ${open}\n`,
+      //   `openRight: ${openRight}`,
+      // );
+      const currentOpen = Math.round(ctx.startX) === 0;
+      const currentOpenRight =
+        Math.round(ctx.startX) === -drawerWidth - drawerRightWidth;
+      const nextOpen = currentOpenRight
+        ? false
+        : currentOpen
+        ? event.velocityX > 0
+        : (Math.abs(event.translationX) > SWIPE_MIN_OFFSET &&
+            Math.abs(event.translationX) > swipeMinVelocity) ||
+          Math.abs(event.translationX) > swipeMinDistance
+        ? // If swiped to right, open the drawer, otherwise close it
+          (event.velocityX === 0 ? event.translationX : event.velocityX) > 0 &&
+          event.velocityX * event.translationX >= 0
+        : open;
+      const nextOpenRight = currentOpen
+        ? false
+        : currentOpenRight
+        ? event.velocityX < 0
+        : (Math.abs(event.translationX) > SWIPE_MIN_OFFSET &&
+            Math.abs(event.translationX) > swipeMinVelocity) ||
+          Math.abs(event.translationX) > swipeMinDistance
+        ? // If swiped to left, open the drawer, otherwise close it
+          (event.velocityX === 0 ? event.translationX : event.velocityX) < 0 &&
+          event.velocityX * event.translationX >= 0
+        : openRight;
       toggleDrawer(nextOpen, nextOpenRight, event.velocityX);
     },
     onFinish: () => {
@@ -302,11 +324,9 @@ export function Drawer({
 
   const translateRightX = useDerivedValue(() => {
     const distanceFromEdge = layout.width - drawerRightWidth;
-    return minmax(
-      translationX.value + layout.width,
-      distanceFromEdge,
-      drawerRightWidth,
-    );
+    const value =
+      translationX.value + layout.width - drawerRightWidth + drawerWidth;
+    return minmax(value, distanceFromEdge, drawerRightWidth);
   });
 
   const drawerAnimatedRightStyle = useAnimatedStyle(() => {
@@ -380,6 +400,11 @@ export function Drawer({
         );
   });
 
+  const shadowOpacity = React.useMemo(() => {
+    if (onGestureActive) return 0.3;
+    return 0;
+  }, [onGestureActive]);
+
   return (
     <DrawerProgressContext.Provider value={progress}>
       <PanGestureHandler
@@ -397,7 +422,8 @@ export function Drawer({
               flexDirection: 'row',
             },
           ]}>
-          <Animated.View style={[styles.content, contentAnimatedStyle]}>
+          <Animated.View
+            style={[styles.content, {shadowOpacity}, contentAnimatedStyle]}>
             <View
               accessibilityElementsHidden={isOpen && drawerType !== 'permanent'}
               importantForAccessibility={
@@ -461,6 +487,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    shadowColor: '#242424',
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 8,
   },
   main: {
     flex: 1,

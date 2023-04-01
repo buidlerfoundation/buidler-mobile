@@ -842,7 +842,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         openRight={openRight}
         onOpenRight={onOpenRight}
         onCloseRight={onCloseRight}
-        swipeMinDistance={0.1}
+        swipeMinDistance={40}
         swipeEdgeWidth={width}
         drawerStyle={{width: width - 80}}
         renderDrawerContent={renderChannel}
@@ -862,7 +862,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           <Header
             direct={direct}
             onOpen={onOpenLeft}
-            showDAppBrowser={!!currentChannel.dapp_integration_url}
+            showDAppBrowser={!!currentChannel?.dapp_integration_url}
             onOpenRight={onOpenRight}
           />
           <FlatList
