@@ -2,11 +2,12 @@ import {useNavigation} from '@react-navigation/native';
 import {setCurrentChannel, setCurrentTeam} from 'actions/UserActions';
 import Fonts from 'common/Fonts';
 import ScreenID from 'common/ScreenID';
-import {buidlerURL, extractBuidlerUrl} from 'helpers/LinkHelper';
+import {buidlerURL, extractBuidlerUrl, sameDAppURL} from 'helpers/LinkHelper';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useChannelId from 'hook/useChannelId';
 import useCommunityId from 'hook/useCommunityId';
+import useCurrentChannel from 'hook/useCurrentChannel';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo, useCallback, useMemo} from 'react';
 import {useWindowDimensions, Linking, TextProps} from 'react-native';
@@ -20,6 +21,7 @@ type RenderHTMLProps = {
   onLinkPress?: () => void;
   defaultTextProps?: TextProps;
   embeds?: boolean;
+  onOpenBrowser?: () => void;
 };
 
 const RenderHTML = ({
@@ -27,12 +29,14 @@ const RenderHTML = ({
   onLinkPress,
   defaultTextProps = {},
   embeds,
+  onOpenBrowser,
 }: RenderHTMLProps) => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
   const team = useAppSelector(state => state.user.team);
   const currentCommunityId = useCommunityId();
   const currentChannelId = useChannelId();
+  const currentChannel = useCurrentChannel();
   const {width} = useWindowDimensions();
   const {colors} = useThemeColor();
   const handleLinkPress = useCallback(
@@ -70,16 +74,21 @@ const RenderHTML = ({
           navigation.navigate(ScreenID.PinPostDetailScreen, {postId});
         }
         return;
+      } else if (sameDAppURL(href, currentChannel?.dapp_integration_url)) {
+        onOpenBrowser?.();
+        return;
       }
       Linking.openURL(href);
     },
     [
+      currentChannel?.dapp_integration_url,
       currentChannelId,
       currentCommunityId,
       dispatch,
       embeds,
       navigation,
       onLinkPress,
+      onOpenBrowser,
       team,
     ],
   );

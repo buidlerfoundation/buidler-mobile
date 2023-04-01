@@ -44,3 +44,8 @@ export const extractBuidlerUrl = (buidlerUrl: string) => {
     messageId,
   };
 };
+
+export const sameDAppURL = (url?: string, dAppUrl?: string) => {
+  if (!dAppUrl || !url) return false;
+  return url.includes(dAppUrl);
+};

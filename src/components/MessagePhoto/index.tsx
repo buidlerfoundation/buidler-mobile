@@ -5,7 +5,14 @@ import Touchable from 'components/Touchable';
 import ImageHelper from 'helpers/ImageHelper';
 import {AttachmentData} from 'models';
 import React, {memo, useCallback, useMemo} from 'react';
-import {View, StyleSheet, Text, Linking, ViewStyle} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Linking,
+  ViewStyle,
+  useWindowDimensions,
+} from 'react-native';
 import useThemeColor from 'hook/useThemeColor';
 import FastImage from 'react-native-fast-image';
 
@@ -179,6 +186,7 @@ const MessagePhoto = ({
     if (stack) return attachments?.slice?.(0, 2);
     return attachments;
   }, [attachments, stack]);
+  const {height, width} = useWindowDimensions();
   if (!attachments || attachments.length === 0) return null;
   return (
     <View style={[styles.container, style]}>
@@ -209,7 +217,10 @@ const MessagePhoto = ({
                         el.mimetype?.includes('video'),
                     )
                     .map(el => ({
-                      url: ImageHelper.normalizeImage(el.file_url, teamId),
+                      url: ImageHelper.normalizeImage(el.file_url, teamId, {
+                        h: height,
+                        w: width,
+                      }),
                     }))
             }
           />

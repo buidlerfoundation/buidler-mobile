@@ -210,6 +210,7 @@ type MessageItemProps = {
   contentId?: string;
   openReactView?: (message: MessageData) => void;
   direct?: boolean;
+  onOpenBrowser?: () => void;
 };
 
 const MessageItem = ({
@@ -221,6 +222,7 @@ const MessageItem = ({
   contentId,
   direct,
   openReactView,
+  onOpenBrowser,
 }: MessageItemProps) => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
@@ -328,6 +330,7 @@ const MessageItem = ({
                           numberOfLines: 5,
                         }
                   }
+                  onOpenBrowser={onOpenBrowser}
                 />
               )) || <View style={{height: 8}} />}
               <MessagePhoto

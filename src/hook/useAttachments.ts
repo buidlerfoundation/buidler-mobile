@@ -1,9 +1,11 @@
 import ImageHelper from 'helpers/ImageHelper';
 import {useMemo} from 'react';
+import {useWindowDimensions} from 'react-native';
 import useAppSelector from './useAppSelector';
 import useCommunityId from './useCommunityId';
 
 const useAttachments = (contentId?: string) => {
+  const {width, height} = useWindowDimensions();
   const communityId = useCommunityId();
   const messageData = useAppSelector(state => state.message.messageData);
   const messages = useMemo(
@@ -21,12 +23,15 @@ const useAttachments = (contentId?: string) => {
               el.mimetype?.includes('image') || el.mimetype?.includes('video'),
           )
           ?.map(el => ({
-            url: ImageHelper.normalizeImage(el.file_url, communityId),
+            url: ImageHelper.normalizeImage(el.file_url, communityId, {
+              w: width,
+              h: height,
+            }),
           })) || []),
       );
     }
     return res;
-  }, [communityId, messages]);
+  }, [communityId, height, messages, width]);
 };
 
 export default useAttachments;

@@ -420,6 +420,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           contentId={currentChannelId}
           openReactView={openReactView}
           direct={direct}
+          onOpenBrowser={onOpenRight}
         />
       );
     },
@@ -428,6 +429,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       colors.separator,
       currentChannelId,
       direct,
+      onOpenRight,
       onPressMessageReply,
       openMenuMessage,
       openReactView,
