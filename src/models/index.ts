@@ -525,3 +525,12 @@ export type NFTDetailDataApi = {
     thumbnail: string;
   }[];
 };
+
+export type DAppChain = {
+  chain_id: number;
+  decimal: number;
+  logo: string;
+  name: string;
+  rpc_url: string;
+  symbol: string;
+};

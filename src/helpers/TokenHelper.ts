@@ -9,6 +9,23 @@ export const round = (value: number, afterDot: number) => {
   return Math.floor(value * p) / p;
 };
 
+export const formatTokenFormHex = (
+  params: {
+    value?: string;
+    symbol?: string;
+    decimal?: number;
+  },
+  afterDot = 5,
+) => {
+  const {value, symbol, decimal} = params;
+  const p = decimal ? Math.pow(10, decimal) : 1;
+  const rounded = value ? round(parseInt(value) / p, afterDot) : 0;
+  if (!symbol) {
+    return `${rounded}`;
+  }
+  return `${rounded} ${symbol.toUpperCase()}`;
+};
+
 export const formatToken = (
   params: {
     value?: number;

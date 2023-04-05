@@ -25,13 +25,19 @@ import notifee from '@notifee/react-native';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
-    const res = await api.getInitial();
+    const [res, resChains] = await Promise.all([
+      api.getInitial(),
+      api.getChains(),
+    ]);
     if (res.statusCode === 200) {
       ImageHelper.initial(
         res.data?.imgproxy.domain || '',
         res.data?.imgproxy?.bucket_name || '',
       );
-      dispatch({type: actionTypes.GET_INITIAL, payload: {data: res.data}});
+      dispatch({
+        type: actionTypes.GET_INITIAL,
+        payload: {data: res.data, chains: resChains.data},
+      });
     } else {
       throw res.message;
     }

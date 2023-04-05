@@ -4,6 +4,7 @@ import {AnyAction, Reducer} from 'redux';
 
 type NetworkReducerState = {
   chainId: number | string;
+  gasPrice?: number;
 };
 
 const initialState: NetworkReducerState = {
@@ -22,7 +23,12 @@ const networkReducers: Reducer<NetworkReducerState, AnyAction> = (
         chainId: payload,
       };
     }
-
+    case actionTypes.UPDATE_GAS_PRICE: {
+      return {
+        ...state,
+        gasPrice: payload,
+      };
+    }
     default:
       return state;
   }

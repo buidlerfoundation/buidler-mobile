@@ -30,6 +30,7 @@
     "@react-navigation/native": "^6.0.13",
     "@react-navigation/native-stack": "^6.2.4",
     "@toruslabs/react-native-web-browser": "^1.1.0",
+    "@walletconnect/react-native-dapp": "^1.8.0",
     "@web3auth/react-native-sdk": "^3.4.0",
     "assert": "^1.5.0",
     "buffer": "^6.0.3",

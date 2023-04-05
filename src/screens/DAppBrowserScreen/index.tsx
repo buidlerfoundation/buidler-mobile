@@ -10,9 +10,10 @@ import {StyleSheet, Text, View} from 'react-native';
 type DAppBrowserScreenProps = {
   url?: string;
   onBack: () => void;
+  open?: boolean;
 };
 
-const DAppBrowserScreen = ({url, onBack}: DAppBrowserScreenProps) => {
+const DAppBrowserScreen = ({url, onBack, open}: DAppBrowserScreenProps) => {
   const {colors} = useThemeColor();
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
@@ -27,7 +28,7 @@ const DAppBrowserScreen = ({url, onBack}: DAppBrowserScreenProps) => {
           {url}
         </Text>
       </View>
-      <DAppBrowser url={url} />
+      <DAppBrowser url={url} focus={open} />
     </View>
   );
 };

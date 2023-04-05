@@ -3,6 +3,7 @@ import {
   Channel,
   CollectibleDataApi,
   Community,
+  DAppChain,
   ENSAsset,
   InitialApiData,
   NFTCollectionDataApi,
@@ -246,3 +247,5 @@ export const getNFTsDetails = (
 };
 
 export const requestOTT = () => ApiCaller.get<string>('authentication/ott');
+
+export const getChains = () => ApiCaller.get<DAppChain[]>('chains');

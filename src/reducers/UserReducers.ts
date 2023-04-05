@@ -1,7 +1,14 @@
 import {actionTypes} from 'actions/actionTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
-import {BalanceApiData, Channel, Community, Space, UserData} from 'models';
+import {
+  BalanceApiData,
+  Channel,
+  Community,
+  DAppChain,
+  Space,
+  UserData,
+} from 'models';
 import {AnyAction, Reducer} from 'redux';
 import {uniqBy} from 'lodash';
 
@@ -23,6 +30,7 @@ interface UserReducerState {
   currentDirectChannelId: string;
   imgDomain: string;
   imgBucket: string;
+  dAppChains: DAppChain[];
   imgConfig: any;
   teamUserMap: {
     [key: string]: {
@@ -67,6 +75,7 @@ const initialState: UserReducerState = {
   imgDomain: '',
   imgBucket: '',
   imgConfig: {},
+  dAppChains: [],
   teamUserMap: {},
   lastChannel: {},
   spaceMembers: [],
@@ -582,6 +591,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
         imgBucket: payload.data.imgproxy?.bucket_name,
         imgConfig: payload.data.img_config,
         loginGoogleUrl: payload.data.login_url,
+        dAppChains: payload.chains,
       };
     }
     case actionTypes.LOGOUT: {

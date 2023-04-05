@@ -172,9 +172,10 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       <DAppBrowserScreen
         url={currentChannel?.dapp_integration_url}
         onBack={onCloseRight}
+        open={openRight}
       />
     );
-  }, [currentChannel?.dapp_integration_url, onCloseRight]);
+  }, [currentChannel?.dapp_integration_url, onCloseRight, openRight]);
   useScrollToTop(
     useRef({
       scrollToTop: () => {
