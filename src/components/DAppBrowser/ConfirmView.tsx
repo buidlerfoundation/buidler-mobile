@@ -49,8 +49,15 @@ const ConfirmView = ({
   const address = useUserAddress();
   const gasPrice = useAppSelector(state => state.network.gasPrice);
   const nwFee = useMemo(() => {
-    return parseInt(confirmData?.data?.object?.gas || 0) * gasPrice;
-  }, [confirmData?.data?.object?.gas, gasPrice]);
+    const price = confirmData?.data?.object?.gasPrice
+      ? parseInt(confirmData?.data?.object?.gasPrice)
+      : gasPrice;
+    return parseInt(confirmData?.data?.object?.gas || 0) * price;
+  }, [
+    confirmData?.data?.object?.gas,
+    confirmData?.data?.object?.gasPrice,
+    gasPrice,
+  ]);
   const total = useMemo(() => {
     return nwFee + parseInt(confirmData?.data?.object?.value || 0);
   }, [confirmData?.data?.object?.value, nwFee]);

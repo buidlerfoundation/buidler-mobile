@@ -307,11 +307,20 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
             from: object.from,
             value: object.value,
             data: object.data,
-            gasPrice: gasPriceHex,
+            gasPrice: object.gasPrice || gasPriceHex,
           };
-          const res = await signer.sendTransaction(transactionParameters);
-          const callback = `window.${network}.sendResponse(${id}, "${res.hash}")`;
-          webviewRef.current.injectJavaScript(callback);
+          try {
+            const res = await signer.sendTransaction(transactionParameters);
+            const callback = `window.${network}.sendResponse(${id}, "${res.hash}")`;
+            webviewRef.current.injectJavaScript(callback);
+          } catch (e) {
+            const callback = `window.${network}.sendError(${id}, "Network error")`;
+            webviewRef.current.injectJavaScript(callback);
+            Toast.show({
+              type: 'customError',
+              props: {message: e.message},
+            });
+          }
           setActionLoading(false);
         }
         break;

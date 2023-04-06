@@ -925,24 +925,26 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             </View>
           )}
           <View style={styles.bottomView}>
-            {canChat ? (
-              <MessageInput
-                openGallery={toggleGallery}
-                onRemoveAttachment={onRemoveAttachment}
-                attachments={attachments}
-                onClearAttachment={onClearAttachment}
-                messageReply={messageReply}
-                messageEdit={messageEdit}
-                onClearReply={onClearReply}
-                inputRef={inputRef}
-                onFocusChanged={setFocus}
-                canMoreAfter={messageData?.canMoreAfter}
-                scrollDown={scrollDown}
-                direct={direct}
-              />
-            ) : (
-              <View style={{height: 1, backgroundColor: colors.border}} />
-            )}
+            <MessageInput
+              openGallery={toggleGallery}
+              onRemoveAttachment={onRemoveAttachment}
+              attachments={attachments}
+              onClearAttachment={onClearAttachment}
+              messageReply={messageReply}
+              messageEdit={messageEdit}
+              onClearReply={onClearReply}
+              inputRef={inputRef}
+              onFocusChanged={setFocus}
+              canMoreAfter={messageData?.canMoreAfter}
+              scrollDown={scrollDown}
+              direct={direct}
+              disabled={!canChat}
+              placeholder={
+                !canChat
+                  ? 'Sending message is not allowed in this channel'
+                  : undefined
+              }
+            />
           </View>
           <ModalBottom
             isVisible={isOpenMenuMessage}

@@ -117,6 +117,7 @@ type MessageInputProps = {
   canMoreAfter?: boolean;
   scrollDown?: () => void;
   direct?: boolean;
+  disabled?: boolean;
 };
 
 const MessageInput = ({
@@ -138,6 +139,7 @@ const MessageInput = ({
   canMoreAfter,
   scrollDown,
   direct,
+  disabled,
 }: MessageInputProps) => {
   const dispatch = useAppDispatch();
   const [val, setVal] = useState('');
@@ -560,9 +562,11 @@ const MessageInput = ({
             )}
           </View>
           <View style={styles.inputContainer}>
-            <Touchable style={{padding: 5}} onPress={onPlusPress}>
-              <SVG.IconPlusCircle />
-            </Touchable>
+            {!disabled && (
+              <Touchable style={{padding: 5}} onPress={onPlusPress}>
+                <SVG.IconPlusCircle />
+              </Touchable>
+            )}
             <TextInput
               style={[styles.input, AppStyles.TextSemi15, {color: colors.text}]}
               placeholder={
@@ -574,7 +578,9 @@ const MessageInput = ({
                 }`
               }
               multiline
-              placeholderTextColor={colors.subtext}
+              placeholderTextColor={
+                disabled ? colors.activeBackground : colors.subtext
+              }
               onChangeText={handleChangeText}
               keyboardAppearance="dark"
               ref={inputRef}
@@ -582,7 +588,8 @@ const MessageInput = ({
               onFocus={handleFocus}
               onBlur={handleBlur}
               value=""
-              onSelectionChange={onSelectionChange}>
+              onSelectionChange={onSelectionChange}
+              editable={!disabled}>
               <Text>{parsedText}</Text>
             </TextInput>
             {(!!val?.trim() || attachments.length > 0) && (
