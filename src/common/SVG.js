@@ -94,6 +94,7 @@ import IconEye from '../assets/images/ic_eye.svg';
 import IconOpenSea from '../assets/images/ic_opensea.svg';
 import IconImageDefault from '../assets/images/ic_image_default.svg';
 import IconBrowser from '../assets/images/ic_browser.svg';
+import IconReload from '../assets/images/ic_reload.svg';
 
 export default {
   IconExpand,
@@ -192,4 +193,5 @@ export default {
   IconOpenSea,
   IconImageDefault,
   IconBrowser,
+  IconReload,
 };

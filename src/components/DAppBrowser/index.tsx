@@ -18,9 +18,6 @@ import RNFS from 'react-native-fs';
 import WebView from 'react-native-webview';
 import LinkPreview from '@lowkey/react-native-link-preview';
 import {Toast} from 'react-native-toast-message/lib/src/Toast';
-import api from 'services/api';
-import useAppDispatch from 'hook/useAppDispatch';
-import {actionTypes} from 'actions/actionTypes';
 import {INFURA_API_KEY} from 'react-native-dotenv';
 import {DAppChain} from 'models';
 import ConfirmView from './ConfirmView';
@@ -28,15 +25,16 @@ import ConfirmView from './ConfirmView';
 type DAppBrowserProps = {
   url?: string;
   focus?: boolean;
+  webviewRef: React.MutableRefObject<WebView<{}>>;
 };
 
-const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
-  const dispatch = useAppDispatch();
+const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
   const [openModalConfirm, setOpenModalConfirm] = useState(false);
   const [currentChain, setCurrentChain] = useState<DAppChain | null>(null);
   const supportedChains = useAppSelector(state => state.user.dAppChains);
   const chainId = useAppSelector(state => state.network.chainId);
-  const gasPrice = useAppSelector(state => state.network.gasPrice);
+  const [gasPrice, setGasPrice] = useState(0);
+  // const gasPrice = useAppSelector(state => state.network.gasPrice);
   const gasPriceHex = useMemo(
     () => ethers.BigNumber.from(`${gasPrice || 0}`).toHexString(),
     [gasPrice],
@@ -56,27 +54,23 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
   const [loading, setLoading] = useState(false);
   const {colors} = useThemeColor();
   const privateKey = useAppSelector(state => state.configs.privateKey);
-  const webviewRef = useRef<WebView>();
   const address = useUserAddress();
   const [actionLoading, setActionLoading] = useState(false);
   const [jsContent, setJSContent] = useState<string | undefined>();
-  useEffect(() => {
-    api.getGasPrice().then(res => {
-      if (res.success) {
-        dispatch({type: actionTypes.UPDATE_GAS_PRICE, payload: res.data});
-      }
-    });
-    const interval = setInterval(() => {
-      api.getGasPrice().then(res => {
-        if (res.success) {
-          dispatch({type: actionTypes.UPDATE_GAS_PRICE, payload: res.data});
-        }
-      });
-    }, 20000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [dispatch]);
+  const gasInterval = useRef<any>();
+  const updateGasPrice = useCallback(async () => {
+    let provider: providers.InfuraProvider | providers.JsonRpcProvider = null;
+    if (currentChain) {
+      provider = new providers.JsonRpcProvider(
+        currentChain.rpc_url,
+        currentChain.chain_id,
+      );
+    } else {
+      provider = new providers.InfuraProvider(chainId, INFURA_API_KEY);
+    }
+    const res = await provider.getGasPrice();
+    setGasPrice(res.toNumber());
+  }, [chainId, currentChain]);
   const toggleModalConfirm = useCallback(
     () => setOpenModalConfirm(current => !current),
     [],
@@ -127,6 +121,7 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
             window.ReactNativeWebView.postMessage(JSON.stringify(json));
         }
         window.ethereum = trustwallet.ethereum;
+        window.ethereum.isMetaMask = true;
       })();
       (function () {
         var __mmHistory = window.history;
@@ -191,7 +186,6 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
   );
   const onMessage = useCallback(
     async (evt: WebViewMessageEvent) => {
-      if (!focus) return;
       const data = JSON.parse(evt.nativeEvent.data);
       const {name, object} = data;
       console.log(data, webviewRef.current);
@@ -218,6 +212,8 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
             });
             break;
           }
+          await updateGasPrice();
+          gasInterval.current = setInterval(updateGasPrice, 10000);
           setConfirmData({
             title: 'Sign Transaction',
             message: `from: ${object.from}\nto: ${object.to}\nvalue: ${object.value}`,
@@ -265,20 +261,26 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
           break;
       }
     },
-    [toggleModalConfirm, getChain, focus],
+    [focus, webviewRef, toggleModalConfirm, updateGasPrice, getChain],
   );
   const onWVLoadEnd = useCallback(() => {
     setTimeout(() => setLoading(false), 200);
   }, []);
   const onCancelAction = useCallback(() => {
     if (!confirmData?.data) return;
+    if (gasInterval.current) {
+      clearInterval(gasInterval.current);
+    }
     const {network, id} = confirmData?.data;
     const callback = `window.${network}.sendError(${id}, "User cancel action")`;
     webviewRef.current.injectJavaScript(callback);
     toggleModalConfirm();
-  }, [toggleModalConfirm, confirmData?.data]);
+  }, [confirmData?.data, webviewRef, toggleModalConfirm]);
   const onConfirmAction = useCallback(async () => {
     if (!confirmData?.data) return;
+    if (gasInterval.current) {
+      clearInterval(gasInterval.current);
+    }
     const {network, id, object} = confirmData?.data;
     switch (confirmData?.data.name) {
       case 'requestAccounts':
@@ -361,6 +363,7 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
     confirmData?.data,
     toggleModalConfirm,
     address,
+    webviewRef,
     privateKey,
     getChain,
     currentChain,
@@ -392,7 +395,7 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
         </View>
       )}
       <ModalBottom
-        isVisible={openModalConfirm}
+        isVisible={openModalConfirm && focus}
         onSwipeComplete={toggleModalConfirm}
         onBackdropPress={toggleModalConfirm}>
         <ConfirmView
@@ -403,6 +406,7 @@ const DAppBrowser = ({url, focus}: DAppBrowserProps) => {
           onConfirmAction={onConfirmAction}
           actionLoading={actionLoading}
           currentChain={currentChain}
+          gasPrice={gasPrice}
         />
       </ModalBottom>
     </>

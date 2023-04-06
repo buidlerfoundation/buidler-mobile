@@ -13,7 +13,6 @@ import React, {memo, useCallback, useMemo} from 'react';
 import {View, StyleSheet, Text, Linking, ActivityIndicator} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import makeBlockie from 'ethereum-blockies-base64';
-import useAppSelector from 'hook/useAppSelector';
 
 type ConfirmViewProps = {
   confirmData: {
@@ -33,6 +32,7 @@ type ConfirmViewProps = {
   actionLoading: boolean;
   onCancelAction: () => void;
   currentChain: DAppChain | null;
+  gasPrice: number;
 };
 
 const ConfirmView = ({
@@ -43,11 +43,11 @@ const ConfirmView = ({
   actionLoading,
   onCancelAction,
   currentChain,
+  gasPrice,
 }: ConfirmViewProps) => {
   const {colors} = useThemeColor();
   const user = useUserData();
   const address = useUserAddress();
-  const gasPrice = useAppSelector(state => state.network.gasPrice);
   const nwFee = useMemo(() => {
     const price = confirmData?.data?.object?.gasPrice
       ? parseInt(confirmData?.data?.object?.gasPrice)

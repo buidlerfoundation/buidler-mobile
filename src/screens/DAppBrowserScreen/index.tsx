@@ -4,8 +4,9 @@ import SVG from 'common/SVG';
 import DAppBrowser from 'components/DAppBrowser';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
-import React, {memo} from 'react';
+import React, {memo, useCallback, useRef} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import WebView from 'react-native-webview';
 
 type DAppBrowserScreenProps = {
   url?: string;
@@ -15,6 +16,10 @@ type DAppBrowserScreenProps = {
 
 const DAppBrowserScreen = ({url, onBack, open}: DAppBrowserScreenProps) => {
   const {colors} = useThemeColor();
+  const webviewRef = useRef<WebView>();
+  const onReload = useCallback(() => {
+    webviewRef.current?.reload();
+  }, []);
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <View style={styles.header}>
@@ -27,8 +32,11 @@ const DAppBrowserScreen = ({url, onBack, open}: DAppBrowserScreenProps) => {
           numberOfLines={1}>
           {url}
         </Text>
+        <Touchable onPress={onReload}>
+          <SVG.IconReload fill={colors.text} />
+        </Touchable>
       </View>
-      <DAppBrowser url={url} focus={open} />
+      <DAppBrowser url={url} focus={open} webviewRef={webviewRef} />
     </View>
   );
 };
@@ -48,6 +56,7 @@ const styles = StyleSheet.create({
   title: {
     marginLeft: 20,
     flex: 1,
+    marginRight: 10,
   },
 });
 
