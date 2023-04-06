@@ -4,9 +4,10 @@ import SVG from 'common/SVG';
 import DAppBrowser from 'components/DAppBrowser';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
-import React, {memo, useCallback, useRef} from 'react';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import WebView from 'react-native-webview';
+import api from 'services/api';
 
 type DAppBrowserScreenProps = {
   url?: string;
@@ -17,9 +18,26 @@ type DAppBrowserScreenProps = {
 const DAppBrowserScreen = ({url, onBack, open}: DAppBrowserScreenProps) => {
   const {colors} = useThemeColor();
   const webviewRef = useRef<WebView>();
+  const [urlWithParams, setUrlWithParams] = useState('');
   const onReload = useCallback(() => {
     webviewRef.current?.reload();
   }, []);
+  const initial = useCallback(async () => {
+    if (url) {
+      let newUrl = url;
+      if (url === 'https://buidler.link/airdrop_hunter') {
+        newUrl += '?embedded=true';
+        const res = await api.requestOTT();
+        if (res.data) {
+          newUrl += `&ott=${res.data}`;
+        }
+      }
+      setUrlWithParams(newUrl);
+    }
+  }, [url]);
+  useEffect(() => {
+    initial();
+  }, [initial]);
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <View style={styles.header}>
@@ -36,7 +54,9 @@ const DAppBrowserScreen = ({url, onBack, open}: DAppBrowserScreenProps) => {
           <SVG.IconReload fill={colors.text} />
         </Touchable>
       </View>
-      <DAppBrowser url={url} focus={open} webviewRef={webviewRef} />
+      {urlWithParams && (
+        <DAppBrowser url={urlWithParams} focus={open} webviewRef={webviewRef} />
+      )}
     </View>
   );
 };
