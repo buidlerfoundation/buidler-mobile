@@ -21,7 +21,7 @@ import {Toast} from 'react-native-toast-message/lib/src/Toast';
 import {INFURA_API_KEY} from 'react-native-dotenv';
 import {DAppChain} from 'models';
 import ConfirmView from './ConfirmView';
-import {injectedJSProviders} from 'helpers/DAppHelper';
+import {injectedJSProviders, normalizeErrorMessage} from 'helpers/DAppHelper';
 
 type DAppBrowserProps = {
   url?: string;
@@ -33,7 +33,6 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
   const [openModalConfirm, setOpenModalConfirm] = useState(false);
   const [currentChain, setCurrentChain] = useState<DAppChain | null>(null);
   const supportedChains = useAppSelector(state => state.user.dAppChains);
-  const chainId = useAppSelector(state => state.network.chainId);
   const [gasPrice, setGasPrice] = useState(0);
   // const gasPrice = useAppSelector(state => state.network.gasPrice);
   const gasPriceHex = useMemo(
@@ -67,11 +66,11 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
         currentChain.chain_id,
       );
     } else {
-      provider = new providers.InfuraProvider(chainId, INFURA_API_KEY);
+      provider = new providers.InfuraProvider('mainnet', INFURA_API_KEY);
     }
     const res = await provider.getGasPrice();
     setGasPrice(res.toNumber());
-  }, [chainId, currentChain]);
+  }, [currentChain]);
   const toggleModalConfirm = useCallback(
     () => setOpenModalConfirm(current => !current),
     [],
@@ -227,7 +226,7 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
               currentChain.chain_id,
             );
           } else {
-            provider = new providers.InfuraProvider(chainId, INFURA_API_KEY);
+            provider = new providers.InfuraProvider('mainnet', INFURA_API_KEY);
           }
           const signer = new Wallet(privateKey, provider);
           const transactionParameters = {
@@ -247,7 +246,7 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
             webviewRef.current.injectJavaScript(callback);
             Toast.show({
               type: 'customError',
-              props: {message: e.message},
+              props: {message: normalizeErrorMessage(e.message)},
             });
           }
           setActionLoading(false);
@@ -276,7 +275,9 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
         };
         const configStr = JSON.stringify(config);
         const setConfig = `window.${network}.setConfig(${configStr})`;
-        const emitChange = `window.${network}.emitChainChanged('0x${chain.chain_id.toString(16)}')`;
+        const emitChange = `window.${network}.emitChainChanged('0x${chain.chain_id.toString(
+          16,
+        )}')`;
         const callback = `window.${network}.sendResponse(${id})`;
         webviewRef.current.injectJavaScript(setConfig);
         webviewRef.current.injectJavaScript(emitChange);
@@ -293,7 +294,6 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
     getChain,
     currentChain,
     gasPriceHex,
-    chainId,
   ]);
   if (!scriptInject || !url) return null;
   return (

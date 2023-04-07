@@ -1,3 +1,9 @@
+const usingMetaMaskUrl = [
+  'https://scroll.io/alpha/bridge',
+  'https://usdcdemo.layerzero.network/bridge',
+  'https://testnetbridge.com/',
+];
+
 export const injectedJSProviders = (url: string, address: string) => {
   let providerConfigs = 'window.ethereum.isMetaMask = true;';
   const debugScript = '';
@@ -12,7 +18,7 @@ export const injectedJSProviders = (url: string, address: string) => {
   //   console.warn = console.log;
   //   console.error = console.log;
   // `;
-  if (url === 'https://scroll.io/alpha/bridge') {
+  if (usingMetaMaskUrl.includes(url)) {
     providerConfigs = `
       window.ethereum.isMetaMask = true;
       window.ethereum.isTrust = false;
@@ -83,4 +89,9 @@ export const injectedJSProviders = (url: string, address: string) => {
     };
     ${debugScript}
   })();`;
+};
+
+export const normalizeErrorMessage = (message: string) => {
+  if (message.includes('insufficient')) return 'Insufficient amount';
+  return message;
 };

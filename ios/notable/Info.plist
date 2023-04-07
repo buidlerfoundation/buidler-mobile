@@ -58,6 +58,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to camera to upload photo to message or task</string>
+	<key>NSMicrophoneUsageDescription</key>
+  <string>We need access to microphone to use audio/video call</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Enabling Face ID allows you quick and secure access to your account.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

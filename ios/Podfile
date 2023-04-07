@@ -36,6 +36,8 @@ target 'notable' do
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
   pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary"
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
+  pod 'Permission-Microphone', :path => "#{permissions_path}/Microphone"
 
   post_install do |installer|
     react_native_post_install(

@@ -161,6 +161,10 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - OpenSSL-Universal (1.1.1100)
+  - Permission-Camera (3.6.1):
+    - RNPermissions
+  - Permission-Microphone (3.6.1):
+    - RNPermissions
   - Permission-Notifications (3.6.1):
     - RNPermissions
   - Permission-PhotoLibrary (3.6.1):
@@ -609,6 +613,8 @@ DEPENDENCIES:
   - "lowkey-react-native-link-preview (from `../node_modules/@lowkey/react-native-link-preview`)"
   - MixpanelReactNative (from `../node_modules/mixpanel-react-native`)
   - OpenSSL-Universal (= 1.1.1100)
+  - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
+  - Permission-Microphone (from `../node_modules/react-native-permissions/ios/Microphone`)
   - Permission-Notifications (from `../node_modules/react-native-permissions/ios/Notifications`)
   - Permission-PhotoLibrary (from `../node_modules/react-native-permissions/ios/PhotoLibrary`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -725,6 +731,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@lowkey/react-native-link-preview"
   MixpanelReactNative:
     :path: "../node_modules/mixpanel-react-native"
+  Permission-Camera:
+    :path: "../node_modules/react-native-permissions/ios/Camera"
+  Permission-Microphone:
+    :path: "../node_modules/react-native-permissions/ios/Microphone"
   Permission-Notifications:
     :path: "../node_modules/react-native-permissions/ios/Notifications"
   Permission-PhotoLibrary:
@@ -881,6 +891,8 @@ SPEC CHECKSUMS:
   MixpanelReactNative: f509f0674e7f80a7a294ff5afa88ac1e8ec61640
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
+  Permission-Camera: bf6791b17c7f614b6826019fcfdcc286d3a107f6
+  Permission-Microphone: 48212dd4d28025d9930d583e3c7a56da7268665c
   Permission-Notifications: 150484ae586eb9be4e32217582a78350a9bb31c3
   Permission-PhotoLibrary: 5b34ca67279f7201ae109cef36f9806a6596002d
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
@@ -949,6 +961,6 @@ SPEC CHECKSUMS:
   Yoga: 1f02ef4ce4469aefc36167138441b27d988282b1
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 9987bd0ab51b8fcbdd0abf174e32ab000ba1d4c7
+PODFILE CHECKSUM: 184ae192735bf6e97d05d1d11d90d4f4df3324e2
 
 COCOAPODS: 1.11.3
