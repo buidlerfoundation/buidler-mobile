@@ -178,6 +178,7 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
             });
             break;
           }
+          setCurrentChain(chain);
           setConfirmData({
             title: 'Switch Chain',
             message: `ChainId: ${object.chainId}`,
@@ -265,7 +266,6 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
         break;
       case 'switchEthereumChain':
         const chain = getChain(object.chainId);
-        setCurrentChain(chain);
         const config = {
           ethereum: {
             address,
