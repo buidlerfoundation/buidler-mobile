@@ -14,7 +14,6 @@ import useThemeColor from 'hook/useThemeColor';
 import {Community} from 'models';
 import React, {memo, useCallback, useState} from 'react';
 import {StyleSheet, Text, View, FlatList, Alert} from 'react-native';
-import api from 'services/api';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import {createLoadingSelector} from 'reducers/selectors';
@@ -74,14 +73,20 @@ const SideBarCommunity = () => {
   const onCreateCommunity = useCallback(() => {}, []);
   const onEditCommunity = useCallback(() => {}, []);
   const onInviteMember = useCallback(async () => {
-    const res = await api.invitation(selectedCommunity?.team_id);
-    const link = res?.data?.invitation_url;
+    const link = `https://buidler.link/${
+      selectedCommunity?.ens || selectedCommunity?.team_url
+    }`;
     setInviteLink(link);
     onCloseMenu();
     Alert.alert('Invite Member', link, [
       {text: 'Copy link', onPress: onCopyInviteLink},
     ]);
-  }, [onCloseMenu, onCopyInviteLink, selectedCommunity?.team_id]);
+  }, [
+    onCloseMenu,
+    onCopyInviteLink,
+    selectedCommunity?.ens,
+    selectedCommunity?.team_url,
+  ]);
   const onLeaveCommunity = useCallback(() => {
     onCloseMenu();
     setTimeout(() => {

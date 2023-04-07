@@ -57,7 +57,8 @@ export const normalizeMessageTextPlain = (
     .replace(/\*(.*)\*/gim, '$1')
     .replace(/!\[(.*?)\]\((.*?)\)/gim, '$1')
     .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
-    .replace(/\n$/gim, '<br />');
+    .replace(/\n$/gim, '<br />')
+    .replace(/\u2028/g, '');
 
   if (messageReply || withoutHtml) {
     res = res.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2');
@@ -135,7 +136,8 @@ export const normalizeMessageText = (
     .replace(
       /(<@)(.*?)(-)(.*?)(>)/gim,
       '<a href="https://community.buidler.app/channels/user/$4" class="mention-string">@$2</a>',
-    );
+    )
+    .replace(/\u2028/g, '');
 
   if (wrapParagraph) {
     res = res.replace(/^([^<]*)([^<]*)$/gim, '<p>$1</p>');

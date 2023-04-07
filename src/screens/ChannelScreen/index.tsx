@@ -21,7 +21,6 @@ import {useNavigation} from '@react-navigation/native';
 import useCommunityId from 'hook/useCommunityId';
 import AppStyles from 'common/AppStyles';
 import numeral from 'numeral';
-import api from 'services/api';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import SVG from 'common/SVG';
@@ -88,16 +87,12 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
     }
   }, [communityId, dispatch, open, socketReconnect]);
   const onInvitePress = useCallback(async () => {
-    let link = '';
-    if (!inviteLink) {
-      const res = await api.invitation(communityId);
-      link = res?.data?.invitation_url;
-      setInviteLink(res?.data?.invitation_url);
-    }
-    Alert.alert('Invite Member', inviteLink || link, [
+    const link = `https://buidler.link/${community.ens || community.team_url}`;
+    setInviteLink(link);
+    Alert.alert('Invite Member', link, [
       {text: 'Copy link', onPress: onCopyInviteLink},
     ]);
-  }, [communityId, inviteLink, onCopyInviteLink]);
+  }, [community.ens, community.team_url, onCopyInviteLink]);
   const onCommunityPress = useCallback(() => {
     navigation.navigate(ScreenID.CommunityDetailScreen);
   }, [navigation]);

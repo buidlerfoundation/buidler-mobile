@@ -5,7 +5,7 @@ import useAppSelector from './useAppSelector';
 import useCommunityId from './useCommunityId';
 
 const useAttachments = (contentId?: string) => {
-  const {width, height} = useWindowDimensions();
+  const {width} = useWindowDimensions();
   const communityId = useCommunityId();
   const messageData = useAppSelector(state => state.message.messageData);
   const messages = useMemo(
@@ -25,13 +25,12 @@ const useAttachments = (contentId?: string) => {
           ?.map(el => ({
             url: ImageHelper.normalizeImage(el.file_url, communityId, {
               w: width,
-              h: height,
             }),
           })) || []),
       );
     }
     return res;
-  }, [communityId, height, messages, width]);
+  }, [communityId, messages, width]);
 };
 
 export default useAttachments;

@@ -130,6 +130,7 @@ export interface Community {
   team_cover?: string;
   seen?: boolean;
   team_background?: string;
+  ens?: string;
 }
 
 export interface NFTCollection {

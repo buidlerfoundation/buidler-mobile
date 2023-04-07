@@ -43,6 +43,7 @@ const AttachmentItem = ({
   allAttachments,
 }: AttachmentItemProps) => {
   const {colors} = useThemeColor();
+  const {width} = useWindowDimensions();
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
   if (att.is_uploaded === false) {
     return (
@@ -100,7 +101,9 @@ const AttachmentItem = ({
         {backgroundColor: colors.backgroundHeader},
       ]}>
       <ImageLightBox
-        originUrl={ImageHelper.normalizeImage(att.file_url, teamId)}
+        originUrl={ImageHelper.normalizeImage(att.file_url, teamId, {
+          w: width,
+        })}
         onLongPress={onLongPress}
         disabled={disabled}
         contentId={contentId}
@@ -186,7 +189,7 @@ const MessagePhoto = ({
     if (stack) return attachments?.slice?.(0, 2);
     return attachments;
   }, [attachments, stack]);
-  const {height, width} = useWindowDimensions();
+  const {width} = useWindowDimensions();
   if (!attachments || attachments.length === 0) return null;
   return (
     <View style={[styles.container, style]}>
@@ -218,7 +221,6 @@ const MessagePhoto = ({
                     )
                     .map(el => ({
                       url: ImageHelper.normalizeImage(el.file_url, teamId, {
-                        h: height,
                         w: width,
                       }),
                     }))
