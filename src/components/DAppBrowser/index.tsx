@@ -21,6 +21,7 @@ import {Toast} from 'react-native-toast-message/lib/src/Toast';
 import {INFURA_API_KEY} from 'react-native-dotenv';
 import {DAppChain} from 'models';
 import ConfirmView from './ConfirmView';
+import {injectedJSProviders} from 'helpers/DAppHelper';
 
 type DAppBrowserProps = {
   url?: string;
@@ -97,90 +98,16 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
   }, [url]);
   const scriptInject = useMemo(() => {
     if (!jsContent) return '';
-    // chainId: "5",
-    // rpcUrl: "https://rpc.ankr.com/eth_goerli",
-    // chainId: 1,
-    // rpcUrl: "https://cloudflare-eth.com",
     return `
       ${jsContent}
-      (function() {
-        var config = {                
-            ethereum: {
-              chainId: 1,
-              rpcUrl: "https://cloudflare-eth.com",
-              address: "${address}",
-            },
-            solana: {
-                cluster: "mainnet-beta",
-            },
-            isDebug: true
-        };
-        trustwallet.ethereum = new trustwallet.Provider(config);
-        trustwallet.solana = new trustwallet.SolanaProvider(config);
-        trustwallet.postMessage = (json) => {
-            window.ReactNativeWebView.postMessage(JSON.stringify(json));
-        }
-        window.ethereum = trustwallet.ethereum;
-        window.ethereum.isMetaMask = true;
-      })();
-      (function () {
-        var __mmHistory = window.history;
-        var __mmPushState = __mmHistory.pushState;
-        var __mmReplaceState = __mmHistory.replaceState;
-        function __mm__updateUrl(){
-          const siteName = document.querySelector('head > meta[property="og:site_name"]');
-          const title = siteName || document.querySelector('head > meta[name="title"]') || document.title;
-          const height = Math.max(document.documentElement.clientHeight, document.documentElement.scrollHeight, document.body.clientHeight, document.body.scrollHeight);
-          window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(
-            {
-              type: 'NAV_CHANGE',
-              payload: {
-                url: location.href,
-                title: title,
-              }
-            }
-          ));
-          setTimeout(() => {
-            const height = Math.max(document.documentElement.clientHeight, document.documentElement.scrollHeight, document.body.clientHeight, document.body.scrollHeight);
-            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(
-            {
-              type: 'GET_HEIGHT',
-              payload: {
-                height: height
-              }
-            }))
-          }, 500);
-        }
-        __mmHistory.pushState = function(state) {
-          setTimeout(function () {
-            __mm__updateUrl();
-          }, 100);
-          return __mmPushState.apply(history, arguments);
-        };
-        __mmHistory.replaceState = function(state) {
-          setTimeout(function () {
-            __mm__updateUrl();
-          }, 100);
-          return __mmReplaceState.apply(history, arguments);
-        };
-        window.onpopstate = function(event) {
-          __mm__updateUrl();
-        };
-        // Debug
-        // console = new Object();
-        // console.log = function(log) {
-        //   window.ReactNativeWebView.postMessage(JSON.stringify(log));
-        // };
-        // console.debug = console.log;
-        // console.info = console.log;
-        // console.warn = console.log;
-        // console.error = console.log;
-      })();
+      ${injectedJSProviders(url, address)}
     `;
-  }, [address, jsContent]);
+  }, [address, jsContent, url]);
   const getChain = useCallback(
     (chainId: number | string) => {
-      return supportedChains.find(el => el.chain_id == chainId);
+      return supportedChains.find(
+        el => el.chain_id == chainId.substring(2) || el.chain_id == chainId,
+      );
     },
     [supportedChains],
   );
@@ -261,7 +188,7 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
           break;
       }
     },
-    [focus, webviewRef, toggleModalConfirm, updateGasPrice, getChain],
+    [webviewRef, toggleModalConfirm, updateGasPrice, getChain],
   );
   const onWVLoadEnd = useCallback(() => {
     setTimeout(() => setLoading(false), 200);
@@ -343,15 +270,13 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
         const config = {
           ethereum: {
             address,
-            chainId: parseInt(object.chainId),
+            chainId: chain.chain_id,
             rpcUrl: chain.rpc_url,
           },
         };
         const configStr = JSON.stringify(config);
         const setConfig = `window.${network}.setConfig(${configStr})`;
-        const emitChange = `window.${network}.emitChainChanged(${parseInt(
-          object.chainId,
-        )})`;
+        const emitChange = `window.${network}.emitChainChanged('0x${chain.chain_id.toString(16)}')`;
         const callback = `window.${network}.sendResponse(${id})`;
         webviewRef.current.injectJavaScript(setConfig);
         webviewRef.current.injectJavaScript(emitChange);

@@ -19,8 +19,9 @@ const DAppBrowserScreen = ({url, onBack, open}: DAppBrowserScreenProps) => {
   const {colors} = useThemeColor();
   const webviewRef = useRef<WebView>();
   const [urlWithParams, setUrlWithParams] = useState('');
+  const [key, setKey] = useState('0');
   const onReload = useCallback(() => {
-    webviewRef.current?.reload();
+    setKey(`${Math.random()}`);
   }, []);
   const initial = useCallback(async () => {
     if (url) {
@@ -55,7 +56,12 @@ const DAppBrowserScreen = ({url, onBack, open}: DAppBrowserScreenProps) => {
         </Touchable>
       </View>
       {urlWithParams && (
-        <DAppBrowser url={urlWithParams} focus={open} webviewRef={webviewRef} />
+        <DAppBrowser
+          key={key}
+          url={urlWithParams}
+          focus={open}
+          webviewRef={webviewRef}
+        />
       )}
     </View>
   );
