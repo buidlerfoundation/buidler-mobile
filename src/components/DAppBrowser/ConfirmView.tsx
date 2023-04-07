@@ -75,7 +75,9 @@ const ConfirmView = ({
       <View style={[styles.accountInfo, {borderColor: colors.border}]}>
         <FastImage
           source={{
-            uri: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+            uri:
+              currentChain?.logo ||
+              'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
           }}
           style={styles.networkLogo}
         />
@@ -104,6 +106,7 @@ const ConfirmView = ({
     colors.subtext,
     colors.text,
     confirmData?.data?.name,
+    currentChain?.logo,
     user.user_name,
   ]);
   const renderBody = useCallback(() => {
