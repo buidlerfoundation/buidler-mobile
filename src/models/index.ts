@@ -535,3 +535,10 @@ export type DAppChain = {
   rpc_url: string;
   symbol: string;
 };
+
+export interface ProfileApiData {
+  profile: {
+    user_id?: string;
+    team_id?: string;
+  };
+}

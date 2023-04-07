@@ -28,6 +28,7 @@ import ImageHelper from 'helpers/ImageHelper';
 import useAppSelector from 'hook/useAppSelector';
 import useAppDispatch from 'hook/useAppDispatch';
 import {fetchDataChannel} from 'actions/UserActions';
+import useUserAddress from 'hook/useUserAddress';
 
 const CommunityHeader = () => {
   const {colors} = useThemeColor();
@@ -63,6 +64,7 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
   const navigation = useNavigation();
   const teamUserData = useTeamUserData();
   const spaceChannel = useSpaceChannel();
+  const address = useUserAddress();
   const communityId = useCommunityId();
   const community = useCurrentCommunity();
   const communityVerified = useMemo(
@@ -87,12 +89,14 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
     }
   }, [communityId, dispatch, open, socketReconnect]);
   const onInvitePress = useCallback(async () => {
-    const link = `https://buidler.link/${community.ens || community.team_url}`;
+    const link = `https://buidler.link/${
+      community.ens || community.team_url
+    }?ref=${address}`;
     setInviteLink(link);
     Alert.alert('Invite Member', link, [
       {text: 'Copy link', onPress: onCopyInviteLink},
     ]);
-  }, [community.ens, community.team_url, onCopyInviteLink]);
+  }, [address, community.ens, community.team_url, onCopyInviteLink]);
   const onCommunityPress = useCallback(() => {
     navigation.navigate(ScreenID.CommunityDetailScreen);
   }, [navigation]);

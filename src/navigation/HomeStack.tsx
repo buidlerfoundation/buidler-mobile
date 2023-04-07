@@ -36,7 +36,7 @@ const HomeStack = () => {
   const handleOpenURL = useCallback(
     async (e: {url: string}) => {
       const {url} = e;
-      if (url.includes('invite.buidler.app')) {
+      if (url.includes('buidler.link')) {
         dispatch(acceptInvitation(url));
       }
     },

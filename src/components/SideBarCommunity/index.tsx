@@ -18,6 +18,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import {createLoadingSelector} from 'reducers/selectors';
 import {actionTypes} from 'actions/actionTypes';
+import useUserAddress from 'hook/useUserAddress';
 
 const teamLoadingSelector = createLoadingSelector([actionTypes.TEAM_PREFIX]);
 
@@ -25,6 +26,7 @@ const SideBarCommunity = () => {
   const {colors} = useThemeColor();
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
+  const address = useUserAddress();
   const teamLoading = useAppSelector(state => teamLoadingSelector(state));
   const reconnectSocket = useAppSelector(state => state.socket.community);
   const [inviteLink, setInviteLink] = useState('');
@@ -75,13 +77,14 @@ const SideBarCommunity = () => {
   const onInviteMember = useCallback(async () => {
     const link = `https://buidler.link/${
       selectedCommunity?.ens || selectedCommunity?.team_url
-    }`;
+    }?ref=${address}`;
     setInviteLink(link);
     onCloseMenu();
     Alert.alert('Invite Member', link, [
       {text: 'Copy link', onPress: onCopyInviteLink},
     ]);
   }, [
+    address,
     onCloseMenu,
     onCopyInviteLink,
     selectedCommunity?.ens,

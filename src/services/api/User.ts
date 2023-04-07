@@ -85,8 +85,14 @@ export const verifyOtp = (data: any) =>
 export const syncChannelKey = (data: any) =>
   ApiCaller.post('user/device/sync', data);
 
-export const acceptInvitation = (invitationId: string) =>
-  ApiCaller.post<Community>(`team/invitation/${invitationId}/accept`);
+export const acceptInvitation = (invitationId: string, ref?: string | null) =>
+  ApiCaller.post<Community>(
+    `team/invitation/${invitationId}/accept`,
+    undefined,
+    undefined,
+    undefined,
+    ref ? {ref} : undefined,
+  );
 
 export const removeDevice = (body: any) =>
   ApiCaller.delete('user/device', body);

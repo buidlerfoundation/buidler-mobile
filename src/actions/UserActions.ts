@@ -22,6 +22,7 @@ import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import {Channel} from 'models';
 import {getPrivateChannel} from 'helpers/ChannelHelper';
 import notifee from '@notifee/react-native';
+import url from 'url';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -513,22 +514,37 @@ export const actionFetchWalletBalance = async (dispatch: Dispatch) => {
 export const fetchWalletBalance = () => async (dispatch: Dispatch) =>
   actionFetchWalletBalance(dispatch);
 
-export const acceptInvitation = (url: string) => async (dispatch: Dispatch) => {
-  const lastIndex = url.lastIndexOf('/');
-  const invitationId = url.substring(lastIndex + 1);
-  const inviteRes = await api.acceptInvitation(invitationId);
-  if (inviteRes.success) {
-    Toast.show({
-      type: 'customSuccess',
-      props: {message: 'You have successfully joined new community.'},
-    });
-    dispatch({type: actionTypes.ACCEPT_TEAM_SUCCESS, payload: inviteRes.data});
-    await dispatch(setCurrentTeam(inviteRes.data));
-    NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
-      openDrawer: true,
-    });
-  }
-};
+export const acceptInvitation =
+  (link: string) => async (dispatch: Dispatch) => {
+    const urlObject = url.parse(link);
+    const communityUrl = urlObject.pathname.substring(1);
+    const invitationRef = urlObject.search.split('ref=')?.[1];
+    const profileRes = await api.getProfile(communityUrl);
+    const teamId = profileRes?.data?.profile?.team_id;
+    if (!teamId) {
+      return;
+    }
+    const invitationRes = await api.invitation(teamId);
+    const invitationUrl = invitationRes.data?.invitation_url;
+    const invitationId = invitationUrl?.substring(
+      invitationUrl?.lastIndexOf('/') + 1,
+    );
+    const inviteRes = await api.acceptInvitation(invitationId, invitationRef);
+    if (inviteRes.success) {
+      Toast.show({
+        type: 'customSuccess',
+        props: {message: 'You have successfully joined new community.'},
+      });
+      dispatch({
+        type: actionTypes.ACCEPT_TEAM_SUCCESS,
+        payload: inviteRes.data,
+      });
+      await dispatch(setCurrentTeam(inviteRes.data));
+      NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+        openDrawer: true,
+      });
+    }
+  };
 
 export const accessToHome =
   () => async (dispatch: Dispatch, getState: AppGetState) => {
