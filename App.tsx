@@ -13,6 +13,8 @@ import ToastContainer from 'components/ToastContainer';
 import SocketUtils from 'utils/SocketUtils';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import ModalProvider from 'components/ModalProvider';
+import {withWalletConnect} from '@walletconnect/react-native-dapp';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 LogBox.ignoreAllLogs();
 
@@ -81,4 +83,14 @@ const App = () => {
   );
 };
 
-export default App;
+export default withWalletConnect(App, {
+  clientMeta: {
+    description: 'Connect with WalletConnect',
+  },
+  redirectUrl: 'buidler://',
+  storageOptions: {
+    asyncStorage: AsyncStorage,
+  },
+});
+
+// export default App;

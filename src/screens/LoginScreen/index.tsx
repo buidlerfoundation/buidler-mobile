@@ -15,9 +15,11 @@ import web3auth, {web3authRedirectUrl} from 'services/connectors/web3auth';
 import {LOGIN_PROVIDER} from '@web3auth/react-native-sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
+import {useWalletConnect} from '@walletconnect/react-native-dapp';
 
 const LoginScreen = () => {
   const {colors} = useThemeColor();
+  const connector = useWalletConnect();
   const onCreatePress = useCallback(() => {
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'false');
@@ -28,6 +30,11 @@ const LoginScreen = () => {
     AsyncStorage.setItem(AsyncKey.isBackup, 'true');
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
   }, []);
+  const onWCPress = useCallback(() => {
+    if (!connector.connected) {
+      connector.connect();
+    }
+  }, [connector]);
   const onSocialConnectPress = useCallback(async (provider: string) => {
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'false');
@@ -91,6 +98,17 @@ const LoginScreen = () => {
         <Text style={[styles.text, {color: colors.text}]}>Import wallet</Text>
         <SVG.IconArrowImport fill={colors.text} />
       </Touchable>
+      <Touchable
+        style={[
+          styles.createButton,
+          {backgroundColor: colors.border, marginTop: 15},
+        ]}
+        onPress={onWCPress}
+        useReactNative>
+        <Text style={[styles.text, {color: colors.text}]}>Wallet connect</Text>
+        <SVG.IconWC />
+      </Touchable>
+
       <View
         style={{marginTop: 20, alignItems: 'center', justifyContent: 'center'}}>
         <Text style={[AppStyles.TextMed15, {color: colors.text}]}>
@@ -175,13 +193,14 @@ const styles = StyleSheet.create({
     marginTop: 25,
   },
   createButton: {
-    marginTop: 70,
+    marginTop: 30,
     borderRadius: 5,
-    height: 60,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'space-between',
     flexDirection: 'row',
-    paddingHorizontal: 20,
+    paddingLeft: 20,
+    paddingRight: 15,
   },
   importButton: {
     marginTop: 20,
