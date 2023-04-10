@@ -1,7 +1,7 @@
 import AppDimension from 'common/AppDimension';
 import Touchable from 'components/Touchable';
 import {Space} from 'models';
-import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo} from 'react';
 import {
   View,
   StyleSheet,
@@ -81,7 +81,6 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
     () => showBadge || community.team_background,
     [community.team_background, showBadge],
   );
-  const [inviteLink, setInviteLink] = useState('');
   const {colors} = useThemeColor();
   useEffect(() => {
     if (open && socketReconnect) {
@@ -92,11 +91,16 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
     const link = `https://buidler.link/${
       community.ens || community.team_url
     }?ref=${address}`;
-    setInviteLink(link);
     Alert.alert('Invite Member', link, [
-      {text: 'Copy link', onPress: onCopyInviteLink},
+      {
+        text: 'Copy link',
+        onPress: async () => {
+          await Clipboard.setString(link);
+          Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+        },
+      },
     ]);
-  }, [address, community.ens, community.team_url, onCopyInviteLink]);
+  }, [address, community.ens, community.team_url]);
   const onCommunityPress = useCallback(() => {
     navigation.navigate(ScreenID.CommunityDetailScreen);
   }, [navigation]);
@@ -221,10 +225,6 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
   const renderItemSeparate = useCallback(() => {
     return <View style={{height: 10}} />;
   }, []);
-  const onCopyInviteLink = useCallback(async () => {
-    await Clipboard.setString(inviteLink);
-    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
-  }, [inviteLink]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>

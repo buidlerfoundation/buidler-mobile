@@ -179,7 +179,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   useScrollToTop(
     useRef({
       scrollToTop: () => {
-        navigation?.toggleDrawer?.();
+        setOpenLeft(current => !current);
       },
     }),
   );

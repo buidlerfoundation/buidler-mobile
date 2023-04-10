@@ -29,7 +29,6 @@ const SideBarCommunity = () => {
   const address = useUserAddress();
   const teamLoading = useAppSelector(state => teamLoadingSelector(state));
   const reconnectSocket = useAppSelector(state => state.socket.community);
-  const [inviteLink, setInviteLink] = useState('');
   const [isOpenMenu, setOpenMenu] = useState(false);
   const [isOpenMenuConfirmLeave, setOpenMenuConfirmLeave] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(
@@ -68,25 +67,25 @@ const SideBarCommunity = () => {
     },
     [handleMenuPress, handlePress],
   );
-  const onCopyInviteLink = useCallback(async () => {
-    await Clipboard.setString(inviteLink);
-    Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
-  }, [inviteLink]);
   const onCreateCommunity = useCallback(() => {}, []);
   const onEditCommunity = useCallback(() => {}, []);
   const onInviteMember = useCallback(async () => {
     const link = `https://buidler.link/${
       selectedCommunity?.ens || selectedCommunity?.team_url
     }?ref=${address}`;
-    setInviteLink(link);
     onCloseMenu();
     Alert.alert('Invite Member', link, [
-      {text: 'Copy link', onPress: onCopyInviteLink},
+      {
+        text: 'Copy link',
+        onPress: async () => {
+          await Clipboard.setString(link);
+          Toast.show({type: 'customSuccess', props: {message: 'Copied'}});
+        },
+      },
     ]);
   }, [
     address,
     onCloseMenu,
-    onCopyInviteLink,
     selectedCommunity?.ens,
     selectedCommunity?.team_url,
   ]);
