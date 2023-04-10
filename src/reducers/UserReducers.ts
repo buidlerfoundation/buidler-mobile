@@ -49,6 +49,7 @@ interface UserReducerState {
   };
   apiTeamController?: AbortController | null;
   apiSpaceMemberController?: AbortController | null;
+  walletConnectURI?: string | null;
 }
 
 const defaultChannel: Channel = {
@@ -102,6 +103,7 @@ const initialState: UserReducerState = {
     },
   },
   apiTeamController: null,
+  walletConnectURI: null,
 };
 
 const userReducers: Reducer<UserReducerState, AnyAction> = (
@@ -130,6 +132,12 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     defaultChannel;
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.UPDATE_WC_URI: {
+      return {
+        ...state,
+        walletConnectURI: payload,
+      };
+    }
     case actionTypes.GET_TEAM_DIRECT_USER: {
       const {directChannelUsersRes} = payload;
       return {
@@ -597,6 +605,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     case actionTypes.LOGOUT: {
       return {
         ...initialState,
+        walletConnectURI: null,
         imgDomain,
         imgConfig,
         imgBucket,

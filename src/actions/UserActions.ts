@@ -23,6 +23,7 @@ import {Channel} from 'models';
 import {getPrivateChannel} from 'helpers/ChannelHelper';
 import notifee from '@notifee/react-native';
 import url from 'url';
+import {clearSession} from 'services/connectors/WalletConnect/UniversalProvider';
 
 export const getInitial: ActionCreator<any> =
   () => async (dispatch: Dispatch) => {
@@ -53,6 +54,7 @@ export const logout: ActionCreator<any> = () => async (dispatch: Dispatch) => {
   });
   await AsyncStorage.clear();
   SocketUtils.disconnect();
+  clearSession();
   dispatch({type: actionTypes.LOGOUT});
 };
 

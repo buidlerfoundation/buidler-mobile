@@ -406,6 +406,8 @@ PODS:
     - React-Core
   - react-native-create-thumbnail (1.6.3):
     - React-Core
+  - react-native-get-random-values (1.8.0):
+    - React-Core
   - react-native-golden-keystore (1.0.0):
     - React
     - TrezorCrypto (= 0.0.9)
@@ -567,7 +569,7 @@ PODS:
   - RNScreens (3.17.0):
     - React-Core
     - React-RCTImage
-  - RNSVG (13.8.0):
+  - RNSVG (13.9.0):
     - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -638,6 +640,7 @@ DEPENDENCIES:
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - "react-native-cameraroll (from `../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-create-thumbnail (from `../node_modules/react-native-create-thumbnail`)
+  - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-golden-keystore (from `../node_modules/react-native-golden-keystore`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
@@ -777,6 +780,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-camera-roll/camera-roll"
   react-native-create-thumbnail:
     :path: "../node_modules/react-native-create-thumbnail"
+  react-native-get-random-values:
+    :path: "../node_modules/react-native-get-random-values"
   react-native-golden-keystore:
     :path: "../node_modules/react-native-golden-keystore"
   react-native-image-picker:
@@ -916,6 +921,7 @@ SPEC CHECKSUMS:
   react-native-blur: 50c9feabacbc5f49b61337ebc32192c6be7ec3c3
   react-native-cameraroll: 88f4e62d9ecd0e1f253abe4f685474f2ea14bfa2
   react-native-create-thumbnail: 94e68f6cc050a870f830352d1a924c1e8d38b52f
+  react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-golden-keystore: 091b0fc11154a97d96ef938b3c22a21a396b4d7b
   react-native-image-picker: 4bc9ed38c8be255b515d8c88babbaf74973f91a8
   react-native-image-resizer: d9fb629a867335bdc13230ac2a58702bb8c8828f
@@ -953,7 +959,7 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: 1e3efeca9628ff9876ee7cdd9edec1b336913f8c
   RNReanimated: e4c680f31659db19820365dd3b8e04f6b21b9fb0
   RNScreens: 0df01424e9e0ed7827200d6ed1087ddd06c493f9
-  RNSVG: c1e76b81c76cdcd34b4e1188852892dc280eb902
+  RNSVG: 53c661b76829783cdaf9b7a57258f3d3b4c28315
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608

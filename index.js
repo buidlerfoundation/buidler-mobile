@@ -3,6 +3,7 @@
  */
 //
 import 'react-native-gesture-handler';
+import 'react-native-get-random-values';
 import '@ethersproject/shims';
 import './shim';
 import {AppRegistry} from 'react-native';

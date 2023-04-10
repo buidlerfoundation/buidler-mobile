@@ -1,3 +1,6 @@
+import 'react-native-get-random-values';
+import '@ethersproject/shims';
+
 import React, {useEffect, useRef} from 'react';
 import {StatusBar, View, LogBox, AppState, Text, TextInput} from 'react-native';
 import RootNavigator from 'navigation';
@@ -13,6 +16,7 @@ import ToastContainer from 'components/ToastContainer';
 import SocketUtils from 'utils/SocketUtils';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import ModalProvider from 'components/ModalProvider';
+import WalletConnectListener from 'components/WalletConnectListener';
 
 LogBox.ignoreAllLogs();
 
@@ -76,6 +80,7 @@ const App = () => {
         />
         <ImageViewer ref={ref => (NavigationServices.imageViewer = ref)} />
         <ToastContainer />
+        <WalletConnectListener />
       </View>
     </Provider>
   );

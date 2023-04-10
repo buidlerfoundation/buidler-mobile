@@ -5,6 +5,7 @@ import ScreenID from 'common/ScreenID';
 import LoginScreen from 'screens/LoginScreen';
 import CreatePasswordScreen from 'screens/CreatePasswordScreen';
 import ImportSeedPhraseScreen from 'screens/ImportSeedPhraseScreen';
+import WalletConnectListScreen from 'screens/WalletConnectListScreen';
 
 export type AuthStackParamsList = {
   LoginScreen: undefined;
@@ -29,6 +30,11 @@ const AuthStack = () => {
       <Stack.Screen
         name={ScreenID.ImportSeedPhraseScreen}
         component={ImportSeedPhraseScreen}
+      />
+      <Stack.Screen
+        name={ScreenID.WalletConnectListScreen}
+        component={WalletConnectListScreen}
+        options={{presentation: 'modal'}}
       />
     </Stack.Navigator>
   );

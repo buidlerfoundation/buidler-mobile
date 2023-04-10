@@ -7,4 +7,6 @@ declare module 'react-native-dotenv' {
   export const WEB3_AUTH_CLIENT_ID: string;
   export const PROFILE_BASE_URL: string;
   export const INFURA_API_KEY: string;
+  export const WC_PROJECT_ID: string;
+  export const WC_RELAY_URL: string;
 }
