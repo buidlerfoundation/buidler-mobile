@@ -517,8 +517,8 @@ export const fetchWalletBalance = () => async (dispatch: Dispatch) =>
 export const acceptInvitation =
   (link: string) => async (dispatch: Dispatch) => {
     const urlObject = url.parse(link);
-    const communityUrl = urlObject.pathname.substring(1);
-    const invitationRef = urlObject.search.split('ref=')?.[1];
+    const communityUrl = urlObject?.pathname?.substring(1);
+    const invitationRef = urlObject?.search?.split('ref=')?.[1];
     const profileRes = await api.getProfile(communityUrl);
     const teamId = profileRes?.data?.profile?.team_id;
     if (!teamId) {
