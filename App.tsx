@@ -85,7 +85,9 @@ const App = () => {
 
 export default withWalletConnect(App, {
   clientMeta: {
-    description: 'Connect with WalletConnect',
+    description: 'Connect with Buidler',
+    url: 'https://community.buidler.app',
+    name: 'Buidler',
   },
   redirectUrl: 'buidler://',
   storageOptions: {

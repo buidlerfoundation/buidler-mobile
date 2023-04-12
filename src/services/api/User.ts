@@ -1,3 +1,4 @@
+import {getDeviceCode} from 'helpers/GenerateUUID';
 import {
   BalanceApiData,
   Channel,
@@ -255,3 +256,8 @@ export const getNFTsDetails = (
 export const requestOTT = () => ApiCaller.get<string>('authentication/ott');
 
 export const getChains = () => ApiCaller.get<DAppChain[]>('chains');
+
+export const removeEncryptedKey = async () => {
+  const deviceCode = await getDeviceCode();
+  return ApiCaller.delete('user/device/encrypt', {device_code: deviceCode});
+};

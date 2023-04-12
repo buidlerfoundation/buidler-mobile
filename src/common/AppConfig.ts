@@ -187,3 +187,8 @@ export const DeletedUser: UserData = {
   user_name: 'Deleted User',
   avatar_url: '',
 };
+
+export const LoginType = {
+  WalletConnect: 'WalletConnect',
+  WalletImport: 'WalletImport',
+};

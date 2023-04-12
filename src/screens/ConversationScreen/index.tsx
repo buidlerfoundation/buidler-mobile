@@ -67,7 +67,7 @@ import MenuPinPost from 'components/MenuPinPost';
 import HapticUtils from 'utils/HapticUtils';
 import useCommunityId from 'hook/useCommunityId';
 import useChannelId from 'hook/useChannelId';
-import AppConfig from 'common/AppConfig';
+import AppConfig, {LoginType} from 'common/AppConfig';
 import AppStyles from 'common/AppStyles';
 import EmojiPicker from 'components/EmojiPicker';
 import {addReact, removeReact} from 'actions/ReactActions';
@@ -85,6 +85,7 @@ import {Drawer} from 'components/RNDrawerLayout';
 import ChannelScreen from 'screens/ChannelScreen';
 import DirectChannelScreen from 'screens/DirectChannelScreen';
 import DAppBrowserScreen from 'screens/DAppBrowserScreen';
+import UnSupportDM from 'components/UnSupportDM';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -98,6 +99,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   const socketConnecting = useAppSelector(
     state => state.socket.socketConnecting,
   );
+  const loginType = useAppSelector(state => state.configs.loginType);
   const socketConversation = useAppSelector(state => state.socket.conversation);
   const socketDirectConversation = useAppSelector(
     state => state.socket.directConversation,
@@ -835,6 +837,9 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     if (!currentChannel?.is_chat_deactivated) return true;
     return userRole === 'Owner' || userRole === 'Admin';
   }, [currentChannel?.is_chat_deactivated, userRole]);
+  if (direct && loginType === LoginType.WalletConnect) {
+    return <UnSupportDM />;
+  }
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
       <Drawer

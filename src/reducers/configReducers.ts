@@ -11,6 +11,7 @@ interface ConfigReducerState {
   openOTP: boolean;
   requestOtpCode: string;
   dataFromUrl: string | null;
+  loginType?: string;
 }
 
 const initialState: ConfigReducerState = {
@@ -22,6 +23,7 @@ const initialState: ConfigReducerState = {
   openOTP: false,
   requestOtpCode: '',
   dataFromUrl: '',
+  loginType: '',
 };
 
 const configReducer: Reducer<ConfigReducerState, AnyAction> = (
@@ -30,6 +32,12 @@ const configReducer: Reducer<ConfigReducerState, AnyAction> = (
 ) => {
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.UPDATE_LOGIN_TYPE: {
+      return {
+        ...state,
+        loginType: payload,
+      };
+    }
     case actionTypes.TOGGLE_OTP: {
       return {
         ...state,

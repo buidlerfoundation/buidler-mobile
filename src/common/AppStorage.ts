@@ -1,3 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import RNGoldenKeystore from 'react-native-golden-keystore';
+
 const PrefixKey = 'Buidler_AsyncKey';
 
 export const AsyncKey = {
@@ -18,4 +21,24 @@ export const AsyncKey = {
   lastSyncChannelKey: `${PrefixKey}_last_sync_channel_key`,
   spaceToggleKey: `${PrefixKey}_space_toggle_key`,
   isBackup: `${PrefixKey}_is_backup`,
+  loginType: `${PrefixKey}_login_type`,
+  generatedPrivateKey: `${PrefixKey}_generated_private_key`,
+};
+
+export const GeneratedPrivateKey = async () => {
+  const current = await AsyncStorage.getItem(AsyncKey.generatedPrivateKey);
+  if (current) {
+    return current;
+  }
+  const res = await RNGoldenKeystore.generateMnemonic();
+  const privateKey = (
+    await RNGoldenKeystore.createHDKeyPair(
+      res,
+      '',
+      RNGoldenKeystore.CoinType.ETH.path,
+      0,
+    )
+  ).private_key;
+  await AsyncStorage.setItem(AsyncKey.generatedPrivateKey, privateKey);
+  return privateKey;
 };

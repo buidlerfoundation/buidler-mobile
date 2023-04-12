@@ -2,7 +2,7 @@ import AppDimension from 'common/AppDimension';
 import Fonts from 'common/Fonts';
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import React, {memo, useCallback, useEffect} from 'react';
+import React, {memo, useCallback, useEffect, useState} from 'react';
 import {View, StyleSheet, Text, Linking} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
@@ -16,10 +16,38 @@ import {LOGIN_PROVIDER} from '@web3auth/react-native-sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AsyncKey} from 'common/AppStorage';
 import {useWalletConnect} from '@walletconnect/react-native-dapp';
+import api from 'services/api';
+import {ethers, utils} from 'ethers';
+import ModalBottom from 'components/ModalBottom';
+import WalletConnectSignMessage from 'components/WalletConnectSignMessage';
+import useAppDispatch from 'hook/useAppDispatch';
+import {accessAppWithWalletConnect} from 'actions/UserActions';
 
 const LoginScreen = () => {
-  const {colors} = useThemeColor();
+  const dispatch = useAppDispatch();
   const connector = useWalletConnect();
+  const [connectData, setConnectData] = useState({
+    address: '',
+    signMessage: '',
+  });
+  const [openSignMessage, setOpenSignMessage] = useState(false);
+  const onCloseSignMessage = useCallback(() => {
+    setOpenSignMessage(false);
+  }, []);
+  const onSignMessage = useCallback(async () => {
+    const params = [
+      utils.hexlify(ethers.utils.toUtf8Bytes(connectData.signMessage)),
+      connectData.address,
+    ];
+    const signature = await connector.signPersonalMessage(params);
+    dispatch(accessAppWithWalletConnect(connectData.signMessage, signature));
+    setOpenSignMessage(false);
+  }, [connectData.address, connectData.signMessage, connector, dispatch]);
+  const {colors} = useThemeColor();
+  useEffect(() => {
+    connector?.killSession?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const onCreatePress = useCallback(() => {
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'false');
@@ -30,9 +58,19 @@ const LoginScreen = () => {
     AsyncStorage.setItem(AsyncKey.isBackup, 'true');
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
   }, []);
-  const onWCPress = useCallback(() => {
+
+  const onWCPress = useCallback(async () => {
+    let address = '';
     if (!connector.connected) {
-      connector.connect();
+      const res = await connector.connect();
+      address = res.accounts?.[0];
+    } else {
+      address = connector.accounts?.[0];
+    }
+    const nonceRes = await api.requestNonceWithAddress(address);
+    if (nonceRes.success) {
+      setConnectData({address, signMessage: nonceRes.data.message});
+      setOpenSignMessage(true);
     }
   }, [connector]);
   const onSocialConnectPress = useCallback(async (provider: string) => {
@@ -153,6 +191,16 @@ const LoginScreen = () => {
         </Text>
         .
       </Text>
+      <ModalBottom
+        isVisible={openSignMessage}
+        onSwipeComplete={onCloseSignMessage}
+        onBackdropPress={onCloseSignMessage}>
+        <WalletConnectSignMessage
+          message={connectData.signMessage}
+          onCancelAction={onCloseSignMessage}
+          onConfirmAction={onSignMessage}
+        />
+      </ModalBottom>
     </View>
   );
 };

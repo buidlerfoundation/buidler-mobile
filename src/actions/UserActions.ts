@@ -4,7 +4,7 @@ import api from 'services/api';
 import SocketUtils from '../utils/SocketUtils';
 import {actionTypes} from './actionTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {AsyncKey} from 'common/AppStorage';
+import {AsyncKey, GeneratedPrivateKey} from 'common/AppStorage';
 import messaging from '@react-native-firebase/messaging';
 import {Platform} from 'react-native';
 import {encryptString, getIV} from 'utils/DataCrypto';
@@ -17,7 +17,7 @@ import {AppGetState} from 'store';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import Toast from 'react-native-toast-message';
 import {getDeviceCode} from 'helpers/GenerateUUID';
-import {UserRole} from 'common/AppConfig';
+import {LoginType, UserRole} from 'common/AppConfig';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import {Channel} from 'models';
 import {getPrivateChannel} from 'helpers/ChannelHelper';
@@ -417,8 +417,42 @@ export const setCurrentTeam =
   (team: any, channelId?: string) => async (dispatch: Dispatch, getState) =>
     actionSetCurrentTeam(team, dispatch, channelId, getState);
 
+export const accessAppWithWalletConnect =
+  (message: string, signature: string) => async (dispatch: Dispatch) => {
+    dispatch({type: actionTypes.ACCESS_APP_REQUEST});
+    try {
+      const res = await api.verifyNonce(message, signature);
+      if (res.statusCode === 200) {
+        const privateKey = await GeneratedPrivateKey();
+        dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: privateKey});
+        await AsyncStorage.setItem(AsyncKey.accessTokenKey, res.token);
+        await AsyncStorage.setItem(AsyncKey.refreshTokenKey, res.refresh_token);
+        await AsyncStorage.setItem(
+          AsyncKey.tokenExpire,
+          res.token_expire_at?.toString(),
+        );
+        await AsyncStorage.setItem(
+          AsyncKey.refreshTokenExpire,
+          res.refresh_token_expire_at?.toString(),
+        );
+        AsyncStorage.setItem(AsyncKey.loginType, LoginType.WalletConnect);
+        dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
+        dispatch({
+          type: actionTypes.UPDATE_LOGIN_TYPE,
+          payload: LoginType.WalletConnect,
+        });
+        NavigationServices.reset(ScreenID.SplashScreen);
+      } else {
+        dispatch({type: actionTypes.ACCESS_APP_FAIL, message: res.message});
+      }
+    } catch (error) {
+      dispatch({type: actionTypes.ACCESS_APP_FAIL, message: error});
+    }
+  };
+
 export const accessApp =
-  (seed: string, password: string) => async (dispatch: Dispatch) => {
+  (seed: string, password: string) =>
+  async (dispatch: Dispatch, getState: AppGetState) => {
     dispatch({type: actionTypes.ACCESS_APP_REQUEST});
     try {
       const iv = await getIV();
@@ -475,7 +509,17 @@ export const accessApp =
             AsyncKey.refreshTokenExpire,
             res.refresh_token_expire_at?.toString(),
           );
+          if (getState().configs.loginType === LoginType.WalletConnect) {
+            await api.removeEncryptedKey();
+            AsyncStorage.setItem(AsyncKey.isBackup, 'true');
+            SocketUtils.disconnect();
+          }
+          AsyncStorage.setItem(AsyncKey.loginType, LoginType.WalletImport);
           dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
+          dispatch({
+            type: actionTypes.UPDATE_LOGIN_TYPE,
+            payload: LoginType.WalletImport,
+          });
           NavigationServices.reset(ScreenID.SplashScreen);
         } else {
           err = res.message;

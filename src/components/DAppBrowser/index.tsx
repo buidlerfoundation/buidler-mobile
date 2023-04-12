@@ -22,6 +22,7 @@ import {INFURA_API_KEY} from 'react-native-dotenv';
 import {DAppChain} from 'models';
 import ConfirmView from './ConfirmView';
 import {injectedJSProviders, normalizeErrorMessage} from 'helpers/DAppHelper';
+import {useWalletConnect} from '@walletconnect/react-native-dapp';
 
 type DAppBrowserProps = {
   url?: string;
@@ -30,6 +31,7 @@ type DAppBrowserProps = {
 };
 
 const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
+  const connector = useWalletConnect();
   const [openModalConfirm, setOpenModalConfirm] = useState(false);
   const [currentChain, setCurrentChain] = useState<DAppChain | null>(null);
   const supportedChains = useAppSelector(state => state.user.dAppChains);
@@ -217,8 +219,29 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
         webviewRef.current.injectJavaScript(callbackRequestAccount);
         break;
       case 'signTransaction':
-        if (privateKey) {
-          setActionLoading(true);
+        setActionLoading(true);
+        const transactionParameters = {
+          gas: object.gas,
+          to: object.to,
+          from: object.from,
+          value: object.value,
+          data: object.data,
+          gasPrice: object.gasPrice || gasPriceHex,
+        };
+        if (connector.connected) {
+          try {
+            const res = await connector.sendTransaction(transactionParameters);
+            const callback = `window.${network}.sendResponse(${id}, "${res}")`;
+            webviewRef.current.injectJavaScript(callback);
+          } catch (e) {
+            const callback = `window.${network}.sendError(${id}, "Network error")`;
+            webviewRef.current.injectJavaScript(callback);
+            Toast.show({
+              type: 'customError',
+              props: {message: normalizeErrorMessage(e.message)},
+            });
+          }
+        } else if (privateKey) {
           let provider: providers.InfuraProvider | providers.JsonRpcProvider =
             null;
           if (currentChain) {
@@ -230,14 +253,6 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
             provider = new providers.InfuraProvider('mainnet', INFURA_API_KEY);
           }
           const signer = new Wallet(privateKey, provider);
-          const transactionParameters = {
-            gasLimit: object.gas,
-            to: object.to,
-            from: object.from,
-            value: object.value,
-            data: object.data,
-            gasPrice: object.gasPrice || gasPriceHex,
-          };
           try {
             const res = await signer.sendTransaction(transactionParameters);
             const callback = `window.${network}.sendResponse(${id}, "${res.hash}")`;
@@ -250,12 +265,20 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
               props: {message: normalizeErrorMessage(e.message)},
             });
           }
-          setActionLoading(false);
         }
+        setActionLoading(false);
         break;
       case 'signPersonalMessage':
-        if (privateKey) {
-          const message = utils.toUtf8String(object.data);
+        const message = utils.toUtf8String(object.data);
+        if (connector.connected) {
+          const params = [
+            utils.hexlify(ethers.utils.toUtf8Bytes(message)),
+            address,
+          ];
+          const signature = await connector.signPersonalMessage(params);
+          const callback = `window.${network}.sendResponse(${id}, "${signature}")`;
+          webviewRef.current.injectJavaScript(callback);
+        } else if (privateKey) {
           const msgHash = utils.hashMessage(message);
           const msgHashBytes = utils.arrayify(msgHash);
           const signingKey = new utils.SigningKey(`0x${privateKey}`);
@@ -291,6 +314,7 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
     address,
     webviewRef,
     privateKey,
+    connector,
     getChain,
     currentChain,
     gasPriceHex,

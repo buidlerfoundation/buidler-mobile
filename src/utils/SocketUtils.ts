@@ -23,7 +23,7 @@ import {normalizeUserName} from 'helpers/MessageHelper';
 import {getCurrentChannel} from 'helpers/StoreHelper';
 import {getCollectibles} from 'actions/CollectibleActions';
 import {getDeviceCode} from 'helpers/GenerateUUID';
-import {AsyncKey} from 'common/AppStorage';
+import {AsyncKey, GeneratedPrivateKey} from 'common/AppStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID, {StackID} from 'common/ScreenID';
@@ -33,6 +33,7 @@ import {Platform} from 'react-native';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import {API_URL} from 'react-native-dotenv';
 import Toast from 'react-native-toast-message';
+import {LoginType} from 'common/AppConfig';
 
 const toggleSocketReconnect = () => {
   const {currentRouter} = NavigationServices;
@@ -63,15 +64,25 @@ class SocketUtil {
     if (this.socket?.connected || this.connecting) return;
     this.connecting = true;
     const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
+    const loginType = await AsyncStorage.getItem(AsyncKey.loginType);
     const deviceCode = await getDeviceCode();
     const deviceToken = await messaging().getToken();
+    const query = {
+      token: accessToken,
+      device_code: deviceCode,
+      device_token: deviceToken,
+      platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
+    };
+    if (loginType === LoginType.WalletConnect) {
+      const generatedPrivateKey = await GeneratedPrivateKey();
+      const publicKey = utils.computePublicKey(
+        `0x${generatedPrivateKey}`,
+        true,
+      );
+      query.encrypt_message_key = publicKey;
+    }
     this.socket = io(`${API_URL}`, {
-      query: {
-        token: accessToken,
-        device_code: deviceCode,
-        device_token: deviceToken,
-        platform: Platform.OS === 'ios' ? 'iOS' : 'Android',
-      },
+      query,
       transports: ['websocket'],
       upgrade: false,
       reconnectionAttempts: 5,

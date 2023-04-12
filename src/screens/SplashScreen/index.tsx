@@ -3,21 +3,20 @@ import React, {memo, useCallback, useEffect, useState} from 'react';
 import {View, ActivityIndicator, Alert, Linking} from 'react-native';
 import NavigationServices from 'services/NavigationServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {AsyncKey} from 'common/AppStorage';
+import {AsyncKey, GeneratedPrivateKey} from 'common/AppStorage';
 import PushNotificationHelper from 'helpers/PushNotificationHelper';
 import {uniqChannelPrivateKey} from 'helpers/ChannelHelper';
 
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessToHome, findUser, getInitial} from 'actions/UserActions';
-import useAppSelector from 'hook/useAppSelector';
 import {setRealHeight} from 'actions/configActions';
 import {actionTypes} from 'actions/actionTypes';
+import store from 'store';
+import {LoginType} from 'common/AppConfig';
 
 const SplashScreen = () => {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
-  const privateKey = useAppSelector(state => state.configs.privateKey);
-
   const handleLinking = useCallback(async () => {
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl?.includes('invite.buidler.app')) {
@@ -30,7 +29,14 @@ const SplashScreen = () => {
     try {
       await uniqChannelPrivateKey();
       const accessToken = await AsyncStorage.getItem(AsyncKey.accessTokenKey);
+      const loginType = await AsyncStorage.getItem(AsyncKey.loginType);
+      let privateKey = store.getState().configs?.privateKey;
+      if (loginType === LoginType.WalletConnect) {
+        privateKey = await GeneratedPrivateKey();
+        dispatch({type: actionTypes.SET_PRIVATE_KEY, payload: privateKey});
+      }
       if (accessToken) {
+        dispatch({type: actionTypes.UPDATE_LOGIN_TYPE, payload: loginType});
         await PushNotificationHelper.init();
         await Promise.all([dispatch(getInitial()), dispatch(findUser())]);
         if (privateKey) {
@@ -52,7 +58,7 @@ const SplashScreen = () => {
       }
     }
     setLoading(false);
-  }, [dispatch, privateKey]);
+  }, [dispatch]);
   useEffect(() => {
     handleLinking();
   }, [handleLinking]);

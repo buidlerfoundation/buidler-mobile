@@ -1,6 +1,6 @@
 import KeyboardLayout from 'components/KeyboardLayout';
 import NavigationHeader from 'components/NavigationHeader';
-import React, {memo, useCallback, useState} from 'react';
+import React, {memo, useCallback, useMemo, useState} from 'react';
 import {View, StyleSheet, TextInput, Text} from 'react-native';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
@@ -12,8 +12,11 @@ import ScreenID from 'common/ScreenID';
 import useThemeColor from 'hook/useThemeColor';
 import {isValidPrivateKey} from 'helpers/SeedHelper';
 import Toast from 'react-native-toast-message';
+import {useRoute} from '@react-navigation/native';
+import AppDimension from 'common/AppDimension';
 
 const ImportSeedPhraseScreen = () => {
+  const route = useRoute();
   const {colors, dark} = useThemeColor();
   const [seed, setSeed] = useState('');
   const fetchCopiedText = useCallback(async () => {
@@ -30,8 +33,14 @@ const ImportSeedPhraseScreen = () => {
     Toast.show({type: 'customError', props: {message: 'Invalid seed phrase'}});
   }, [seed]);
   const onChangeSeed = useCallback(text => setSeed(text), []);
+  const extraPaddingBottom = useMemo(() => {
+    if (route.params?.importFromWC) {
+      return -AppDimension.bottomTabbarHeight - AppDimension.extraBottom;
+    }
+    return 0;
+  }, [route.params?.importFromWC]);
   return (
-    <KeyboardLayout>
+    <KeyboardLayout extraPaddingBottom={extraPaddingBottom}>
       <View style={styles.container}>
         <NavigationHeader title="Add seed phrase" />
         <View style={{flex: 1}}>
