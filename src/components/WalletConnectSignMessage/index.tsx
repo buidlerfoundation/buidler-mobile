@@ -1,22 +1,24 @@
+import {useWalletConnect} from '@walletconnect/react-native-dapp';
 import AppDimension from 'common/AppDimension';
 import AppStyles from 'common/AppStyles';
+import SVG from 'common/SVG';
+import AnimatedDot from 'components/AnimatedDot';
 import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import React, {memo} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 
 type WalletConnectSignMessageProps = {
-  message: string;
   onConfirmAction: () => void;
   onCancelAction: () => void;
 };
 
 const WalletConnectSignMessage = ({
-  message,
   onConfirmAction,
   onCancelAction,
 }: WalletConnectSignMessageProps) => {
   const {colors} = useThemeColor();
+  const connector = useWalletConnect();
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <Text
@@ -24,29 +26,23 @@ const WalletConnectSignMessage = ({
           AppStyles.TextBold20,
           {color: colors.text, alignSelf: 'center'},
         ]}>
-        Message Signing Request
+        Waiting for confirmation
       </Text>
-      <Text
-        style={[AppStyles.TextMed15, {color: colors.subtext, marginTop: 20}]}>
-        Message
-      </Text>
-      <View
-        style={[
-          styles.messageWrap,
-          {
-            backgroundColor: colors.activeBackgroundLight,
-            borderColor: colors.border,
-          },
-        ]}>
-        <Text style={[AppStyles.TextMed12, {color: colors.subtext}]}>
-          {message}
+      <View style={{alignSelf: 'center', marginVertical: 40}}>
+        <AnimatedDot />
+      </View>
+      <View style={{alignSelf: 'center', alignItems: 'center'}}>
+        <SVG.LogoWC />
+        <Text
+          style={[AppStyles.TextSemi16, {color: colors.text, marginTop: 5}]}>
+          with {connector.peerMeta?.name}
         </Text>
       </View>
       <Touchable
         style={[styles.button, {backgroundColor: colors.blue, marginTop: 40}]}
         onPress={onConfirmAction}>
         <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-          Confirm
+          Open {connector.peerMeta?.name}
         </Text>
       </Touchable>
       <Touchable
@@ -62,18 +58,11 @@ const WalletConnectSignMessage = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 15,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: AppDimension.extraBottom + 12,
-    minHeight: 350,
-  },
-  messageWrap: {
-    marginTop: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderWidth: 1,
     borderRadius: 5,
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: AppDimension.extraBottom + 20,
+    minHeight: 350,
   },
   button: {
     height: 50,

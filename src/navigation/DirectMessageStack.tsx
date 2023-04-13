@@ -3,8 +3,6 @@ import ScreenID from 'common/ScreenID';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import DirectMessageScreen from 'screens/DirectMessageScreen';
-import CreatePasswordScreen from 'screens/CreatePasswordScreen';
-import ImportSeedPhraseScreen from 'screens/ImportSeedPhraseScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,16 +29,6 @@ const DirectMessageStack = () => {
         name={ScreenID.DirectMessageScreen}
         component={DirectMessageScreen}
         initialParams={route.params}
-      />
-      <Stack.Screen
-        name={ScreenID.CreatePasswordScreen}
-        component={CreatePasswordScreen}
-        initialParams={{importFromWC: true}}
-      />
-      <Stack.Screen
-        name={ScreenID.ImportSeedPhraseScreen}
-        component={ImportSeedPhraseScreen}
-        initialParams={{importFromWC: true}}
       />
     </Stack.Navigator>
   );

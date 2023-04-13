@@ -1,6 +1,6 @@
 import KeyboardLayout from 'components/KeyboardLayout';
 import NavigationHeader from 'components/NavigationHeader';
-import React, {memo, useCallback, useMemo, useState} from 'react';
+import React, {memo, useCallback, useState} from 'react';
 import {View, StyleSheet, TextInput, Text} from 'react-native';
 import Fonts from 'common/Fonts';
 import Touchable from 'components/Touchable';
@@ -10,15 +10,14 @@ import RNGoldenKeystore from 'react-native-golden-keystore';
 import NavigationServices from 'services/NavigationServices';
 import ScreenID from 'common/ScreenID';
 import useThemeColor from 'hook/useThemeColor';
-import {isValidPrivateKey} from 'helpers/SeedHelper';
+import {addressFromSeed, isValidPrivateKey} from 'helpers/SeedHelper';
 import Toast from 'react-native-toast-message';
-import {useRoute} from '@react-navigation/native';
-import AppDimension from 'common/AppDimension';
+import useUserAddress from 'hook/useUserAddress';
 
 const ImportSeedPhraseScreen = () => {
-  const route = useRoute();
   const {colors, dark} = useThemeColor();
   const [seed, setSeed] = useState('');
+  const currentAddress = useUserAddress();
   const fetchCopiedText = useCallback(async () => {
     const text = await Clipboard.getString();
     setSeed(text.toLowerCase());
@@ -26,21 +25,20 @@ const ImportSeedPhraseScreen = () => {
   const onNextPress = useCallback(async () => {
     const isValid = await RNGoldenKeystore.mnemonicIsValid(seed);
     if (isValid === '1' || isValidPrivateKey(seed)) {
+      const address = await addressFromSeed(seed);
+      if (currentAddress && address !== currentAddress) {
+        Toast.show({type: 'customError', props: {message: 'Invalid wallet'}});
+        return;
+      }
       NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {seed});
       return;
     }
 
     Toast.show({type: 'customError', props: {message: 'Invalid seed phrase'}});
-  }, [seed]);
+  }, [seed, currentAddress]);
   const onChangeSeed = useCallback(text => setSeed(text), []);
-  const extraPaddingBottom = useMemo(() => {
-    if (route.params?.importFromWC) {
-      return -AppDimension.bottomTabbarHeight - AppDimension.extraBottom;
-    }
-    return 0;
-  }, [route.params?.importFromWC]);
   return (
-    <KeyboardLayout extraPaddingBottom={extraPaddingBottom}>
+    <KeyboardLayout>
       <View style={styles.container}>
         <NavigationHeader title="Add seed phrase" />
         <View style={{flex: 1}}>

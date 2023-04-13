@@ -22,6 +22,7 @@ import ModalBottom from 'components/ModalBottom';
 import WalletConnectSignMessage from 'components/WalletConnectSignMessage';
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessAppWithWalletConnect} from 'actions/UserActions';
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
 const LoginScreen = () => {
   const dispatch = useAppDispatch();
@@ -34,13 +35,24 @@ const LoginScreen = () => {
   const onCloseSignMessage = useCallback(() => {
     setOpenSignMessage(false);
   }, []);
+  const handleCancel = useCallback(() => {
+    connector.killSession();
+    onCloseSignMessage();
+  }, [connector, onCloseSignMessage]);
   const onSignMessage = useCallback(async () => {
-    const params = [
-      utils.hexlify(ethers.utils.toUtf8Bytes(connectData.signMessage)),
-      connectData.address,
-    ];
-    const signature = await connector.signPersonalMessage(params);
-    dispatch(accessAppWithWalletConnect(connectData.signMessage, signature));
+    try {
+      const params = [
+        utils.hexlify(ethers.utils.toUtf8Bytes(connectData.signMessage)),
+        connectData.address,
+      ];
+      const signature = await connector.signPersonalMessage(params);
+      dispatch(accessAppWithWalletConnect(connectData.signMessage, signature));
+    } catch (e) {
+      Toast.show({
+        type: 'customError',
+        props: {message: e.message},
+      });
+    }
     setOpenSignMessage(false);
   }, [connectData.address, connectData.signMessage, connector, dispatch]);
   const {colors} = useThemeColor();
@@ -197,7 +209,7 @@ const LoginScreen = () => {
         onBackdropPress={onCloseSignMessage}>
         <WalletConnectSignMessage
           message={connectData.signMessage}
-          onCancelAction={onCloseSignMessage}
+          onCancelAction={handleCancel}
           onConfirmAction={onSignMessage}
         />
       </ModalBottom>

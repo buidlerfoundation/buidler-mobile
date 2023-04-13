@@ -34,7 +34,6 @@ import SwitchButton from 'components/SwitchButton';
 import AppStyles from 'common/AppStyles';
 import {removeCredentials, storeCredentials} from 'services/keychain';
 import {Toast} from 'react-native-toast-message/lib/src/Toast';
-import AppDimension from 'common/AppDimension';
 
 type Props = NativeStackScreenProps<
   AuthStackParamsList,
@@ -108,14 +107,8 @@ const CreatePasswordScreen = ({route}: Props) => {
       setShowBiometricType(res.biometryType);
     });
   }, []);
-  const extraPaddingBottom = useMemo(() => {
-    if (route.params?.importFromWC) {
-      return -AppDimension.bottomTabbarHeight - AppDimension.extraBottom;
-    }
-    return 0;
-  }, [route.params?.importFromWC]);
   return (
-    <KeyboardLayout extraPaddingBottom={extraPaddingBottom}>
+    <KeyboardLayout>
       <View style={styles.container}>
         <NavigationHeader title="Create password" />
         <View style={styles.body}>

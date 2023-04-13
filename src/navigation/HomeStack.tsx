@@ -20,6 +20,9 @@ import DirectEmpty from 'screens/DirectEmpty';
 import UnseenBadge from 'components/UnseenBadge';
 import useUnseenDirect from 'hook/useUnseenDirect';
 import UserStack from './UserStack';
+import useUnseenCommunity from 'hook/useUnseenCommunity';
+import {LoginType} from 'common/AppConfig';
+import UnSupportDM from 'components/UnSupportDM';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,9 +33,11 @@ const HomeStack = () => {
   const userData = useAppSelector(state => state.user.userData);
   const {colors} = useThemeColor();
   const openOTP = useAppSelector(state => state.configs.openOTP);
+  const loginType = useAppSelector(state => state.configs.loginType);
   const requestOtpCode = useAppSelector(state => state.configs.requestOtpCode);
   const directChannels = useAppSelector(state => state.user.directChannel);
   const isUnseenDirect = useUnseenDirect();
+  const isUnseenCommunity = useUnseenCommunity();
   const handleOpenURL = useCallback(
     async (e: {url: string}) => {
       const {url} = e;
@@ -70,9 +75,22 @@ const HomeStack = () => {
   const header = useCallback(() => null, []);
   const tabBarIconHome = useCallback(
     ({color}: {focused: boolean; color: string}) => {
-      return <SVG.IconTabHome fill={color} />;
+      return (
+        <View>
+          <SVG.IconTabHome fill={color} />
+          {isUnseenCommunity && (
+            <UnseenBadge
+              style={{
+                position: 'absolute',
+                top: 3,
+                right: -1,
+              }}
+            />
+          )}
+        </View>
+      );
     },
-    [],
+    [isUnseenCommunity],
   );
   const tabBarIconChat = useCallback(
     ({color}: {focused: boolean; color: string}) => {
@@ -148,7 +166,6 @@ const HomeStack = () => {
         backgroundColor: colors.background,
         borderTopColor: colors.border,
       },
-      tabBarShowLabel: false,
     }),
     [colors.background, colors.border, colors.subtext, colors.text, header],
   );
@@ -166,6 +183,7 @@ const HomeStack = () => {
               : colors.background,
           backgroundColor: colors.background,
         },
+        title: 'Channels',
       };
     },
     [colors.background, colors.border, tabBarIconChat],
@@ -184,6 +202,7 @@ const HomeStack = () => {
               : colors.background,
           backgroundColor: colors.backgroundHeader,
         },
+        title: 'DMs',
       };
     },
     [
@@ -203,7 +222,7 @@ const HomeStack = () => {
         }
         screenOptions={screenOptions}>
         <Tab.Screen
-          options={{tabBarIcon: tabBarIconHome}}
+          options={{tabBarIcon: tabBarIconHome, title: 'Community'}}
           name={ScreenID.CommunityScreen}
           component={SideBarCommunity}
         />
@@ -217,7 +236,11 @@ const HomeStack = () => {
           options={directOptions}
           name={StackID.DirectMessageStack}
           component={
-            directChannels.length > 0 ? DirectMessageStack : DirectEmpty
+            loginType === LoginType.WalletConnect
+              ? UnSupportDM
+              : directChannels.length > 0
+              ? DirectMessageStack
+              : DirectEmpty
           }
           initialParams={route.params}
         />
@@ -225,6 +248,7 @@ const HomeStack = () => {
           options={{
             tabBarIcon: tabBarIconNotification,
             header: () => <NotificationHeader />,
+            title: 'Notifications',
           }}
           name={ScreenID.NotificationScreen}
           component={NotificationScreen}
@@ -232,6 +256,7 @@ const HomeStack = () => {
         <Tab.Screen
           options={{
             tabBarIcon: tabBarIconProfile,
+            title: 'Profile',
           }}
           name={StackID.UserStack}
           component={UserStack}

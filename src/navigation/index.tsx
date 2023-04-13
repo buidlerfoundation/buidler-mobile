@@ -22,6 +22,8 @@ import BackupScreen from 'screens/BackupScreen';
 import BackupDataScreen from 'screens/BackupDataScreen';
 import NFTDetailScreen from 'screens/NFTDetailScreen';
 import DAppBrowserScreen from 'screens/DAppBrowserScreen';
+import CreatePasswordScreen from 'screens/CreatePasswordScreen';
+import ImportSeedPhraseScreen from 'screens/ImportSeedPhraseScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -87,6 +89,14 @@ const RootNavigator = () => {
           <Stack.Screen
             name={ScreenID.DAPPBrowserScreen}
             component={DAppBrowserScreen}
+          />
+          <Stack.Screen
+            name={ScreenID.CreatePasswordScreen}
+            component={CreatePasswordScreen}
+          />
+          <Stack.Screen
+            name={ScreenID.ImportSeedPhraseScreen}
+            component={ImportSeedPhraseScreen}
           />
         </Stack.Group>
         <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
