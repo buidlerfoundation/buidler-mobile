@@ -61,7 +61,7 @@ const UnlockScreen = () => {
           await dispatch(accessToHome());
         }
       } catch (error) {
-        alert('Invalid Password');
+        alert('Something went wrong, please try again later.');
       }
     },
     [dispatch, user.user_id],
