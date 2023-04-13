@@ -43,6 +43,9 @@ const HomeStack = () => {
     [dispatch],
   );
   useEffect(() => {
+    Linking.getInitialURL().then(url => handleOpenURL({url}));
+  }, [handleOpenURL]);
+  useEffect(() => {
     Linking.removeAllListeners('url');
     Linking.addEventListener('url', handleOpenURL);
   }, [handleOpenURL]);
