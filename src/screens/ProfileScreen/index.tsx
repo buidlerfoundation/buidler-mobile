@@ -30,6 +30,8 @@ import {
 } from 'services/keychain';
 import {biometricAuthenticate, isBiometricAvailable} from 'services/biometric';
 import SwitchButton from 'components/SwitchButton';
+import useAppSelector from 'hook/useAppSelector';
+import {LoginType} from 'common/AppConfig';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -43,6 +45,7 @@ const ProfileScreen = () => {
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const userData = useUserData();
+  const loginType = useAppSelector(state => state.configs.loginType);
   useEffect(() => {
     getCredentials().then(res => {
       if (res) {
@@ -158,7 +161,7 @@ const ProfileScreen = () => {
             <SVG.IconArrowRight fill={colors.subtext} />
           </Touchable>
         )}
-        {biometricType && (
+        {loginType !== LoginType.WalletConnect && biometricType && (
           <Touchable
             style={[
               styles.actionItem,
