@@ -72,6 +72,8 @@ const RenderHTML = ({
           });
         } else if (postId) {
           navigation.navigate(ScreenID.PinPostDetailScreen, {postId});
+        } else if (channelId) {
+          dispatch(setCurrentChannel({channel_id: channelId}));
         }
         return;
       } else if (sameDAppURL(href, currentChannel?.dapp_integration_url)) {
