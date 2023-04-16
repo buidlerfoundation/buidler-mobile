@@ -52,7 +52,7 @@ const ImportSeedPhraseScreen = () => {
             ]}>
             <TextInput
               style={[styles.input, {color: colors.text}]}
-              placeholder="Your seed phrase"
+              placeholder="Your seed phrase or private key"
               placeholderTextColor={colors.subtext}
               keyboardAppearance={dark ? 'dark' : 'light'}
               autoFocus
