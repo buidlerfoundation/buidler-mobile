@@ -387,6 +387,7 @@ const MessageInput = ({
       const sender = teamUserData?.find?.(
         u => u.user_id === messageReply?.sender_id,
       );
+      if (!sender) return null;
       return (
         <View style={[styles.replyContainer, {borderColor: colors.border}]}>
           <View
