@@ -57,13 +57,14 @@ export const normalizeMessageTextPlain = (
     .replace(/\*(.*)\*/gim, '$1')
     .replace(/!\[(.*?)\]\((.*?)\)/gim, '$1')
     .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
-    .replace(/\n$/gim, '<br />')
+    .replace(/<div>|<\/div>/gim, '')
     .replace(/\u2028/g, '');
 
   if (messageReply || withoutHtml) {
     res = res.replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2');
   } else {
     res = res
+      .replace(/\n$/gim, '<br />')
       .replace(
         /((https?|ftps?):\/\/[^"<\s]+)(?![^<>]*>|[^"]*?<\/a)/gim,
         "<a class='text-ellipsis' style='white-space: pre-line;' href='$1'>$1</a>",

@@ -44,7 +44,11 @@ import MenuConfirmDeleteMessage from 'components/MenuConfirmDeleteMessage';
 const taskMoreSelector = createLoadMoreSelector([actionTypes.TASK_PREFIX]);
 const taskLoadingSelector = createLoadingSelector([actionTypes.TASK_PREFIX]);
 
-const PinPostScreen = () => {
+type PinPostScreenProps = {
+  onBack: () => void;
+};
+
+const PinPostScreen = ({onBack}: PinPostScreenProps) => {
   const dispatch = useAppDispatch();
   const pinPosts = usePinPosts();
   const navigation = useNavigation();
@@ -71,7 +75,6 @@ const PinPostScreen = () => {
   const onCloseMenuPinPost = useCallback(() => {
     setOpenMenuPinPost(false);
   }, []);
-  const onBack = useCallback(() => navigation.goBack(), [navigation]);
   useFocusEffect(
     useCallback(() => {
       if (reconnectSocket && !loadingTask && currentChannelId) {
@@ -262,7 +265,7 @@ const PinPostScreen = () => {
     [closeModalEmoji, onCloseMenuPinPost, onReactPress],
   );
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: colors.background}]}>
       <View style={styles.header}>
         <Touchable onPress={onBack}>
           <SVG.IconArrowBack fill={colors.text} />

@@ -24,6 +24,7 @@ import NFTDetailScreen from 'screens/NFTDetailScreen';
 import DAppBrowserScreen from 'screens/DAppBrowserScreen';
 import CreatePasswordScreen from 'screens/CreatePasswordScreen';
 import ImportSeedPhraseScreen from 'screens/ImportSeedPhraseScreen';
+import LoadingScreen from 'screens/LoadingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,12 +52,8 @@ const RootNavigator = () => {
             animation: 'none',
           }}>
           <Stack.Screen name={ScreenID.SplashScreen} component={SplashScreen} />
-        </Stack.Group>
-        <Stack.Group
-          screenOptions={{
-            animation: 'none',
-          }}>
           <Stack.Screen name={ScreenID.UnlockScreen} component={UnlockScreen} />
+          <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
         </Stack.Group>
         <Stack.Group
           screenOptions={{
@@ -99,8 +96,8 @@ const RootNavigator = () => {
             component={ImportSeedPhraseScreen}
           />
         </Stack.Group>
-        <Stack.Screen name={StackID.HomeStack} component={HomeStack} />
         <Stack.Screen name={StackID.AuthStack} component={AuthStack} />
+        <Stack.Screen name={ScreenID.LoadingScreen} component={LoadingScreen} />
         <Stack.Screen
           name={ScreenID.AllPhotoScreen}
           component={AllPhotoScreen}

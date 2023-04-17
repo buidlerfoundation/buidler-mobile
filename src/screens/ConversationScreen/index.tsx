@@ -85,6 +85,7 @@ import {Drawer} from 'components/RNDrawerLayout';
 import ChannelScreen from 'screens/ChannelScreen';
 import DirectChannelScreen from 'screens/DirectChannelScreen';
 import DAppBrowserScreen from 'screens/DAppBrowserScreen';
+import PinPostScreen from 'screens/PinPostScreen';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -176,6 +177,9 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       />
     );
   }, [currentChannel?.dapp_integration_url, onCloseRight, openRight]);
+  const renderPinPost = useCallback(() => {
+    return <PinPostScreen onBack={onCloseRight} />;
+  }, [onCloseRight]);
   useScrollToTop(
     useRef({
       scrollToTop: () => {
@@ -203,11 +207,13 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     }
   }, [currentTeamId, navigation, onOpenLeft, route.params?.openDrawer]);
   useEffect(() => {
-    if (openLeft) {
+    if (openLeft || openRight) {
       Keyboard.dismiss();
     }
-    navigation.setParams({drawerStatus: openLeft ? 'open' : 'close'});
-  }, [navigation, openLeft]);
+    navigation.setParams({
+      drawerStatus: openLeft || openRight ? 'open' : 'close',
+    });
+  }, [navigation, openLeft, openRight]);
   const handleGetLatestMessage = useCallback(async () => {
     if (currentChannelId) {
       await dispatch(
@@ -850,7 +856,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         drawerStyle={{width: width - 80}}
         renderDrawerContent={renderChannel}
         renderDrawerContentRight={
-          currentChannel?.dapp_integration_url ? renderBrowser : undefined
+          currentChannel?.dapp_integration_url ? renderBrowser : renderPinPost
         }
         overlayStyle={{backgroundColor: '#19191980'}}>
         <View

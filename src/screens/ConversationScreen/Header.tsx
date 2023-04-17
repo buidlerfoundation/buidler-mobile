@@ -1,6 +1,4 @@
-import {useNavigation} from '@react-navigation/native';
 import AppDimension from 'common/AppDimension';
-import ScreenID from 'common/ScreenID';
 import SVG from 'common/SVG';
 import ChannelTitle from 'components/ChannelTitle';
 import DirectChannelTitle from 'components/DirectChannelTitle';
@@ -23,10 +21,6 @@ const Header = ({
   showDAppBrowser,
 }: HeaderProps) => {
   const {colors} = useThemeColor();
-  const navigation = useNavigation();
-  const onPinPress = useCallback(() => {
-    navigation.navigate(ScreenID.PinPostScreen);
-  }, [navigation]);
   const renderRight = useCallback(() => {
     if (direct) return null;
     if (showDAppBrowser) {
@@ -37,11 +31,11 @@ const Header = ({
       );
     }
     return (
-      <Touchable onPress={onPinPress}>
+      <Touchable onPress={onOpenRight}>
         <SVG.IconPin fill={colors.text} />
       </Touchable>
     );
-  }, [colors.text, direct, onOpenRight, onPinPress, showDAppBrowser]);
+  }, [colors.text, direct, onOpenRight, showDAppBrowser]);
   return (
     <View style={styles.container}>
       <Touchable onPress={onOpen}>

@@ -15,7 +15,6 @@ import {actionTypes} from 'actions/actionTypes';
 import KeyboardLayout from 'components/KeyboardLayout';
 import Touchable from 'components/Touchable';
 import useAppSelector from 'hook/useAppSelector';
-import {accessToHome} from 'actions/UserActions';
 import {useCallback} from 'react';
 import useThemeColor from 'hook/useThemeColor';
 import AvatarView from 'components/AvatarView';
@@ -27,6 +26,7 @@ import {initialSpaceToggle} from 'actions/SideBarActions';
 import {biometricAuthenticate, isBiometricAvailable} from 'services/biometric';
 import {getCredentials} from 'services/keychain';
 import AppStyles from 'common/AppStyles';
+import NavigationServices from 'services/NavigationServices';
 
 const UnlockScreen = () => {
   const inputRef = useRef<TextInput>();
@@ -58,7 +58,7 @@ const UnlockScreen = () => {
             payload: privateKey,
           });
           dispatch(initialSpaceToggle());
-          await dispatch(accessToHome());
+          NavigationServices.replace(ScreenID.LoadingScreen);
         }
       } catch (error) {
         alert('Something went wrong, please try again later.');
