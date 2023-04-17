@@ -856,7 +856,11 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         drawerStyle={{width: width - 80}}
         renderDrawerContent={renderChannel}
         renderDrawerContentRight={
-          currentChannel?.dapp_integration_url ? renderBrowser : renderPinPost
+          direct
+            ? undefined
+            : currentChannel?.dapp_integration_url
+            ? renderBrowser
+            : renderPinPost
         }
         overlayStyle={{backgroundColor: '#19191980'}}>
         <View
