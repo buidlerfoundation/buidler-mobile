@@ -513,8 +513,12 @@ export const accessApp =
             await api.removeEncryptedKey();
             AsyncStorage.setItem(AsyncKey.isBackup, 'true');
             SocketUtils.disconnect();
+            NavigationServices.reset(ScreenID.SplashScreen);
           }
-          AsyncStorage.setItem(AsyncKey.loginType, LoginType.WalletImport);
+          await AsyncStorage.setItem(
+            AsyncKey.loginType,
+            LoginType.WalletImport,
+          );
           dispatch({type: actionTypes.ACCESS_APP_SUCCESS, payload: res});
           dispatch({
             type: actionTypes.UPDATE_LOGIN_TYPE,
@@ -653,6 +657,30 @@ export const accessToHome =
       PushNotificationHelper.reset();
     }
     NavigationServices.replace(StackID.HomeStack, params);
+  };
+
+export const getUserDetail =
+  (userId: string, teamId: string) => async (dispatch: Dispatch) => {
+    try {
+      dispatch({
+        type: actionTypes.FETCH_USER_REQUEST,
+        payload: {userId, teamId},
+      });
+      const res = await api.getUserDetail(userId, teamId);
+      if (res.success) {
+        dispatch({
+          type: actionTypes.FETCH_USER_SUCCESS,
+          payload: {user: res.data, teamId},
+        });
+      } else {
+        dispatch({
+          type: actionTypes.FETCH_USER_FAIL,
+          payload: {userId, teamId},
+        });
+      }
+    } catch (error) {
+      dispatch({type: actionTypes.FETCH_USER_FAIL, payload: {userId, teamId}});
+    }
   };
 
 export const leaveTeam = (teamId: string) => async (dispatch: Dispatch) => {

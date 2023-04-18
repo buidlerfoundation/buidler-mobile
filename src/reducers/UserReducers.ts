@@ -11,6 +11,7 @@ import {
 } from 'models';
 import {AnyAction, Reducer} from 'redux';
 import {uniqBy} from 'lodash';
+import AppConfig from 'common/AppConfig';
 
 interface MemberRoleData {
   data: Array<UserData>;
@@ -130,6 +131,92 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     defaultChannel;
   const {type, payload} = action;
   switch (type) {
+    case actionTypes.FETCH_USER_REQUEST: {
+      const {userId, teamId} = payload;
+      const isDirect = teamId === AppConfig.directCommunityId;
+      if (isDirect) {
+        return {
+          ...state,
+          directChannelUsers: [
+            ...state.directChannelUsers,
+            {user_id: userId, fetching: true},
+          ],
+        };
+      }
+      return {
+        ...state,
+        teamUserMap: {
+          ...state.teamUserMap,
+          [teamId]: {
+            data: [
+              ...(state.teamUserMap?.[teamId]?.data || []),
+              {user_id: userId, fetching: true},
+            ],
+            total: state.teamUserMap?.[teamId]?.total || 0,
+          },
+        },
+      };
+    }
+    case actionTypes.FETCH_USER_FAIL: {
+      const {userId, teamId} = payload;
+      const isDirect = teamId === AppConfig.directCommunityId;
+      if (isDirect) {
+        return {
+          ...state,
+          directChannelUsers: state.directChannelUsers.map(el => {
+            if (el.user_id === userId) {
+              return {user_id: userId, fetching: false};
+            }
+            return el;
+          }),
+        };
+      }
+      return {
+        ...state,
+        teamUserMap: {
+          ...state.teamUserMap,
+          [teamId]: {
+            data: (state.teamUserMap?.[teamId]?.data || []).map(el => {
+              if (el.user_id === userId) {
+                return {user_id: userId, fetching: true};
+              }
+              return el;
+            }),
+            total: state.teamUserMap?.[teamId]?.total || 0,
+          },
+        },
+      };
+    }
+    case actionTypes.FETCH_USER_SUCCESS: {
+      const {user, teamId} = payload;
+      const isDirect = teamId === AppConfig.directCommunityId;
+      if (isDirect) {
+        return {
+          ...state,
+          directChannelUsers: state.directChannelUsers.map(el => {
+            if (el.user_id === user.user_id) {
+              return user;
+            }
+            return el;
+          }),
+        };
+      }
+      return {
+        ...state,
+        teamUserMap: {
+          ...state.teamUserMap,
+          [teamId]: {
+            data: (state.teamUserMap?.[teamId]?.data || []).map(el => {
+              if (el.user_id === user.user_id) {
+                return user;
+              }
+              return el;
+            }),
+            total: (state.teamUserMap?.[teamId]?.total || 0) + 1,
+          },
+        },
+      };
+    }
     case actionTypes.GET_TEAM_DIRECT_USER: {
       const {directChannelUsersRes} = payload;
       return {

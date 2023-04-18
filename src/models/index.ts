@@ -79,6 +79,7 @@ export interface UserData {
   is_blocked?: boolean;
   total_unread_notifications?: number;
   direct_channel_id?: string;
+  fetching?: boolean;
 }
 
 export interface Channel {
