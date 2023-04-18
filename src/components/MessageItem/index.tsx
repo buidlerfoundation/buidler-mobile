@@ -241,8 +241,9 @@ const MessageItem = ({
     [dispatch, item.message_id, reactData, userData?.user_id],
   );
   const onUserPress = useCallback(() => {
-    navigation.navigate(ScreenID.UserScreen, {userId: item.sender_id, direct});
-  }, [direct, item.sender_id, navigation]);
+    if (!sender.user_id) return;
+    navigation.navigate(ScreenID.UserScreen, {userId: sender.user_id, direct});
+  }, [direct, navigation, sender.user_id]);
   if (!sender) return null;
   return (
     <View
