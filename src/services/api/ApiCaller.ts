@@ -27,10 +27,10 @@ const sleep = (timeout = 1000) => {
   });
 };
 
-const handleError = (message: string, apiData: any) => {
+const handleError = (message: string, apiData: any, withoutError?: boolean) => {
   const {uri, fetchOptions} = apiData;
   const compareUri = `${fetchOptions.method}-${uri}`;
-  if (!ignoreMessageErrorApis.includes(compareUri)) {
+  if (!ignoreMessageErrorApis.includes(compareUri) && !withoutError) {
     Toast.show({
       type: 'customError',
       props: {message},
@@ -58,6 +58,7 @@ const fetchWithRetry = (
   fetchOptions: any = {},
   retries = 0,
   serviceBaseUrl?: string,
+  withoutError?: boolean,
 ) => {
   let apiUrl = '';
   if (serviceBaseUrl) {
@@ -93,12 +94,17 @@ const fetchWithRetry = (
                   fetchOptions,
                   retries - 1,
                   serviceBaseUrl,
+                  withoutError,
                 );
               } else {
                 NavigationServices.reset(ScreenID.SplashScreen);
               }
             } else {
-              handleError(data.message || data, {uri, fetchOptions});
+              handleError(
+                data.message || data,
+                {uri, fetchOptions},
+                withoutError,
+              );
             }
           }
           if (data.data) {
@@ -143,6 +149,7 @@ async function requestAPI<T = any>(
   serviceBaseUrl?: string,
   controller?: AbortController,
   h?: any,
+  withoutError?: boolean,
 ): Promise<BaseDataApi<T>> {
   if (GlobalVariable.sessionExpired) {
     return {
@@ -245,12 +252,27 @@ async function requestAPI<T = any>(
     fetchOptions,
     uri === 'user/refresh' ? 5 : 0,
     serviceBaseUrl,
+    withoutError,
   );
 }
 
 const ApiCaller = {
-  get<T>(url: string, baseUrl?: string, controller?: AbortController, h?: any) {
-    return requestAPI<T>(METHOD_GET, url, undefined, baseUrl, controller, h);
+  get<T>(
+    url: string,
+    baseUrl?: string,
+    controller?: AbortController,
+    h?: any,
+    withoutError?: boolean,
+  ) {
+    return requestAPI<T>(
+      METHOD_GET,
+      url,
+      undefined,
+      baseUrl,
+      controller,
+      h,
+      withoutError,
+    );
   },
 
   post<T>(

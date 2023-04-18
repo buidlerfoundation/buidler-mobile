@@ -635,6 +635,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     }
     case actionTypes.USER_ONLINE: {
       const {user_id} = payload;
+      if (!currentTeamId) return state;
       return {
         ...state,
         teamUserMap: {

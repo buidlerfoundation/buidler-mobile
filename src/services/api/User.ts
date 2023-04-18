@@ -122,8 +122,18 @@ export const fetchNFTCollection = () =>
     'user/nft-collection/group',
   );
 
-export const getUserDetail = (userId: string, teamId: string) =>
-  ApiCaller.get<UserData>(`user/${userId}/team/${teamId}`);
+export const getUserDetail = (
+  userId: string,
+  teamId: string,
+  withoutError?: boolean,
+) =>
+  ApiCaller.get<UserData>(
+    `user/${userId}/team/${teamId}`,
+    undefined,
+    undefined,
+    undefined,
+    withoutError,
+  );
 
 export const importToken = (address: string) =>
   ApiCaller.post<Token>(`user/balance/${address}`);

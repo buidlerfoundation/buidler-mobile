@@ -15,7 +15,7 @@ function useUserById(userId?: string, direct?: boolean) {
     if (userId) {
       const existed = users.find(el => el.user_id === userId);
       if (!existed) {
-        dispatch(getUserDetail(userId, communityId));
+        dispatch(getUserDetail(userId, communityId, true));
       } else if (!existed.fetching && !existed.user_name) {
         setUser(DeletedUser);
       } else if (existed.user_name) {
@@ -23,7 +23,10 @@ function useUserById(userId?: string, direct?: boolean) {
       }
     }
   }, [communityId, dispatch, userId, users]);
-  return React.useMemo(() => user, [user]);
+  return React.useMemo(() => {
+    if (user?.is_deleted) return DeletedUser;
+    return user;
+  }, [user]);
 }
 
 export default useUserById;
