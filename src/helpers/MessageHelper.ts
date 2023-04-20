@@ -138,6 +138,7 @@ export const normalizeMessageText = (
       /(<@)(.*?)(-)(.*?)(>)/gim,
       '<a href="https://community.buidler.app/channels/user/$4" class="mention-string">@$2</a>',
     )
+    .replace(/<div>|<\/div>/gim, '')
     .replace(/\u2028/g, '');
 
   if (wrapParagraph) {
