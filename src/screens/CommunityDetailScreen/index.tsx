@@ -1,4 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
+import {actionTypes} from 'actions/actionTypes';
 import {getMemberData, leaveTeam} from 'actions/UserActions';
 import AppConfig, {UserRole} from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
@@ -9,6 +10,7 @@ import MemberItem from 'components/MemberItem';
 import MenuCommunity from 'components/MenuCommunity';
 import MenuConfirmLeaveCommunity from 'components/MenuConfirmLeaveCommunity';
 import ModalBottom from 'components/ModalBottom';
+import Spinner from 'components/Spinner';
 import Touchable from 'components/Touchable';
 import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
@@ -17,10 +19,16 @@ import useThemeColor from 'hook/useThemeColor';
 import {UserRoleType} from 'models';
 import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {View, StyleSheet, Text, FlatList} from 'react-native';
+import {createLoadingSelector} from 'reducers/selectors';
+
+const loadingSelector = createLoadingSelector([
+  actionTypes.CURRENT_TEAM_PREFIX,
+]);
 
 const CommunityDetailScreen = () => {
   const dispatch = useAppDispatch();
   const memberData = useAppSelector(state => state.user.memberData);
+  const loadingTeam = useAppSelector(state => loadingSelector(state));
   const [activeRole, setActiveRole] = useState<UserRoleType>(UserRole.Member);
   const navigation = useNavigation();
   const {colors} = useThemeColor();
@@ -54,8 +62,10 @@ const CommunityDetailScreen = () => {
     );
   }, [activeRole, community.team_id, dispatch, memberData]);
   useEffect(() => {
-    fetchAllMemberData();
-  }, [fetchAllMemberData]);
+    if (!loadingTeam) {
+      fetchAllMemberData();
+    }
+  }, [fetchAllMemberData, loadingTeam]);
   const members = useMemo(
     () => memberData[activeRole].data,
     [activeRole, memberData],
@@ -96,24 +106,28 @@ const CommunityDetailScreen = () => {
           </Touchable>
         )}
       </View>
-      <FlatList
-        data={members}
-        ListHeaderComponent={
-          <CommunityDetailHeader
-            activeRole={activeRole}
-            setActiveRole={setActiveRole}
-          />
-        }
-        keyExtractor={item => item.user_id}
-        numColumns={3}
-        renderItem={renderItem}
-        ItemSeparatorComponent={() => <View style={{height: 25}} />}
-        ListFooterComponent={
-          <View style={{height: 15 + AppDimension.extraBottom}} />
-        }
-        onEndReachedThreshold={0.5}
-        onEndReached={onMoreMemberData}
-      />
+      {!loadingTeam ? (
+        <FlatList
+          data={members}
+          ListHeaderComponent={
+            <CommunityDetailHeader
+              activeRole={activeRole}
+              setActiveRole={setActiveRole}
+            />
+          }
+          keyExtractor={item => item.user_id}
+          numColumns={3}
+          renderItem={renderItem}
+          ItemSeparatorComponent={() => <View style={{height: 25}} />}
+          ListFooterComponent={
+            <View style={{height: 15 + AppDimension.extraBottom}} />
+          }
+          onEndReachedThreshold={0.5}
+          onEndReached={onMoreMemberData}
+        />
+      ) : (
+        <Spinner size="small" />
+      )}
       <ModalBottom
         isVisible={isOpenMenu}
         onSwipeComplete={onCloseMenu}
