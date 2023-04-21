@@ -67,18 +67,22 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
     [colors.subtext, colors.text, item.is_read],
   );
   const parsedText = useMemo(() => {
-    return item?.content.split(/(\s)/g).map((el, index) => {
-      if (/(<@)(.*?)(-)(.*?)(>)/.test(el)) {
-        return (
-          <Text
-            style={[{color: item.is_read ? colors.subtext : colors.mention}]}
-            key={`${el}-${index}`}>
-            {el.replace(/(<@)(.*?)(-)(.*?)(>)/, '@$2')}
-          </Text>
-        );
-      }
-      return <Text key={`${el}-${index}`}>{el}</Text>;
-    });
+    return item?.content
+      .replace(/(<a.*>)(#.*)(<\/a>)/gim, '$2')
+      .replace(/<div>|<\/div>/gim, '')
+      .split(/(\s)/g)
+      .map((el, index) => {
+        if (/(<@)(.*?)(-)(.*?)(>)/.test(el)) {
+          return (
+            <Text
+              style={[{color: item.is_read ? colors.subtext : colors.mention}]}
+              key={`${el}-${index}`}>
+              {el.replace(/(<@)(.*?)(-)(.*?)(>)/, '@$2')}
+            </Text>
+          );
+        }
+        return <Text key={`${el}-${index}`}>{el}</Text>;
+      });
   }, [colors.mention, colors.subtext, item?.content, item.is_read]);
   const onLayout = useCallback(
     (event: LayoutChangeEvent) => {

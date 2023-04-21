@@ -36,7 +36,7 @@ type ReplyMessageProps = {
   replyMessageId?: string;
   onPressMessageReply?: (replyMessage: MessageData) => void;
   embeds?: boolean;
-  direct?: boolean;
+  replier?: UserData;
 };
 
 const ReplyMessage = memo(
@@ -45,11 +45,9 @@ const ReplyMessage = memo(
     replyMessageId,
     onPressMessageReply,
     embeds,
-    direct,
+    replier,
   }: ReplyMessageProps) => {
-    const teamId = useCommunityId(direct);
     const {colors} = useThemeColor();
-    const replier = useUserById(replyMessage?.sender_id, teamId);
     const isReplyExisted = useMemo(
       () => !!replyMessage && !!replier,
       [replier, replyMessage],
@@ -209,6 +207,7 @@ const MessageItem = ({
   const reactData = useAppSelector(state => state.reactReducer.reactData);
   const userData = useUserData();
   const sender = useUserById(item.sender_id, direct);
+  const replier = useUserById(item?.conversation_data?.sender_id, direct);
   const highlightMessageId = useAppSelector(
     state => state.message.highlightMessageId,
   );
@@ -258,7 +257,7 @@ const MessageItem = ({
         replyMessageId={item.reply_message_id}
         onPressMessageReply={onPressMessageReply}
         embeds={embeds}
-        direct={direct}
+        replier={replier}
       />
       <Touchable
         style={[styles.container]}
