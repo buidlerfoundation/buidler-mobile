@@ -68,8 +68,7 @@ const NotificationItem = ({item, onLongPress}: NotificationItemProps) => {
   );
   const parsedText = useMemo(() => {
     return item?.content
-      .replace(/(<a.*>)(#.*)(<\/a>)/gim, '$2')
-      .replace(/<div>|<\/div>/gim, '')
+      .replace(/(<a.*?>)(#.*?)(<\/a>)/gim, '$2')
       .split(/(\s)/g)
       .map((el, index) => {
         if (/(<@)(.*?)(-)(.*?)(>)/.test(el)) {
