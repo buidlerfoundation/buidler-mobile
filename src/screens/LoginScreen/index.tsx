@@ -145,6 +145,9 @@ const LoginScreen = () => {
   const onLoginWithTwitter = useCallback(() => {
     onSocialConnectPress(LOGIN_PROVIDER.TWITTER);
   }, [onSocialConnectPress]);
+  const onLoginWithGithub = useCallback(() => {
+    onSocialConnectPress(LOGIN_PROVIDER.GITHUB);
+  }, [onSocialConnectPress]);
   const onTermPress = useCallback(() => {
     Linking.openURL(`${buidlerHomeURL}/terms`);
   }, []);
@@ -245,6 +248,7 @@ const LoginScreen = () => {
           onLoginFacebook={onLoginWithFacebook}
           onLoginGoogle={onLoginWithGoogle}
           onLoginTwitter={onLoginWithTwitter}
+          onLoginGithub={onLoginWithGithub}
         />
       </ModalBottom>
     </View>
