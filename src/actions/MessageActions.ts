@@ -202,7 +202,9 @@ export const getMessages: ActionCreator<any> =
         ? {directConversation: false}
         : {conversation: false};
     const {apiController, messageData} = getState().message;
-    apiController?.abort?.();
+    if (channelType !== 'Direct') {
+      apiController?.abort?.();
+    }
     if (!before) {
       const messages = messageData?.[channelId]?.data;
       SocketUtils.emitSeenChannel(messages?.[0]?.message_id, channelId);

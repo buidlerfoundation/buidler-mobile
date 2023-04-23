@@ -19,7 +19,7 @@ const SplashScreen = () => {
   const [loading, setLoading] = useState(false);
   const handleLinking = useCallback(async () => {
     const deepLinkUrl = await Linking.getInitialURL();
-    if (deepLinkUrl?.includes('invite.buidler.app')) {
+    if (deepLinkUrl?.includes('buidler.link')) {
       dispatch({type: actionTypes.SET_DATA_FROM_URL, payload: deepLinkUrl});
     }
   }, [dispatch]);

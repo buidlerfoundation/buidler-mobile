@@ -111,12 +111,13 @@ const UserScreen = () => {
     startDM();
   }, [startDM]);
   const onDirectMessage = useCallback(async () => {
+    if (isMine) return;
     if (directUser?.direct_channel_id) {
       startDM(directUser?.direct_channel_id);
     } else {
       setOpenConfirmDM(true);
     }
-  }, [directUser?.direct_channel_id, startDM]);
+  }, [directUser?.direct_channel_id, isMine, startDM]);
   const onSendCrypto = useCallback(() => {
     Toast.show({type: 'customInfo', props: {message: 'Coming soon!'}});
   }, []);
@@ -147,6 +148,12 @@ const UserScreen = () => {
       });
     }
   }, [onBack, route.params?.userId, error]);
+  useEffect(() => {
+    if (userProfile?.user_id && route.params?.startDM) {
+      onDirectMessage();
+      navigation.setParams({userId: userProfile?.user_id});
+    }
+  }, [navigation, onDirectMessage, route.params?.startDM, userProfile]);
   const onBlock = useCallback(() => {
     api.blockUser(userProfile?.user_id);
     setUserProfile(current => ({...current, is_blocked: true}));

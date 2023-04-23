@@ -48,9 +48,6 @@ const HomeStack = () => {
     [dispatch],
   );
   useEffect(() => {
-    Linking.getInitialURL().then(url => handleOpenURL({url}));
-  }, [handleOpenURL]);
-  useEffect(() => {
     Linking.removeAllListeners('url');
     Linking.addEventListener('url', handleOpenURL);
   }, [handleOpenURL]);
@@ -72,6 +69,14 @@ const HomeStack = () => {
       NavigationServices.pushToScreen(ScreenID.EnterOTPScreen);
     }
   }, [openOTP, requestOtpCode]);
+  useEffect(() => {
+    if (route.params?.userId) {
+      navigation.navigate(ScreenID.UserScreen, {
+        userId: route.params?.userId,
+        startDM: route.params?.startDM,
+      });
+    }
+  }, [navigation, route.params?.startDM, route.params?.userId]);
   const header = useCallback(() => null, []);
   const tabBarIconHome = useCallback(
     ({color}: {focused: boolean; color: string}) => {

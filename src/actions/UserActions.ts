@@ -577,6 +577,14 @@ export const acceptInvitation =
     const invitationRef = urlObject?.search?.split('ref=')?.[1];
     const profileRes = await api.getProfile(communityUrl);
     const teamId = profileRes?.data?.profile?.team_id;
+    const userId = profileRes?.data?.profile?.user_id;
+    if (userId) {
+      NavigationServices.pushToScreen(ScreenID.UserScreen, {
+        userId,
+        startDM: true,
+      });
+      return;
+    }
     if (!teamId) {
       return;
     }
@@ -606,13 +614,28 @@ export const accessToHome =
   () => async (dispatch: Dispatch, getState: AppGetState) => {
     const dataFromUrl = getState()?.configs?.dataFromUrl;
     let invitationCommunity = null;
+    let userId = null;
     if (dataFromUrl) {
       dispatch({type: actionTypes.SET_DATA_FROM_URL, payload: ''});
-      const lastIndex = dataFromUrl.lastIndexOf('/');
-      const invitationId = dataFromUrl.substring(lastIndex + 1);
-      const inviteRes = await api.acceptInvitation(invitationId);
-      if (inviteRes.success) {
-        invitationCommunity = inviteRes.data;
+      const urlObject = url.parse(dataFromUrl);
+      const communityUrl = urlObject?.pathname?.substring(1);
+      const invitationRef = urlObject?.search?.split('ref=')?.[1];
+      const profileRes = await api.getProfile(communityUrl);
+      const teamId = profileRes?.data?.profile?.team_id;
+      userId = profileRes?.data?.profile?.user_id;
+      if (teamId) {
+        const invitationRes = await api.invitation(teamId);
+        const invitationUrl = invitationRes.data?.invitation_url;
+        const invitationId = invitationUrl?.substring(
+          invitationUrl?.lastIndexOf('/') + 1,
+        );
+        const inviteRes = await api.acceptInvitation(
+          invitationId,
+          invitationRef,
+        );
+        if (inviteRes.success) {
+          invitationCommunity = inviteRes.data;
+        }
       }
     }
     await dispatch(findTeamAndChannel());
@@ -663,6 +686,10 @@ export const accessToHome =
         );
       }
       PushNotificationHelper.reset();
+    }
+    if (userId) {
+      params.userId = userId;
+      params.startDM = true;
     }
     NavigationServices.replace(StackID.HomeStack, params);
   };
