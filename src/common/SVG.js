@@ -89,6 +89,8 @@ import IconLogoApple from '../assets/images/ic_logo_apple.svg';
 import IconLogoDiscord from '../assets/images/ic_logo_discord.svg';
 import IconLogoFacebook from '../assets/images/ic_logo_facebook.svg';
 import IconLogoGoogle from '../assets/images/ic_logo_google.svg';
+import IconLogoTwitter from '../assets/images/ic_logo_twitter.svg';
+import IconLogoGithub from '../assets/images/ic_logo_github.svg';
 import IconMenuCopy from '../assets/images/ic_menu_copy.svg';
 import IconEye from '../assets/images/ic_eye.svg';
 import IconOpenSea from '../assets/images/ic_opensea.svg';
@@ -198,4 +200,6 @@ export default {
   IconReload,
   IconWC,
   LogoWC,
+  IconLogoTwitter,
+  IconLogoGithub,
 };

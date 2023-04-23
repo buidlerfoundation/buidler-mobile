@@ -30,7 +30,10 @@ const ImportSeedPhraseScreen = () => {
         Toast.show({type: 'customError', props: {message: 'Invalid wallet'}});
         return;
       }
-      NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {seed});
+      NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {
+        seed,
+        method: 'Import',
+      });
       return;
     }
 

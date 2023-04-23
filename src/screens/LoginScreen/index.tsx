@@ -23,6 +23,9 @@ import WalletConnectSignMessage from 'components/WalletConnectSignMessage';
 import useAppDispatch from 'hook/useAppDispatch';
 import {accessAppWithWalletConnect} from 'actions/UserActions';
 import {Toast} from 'react-native-toast-message/lib/src/Toast';
+import MenuLoginSeed from 'components/MenuLoginSeed';
+import MenuLoginSocial from 'components/MenuLoginSocial';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 const LoginScreen = () => {
   const dispatch = useAppDispatch();
@@ -32,6 +35,8 @@ const LoginScreen = () => {
     signMessage: '',
   });
   const [openSignMessage, setOpenSignMessage] = useState(false);
+  const [openLoginSeed, setOpenLoginSeed] = useState(false);
+  const [openLoginSocial, setOpenLoginSocial] = useState(false);
   const onCloseSignMessage = useCallback(() => {
     setOpenSignMessage(false);
   }, []);
@@ -61,18 +66,32 @@ const LoginScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onCreatePress = useCallback(() => {
+    MixpanelAnalytics.tracking('Login Method Selected', {
+      category: 'Login',
+      method: 'Create',
+    });
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'false');
+    toggleLoginSeed();
     NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen);
-  }, []);
+  }, [toggleLoginSeed]);
   const onImportPress = useCallback(() => {
+    MixpanelAnalytics.tracking('Login Method Selected', {
+      category: 'Login',
+      method: 'Import',
+    });
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'true');
+    toggleLoginSeed();
     NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
-  }, []);
+  }, [toggleLoginSeed]);
 
   const onWCPress = useCallback(async () => {
     let address = '';
+    MixpanelAnalytics.tracking('Login Method Selected', {
+      category: 'Login',
+      method: 'WalletConnect',
+    });
     if (!connector.connected) {
       const res = await connector.connect();
       address = res.accounts?.[0];
@@ -86,6 +105,10 @@ const LoginScreen = () => {
     }
   }, [connector]);
   const onSocialConnectPress = useCallback(async (provider: string) => {
+    MixpanelAnalytics.tracking('Login Method Selected', {
+      category: 'Login',
+      method: provider,
+    });
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'false');
     const res = await web3auth.login({
@@ -95,9 +118,18 @@ const LoginScreen = () => {
     if (res.privKey) {
       NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {
         seed: res.privKey,
+        method: provider,
       });
     }
   }, []);
+  const toggleLoginSeed = useCallback(
+    () => setOpenLoginSeed(current => !current),
+    [],
+  );
+  const toggleLoginSocial = useCallback(
+    () => setOpenLoginSocial(current => !current),
+    [],
+  );
   const onLoginWithApple = useCallback(() => {
     onSocialConnectPress(LOGIN_PROVIDER.APPLE);
   }, [onSocialConnectPress]);
@@ -109,6 +141,9 @@ const LoginScreen = () => {
   }, [onSocialConnectPress]);
   const onLoginWithGoogle = useCallback(() => {
     onSocialConnectPress(LOGIN_PROVIDER.GOOGLE);
+  }, [onSocialConnectPress]);
+  const onLoginWithTwitter = useCallback(() => {
+    onSocialConnectPress(LOGIN_PROVIDER.TWITTER);
   }, [onSocialConnectPress]);
   const onTermPress = useCallback(() => {
     Linking.openURL(`${buidlerHomeURL}/terms`);
@@ -122,77 +157,55 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <SVG.Logo width={90} height={90} />
-      <Text style={[styles.title, {color: colors.text}]}>
-        Release the on-chain superpower to buidl a trustless community
-      </Text>
-      <Text style={[styles.description, {color: colors.text}]}>
-        The web3 messaging platform offers wallet-to-wallet messaging,
-        token-based membership, and on-chain verification.
-      </Text>
-      <Touchable
-        useReactNative
-        style={[styles.createButton, {backgroundColor: colors.border}]}
-        onPress={onCreatePress}>
-        <Text style={[styles.text, {color: colors.text}]}>New wallet</Text>
-        <View style={styles.plusWrap}>
-          <SVG.IconPlus width={16} height={16} fill={colors.text} />
-        </View>
-      </Touchable>
-      <Touchable
-        style={[
-          styles.createButton,
-          {backgroundColor: colors.border, marginTop: 15},
-        ]}
-        onPress={onImportPress}
-        useReactNative>
-        <Text style={[styles.text, {color: colors.text}]}>Import wallet</Text>
-        <SVG.IconArrowImport fill={colors.text} />
-      </Touchable>
-      <Touchable
-        style={[
-          styles.createButton,
-          {backgroundColor: colors.border, marginTop: 15},
-        ]}
-        onPress={onWCPress}
-        useReactNative>
-        <Text style={[styles.text, {color: colors.text}]}>Wallet connect</Text>
-        <SVG.IconWC />
-      </Touchable>
-
-      <View
-        style={{marginTop: 20, alignItems: 'center', justifyContent: 'center'}}>
-        <Text style={[AppStyles.TextMed15, {color: colors.text}]}>
-          Or connect with social account:
+      <View style={{flex: 1}}>
+        <Text style={[styles.title, {color: colors.text}]}>
+          Release the on-chain superpower to buidl a trustless community
         </Text>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Touchable
-            useReactNative
-            style={{padding: 10}}
-            onPress={onLoginWithApple}>
-            <SVG.IconLogoApple fill={colors.text} />
-          </Touchable>
-          <Touchable
-            useReactNative
-            style={{padding: 10}}
-            onPress={onLoginWithDiscord}>
-            <SVG.IconLogoDiscord fill={colors.text} />
-          </Touchable>
-          <Touchable
-            useReactNative
-            style={{padding: 10}}
-            onPress={onLoginWithFacebook}>
-            <SVG.IconLogoFacebook fill={colors.text} />
-          </Touchable>
-          <Touchable
-            useReactNative
-            style={{padding: 10}}
-            onPress={onLoginWithGoogle}>
-            <SVG.IconLogoGoogle fill={colors.text} />
-          </Touchable>
-        </View>
+        <Text style={[styles.description, {color: colors.subtext}]}>
+          The web3 messaging platform offers wallet-to-wallet messaging,
+          token-based membership, and on-chain verification.
+        </Text>
+        <Touchable
+          useReactNative
+          style={[
+            styles.createButton,
+            {backgroundColor: colors.border, marginTop: 70},
+          ]}
+          onPress={toggleLoginSeed}>
+          <Text style={[styles.text, {color: colors.text}]}>Seed Phrase</Text>
+          <View style={styles.plusWrap}>
+            <SVG.IconPlus width={16} height={16} fill={colors.text} />
+          </View>
+        </Touchable>
+        <Touchable
+          style={[
+            styles.createButton,
+            {backgroundColor: colors.border, marginTop: 15},
+          ]}
+          onPress={toggleLoginSocial}
+          useReactNative>
+          <Text style={[styles.text, {color: colors.text}]}>
+            Social Connect
+          </Text>
+        </Touchable>
+        <Touchable
+          style={[
+            styles.createButton,
+            {backgroundColor: colors.border, marginTop: 15},
+          ]}
+          onPress={onWCPress}
+          useReactNative>
+          <Text style={[styles.text, {color: colors.text}]}>
+            Wallet connect
+          </Text>
+          <SVG.IconWC />
+        </Touchable>
       </View>
       <Text
-        style={[AppStyles.TextMed13, {color: colors.subtext, marginTop: 25}]}>
+        style={[
+          AppStyles.TextMed13,
+          {color: colors.subtext, marginBottom: AppDimension.extraBottom + 10},
+        ]}>
         By connecting wallet, you agree to our{' '}
         <Text style={styles.btnTerm} onPress={onTermPress}>
           Terms
@@ -213,16 +226,37 @@ const LoginScreen = () => {
           onConfirmAction={onSignMessage}
         />
       </ModalBottom>
+      <ModalBottom
+        isVisible={openLoginSeed}
+        onSwipeComplete={toggleLoginSeed}
+        onBackdropPress={toggleLoginSeed}>
+        <MenuLoginSeed
+          onCreatePress={onCreatePress}
+          onImportPress={onImportPress}
+        />
+      </ModalBottom>
+      <ModalBottom
+        isVisible={openLoginSocial}
+        onSwipeComplete={toggleLoginSocial}
+        onBackdropPress={toggleLoginSocial}>
+        <MenuLoginSocial
+          onLoginApple={onLoginWithApple}
+          onLoginDiscord={onLoginWithDiscord}
+          onLoginFacebook={onLoginWithFacebook}
+          onLoginGoogle={onLoginWithGoogle}
+          onLoginTwitter={onLoginWithTwitter}
+        />
+      </ModalBottom>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: AppDimension.extraTop,
+    paddingTop: AppDimension.extraTop + 70,
     justifyContent: 'center',
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: 30,
   },
   loginButton: {
     flexDirection: 'row',
@@ -242,20 +276,19 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    lineHeight: 38,
+    lineHeight: 35,
     fontFamily: Fonts.Bold,
-    marginTop: 25,
+    marginTop: 30,
   },
   description: {
     fontSize: 16,
     lineHeight: 26,
     fontFamily: Fonts.SemiBold,
-    marginTop: 25,
+    marginTop: 30,
   },
   createButton: {
-    marginTop: 30,
     borderRadius: 5,
-    height: 50,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'space-between',
     flexDirection: 'row',

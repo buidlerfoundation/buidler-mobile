@@ -441,6 +441,10 @@ export const accessAppWithWalletConnect =
           type: actionTypes.UPDATE_LOGIN_TYPE,
           payload: LoginType.WalletConnect,
         });
+        MixpanelAnalytics.tracking('Login Successful', {
+          category: 'Login',
+          method: LoginType.WalletConnect,
+        });
         NavigationServices.reset(ScreenID.SplashScreen);
       } else {
         dispatch({type: actionTypes.ACCESS_APP_FAIL, message: res.message});
@@ -451,7 +455,7 @@ export const accessAppWithWalletConnect =
   };
 
 export const accessApp =
-  (seed: string, password: string) =>
+  (seed: string, password: string, method?: string) =>
   async (dispatch: Dispatch, getState: AppGetState) => {
     dispatch({type: actionTypes.ACCESS_APP_REQUEST});
     try {
@@ -523,6 +527,10 @@ export const accessApp =
           dispatch({
             type: actionTypes.UPDATE_LOGIN_TYPE,
             payload: LoginType.WalletImport,
+          });
+          MixpanelAnalytics.tracking('Login Successful', {
+            category: 'Login',
+            method: method || 'Create',
           });
           NavigationServices.reset(ScreenID.SplashScreen);
         } else {

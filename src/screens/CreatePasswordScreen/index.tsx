@@ -44,6 +44,10 @@ const CreatePasswordScreen = ({route}: Props) => {
   const dispatch = useAppDispatch();
   const inputRef = useRef<TextInput>();
   const seed = useMemo(() => route.params?.seed || '', [route.params?.seed]);
+  const method = useMemo(
+    () => route.params?.method || 'Create',
+    [route.params?.method],
+  );
   const {colors, dark} = useThemeColor();
   const [biometricType, setShowBiometricType] = useState<string | null>(null);
   const [activeBiometric, setActiveBiometric] = useState(true);
@@ -70,13 +74,13 @@ const CreatePasswordScreen = ({route}: Props) => {
   const handleNext = useCallback(() => {
     if (seed) {
       // logged on
-      dispatch(accessApp(seed, password));
+      dispatch(accessApp(seed, password, method));
     } else {
       NavigationServices.pushToScreen(ScreenID.StoreSeedPhraseScreen, {
         password,
       });
     }
-  }, [dispatch, password, seed]);
+  }, [dispatch, password, seed, method]);
   const onNextPress = useCallback(async () => {
     if (!password) {
       Toast.show({
