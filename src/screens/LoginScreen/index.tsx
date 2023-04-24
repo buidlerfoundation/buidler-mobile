@@ -190,6 +190,7 @@ const LoginScreen = () => {
           <Text style={[styles.text, {color: colors.text}]}>
             Social Connect
           </Text>
+          <SVG.IconArrowImport fill={colors.text} />
         </Touchable>
         <Touchable
           style={[

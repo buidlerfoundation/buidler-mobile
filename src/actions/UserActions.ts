@@ -701,7 +701,7 @@ export const getUserDetail =
         type: actionTypes.FETCH_USER_REQUEST,
         payload: {userId, teamId},
       });
-      const res = await api.getUserDetail(userId, teamId);
+      const res = await api.getUserDetail(userId, teamId, true);
       if (res.success) {
         dispatch({
           type: actionTypes.FETCH_USER_SUCCESS,

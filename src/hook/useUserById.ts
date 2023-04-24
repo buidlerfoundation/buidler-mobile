@@ -15,7 +15,7 @@ function useUserById(userId?: string, direct?: boolean) {
     if (userId) {
       const existed = users.find(el => el.user_id === userId);
       if (!existed) {
-        dispatch(getUserDetail(userId, communityId, true));
+        dispatch(getUserDetail(userId, communityId));
       } else if (!existed.fetching && !existed.user_name) {
         setUser(DeletedUser);
       } else if (existed.user_name) {

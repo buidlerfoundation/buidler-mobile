@@ -23,15 +23,19 @@ const MenuLoginSeed = ({onCreatePress, onImportPress}: MenuLoginSeedProps) => {
       </Text>
       <Touchable
         style={[styles.button, {backgroundColor: colors.border, marginTop: 40}]}
-        onPress={onCreatePress}>
+        onPress={onCreatePress}
+        useReactNative>
         <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
           Create new Wallet
         </Text>
-        <SVG.IconPlus fill={colors.text} />
+        <View style={styles.icon}>
+          <SVG.IconPlus width={16} height={16} fill={colors.text} />
+        </View>
       </Touchable>
       <Touchable
         style={[styles.button, {backgroundColor: colors.border, marginTop: 15}]}
-        onPress={onImportPress}>
+        onPress={onImportPress}
+        useReactNative>
         <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
           Import Wallet
         </Text>
@@ -55,6 +59,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 5,
     paddingHorizontal: 20,
+  },
+  icon: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
