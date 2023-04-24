@@ -73,7 +73,10 @@ const LoginScreen = () => {
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'false');
     toggleLoginSeed();
-    NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen);
+    setTimeout(
+      () => NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen),
+      300,
+    );
   }, [toggleLoginSeed]);
   const onImportPress = useCallback(() => {
     MixpanelAnalytics.tracking('Login Method Selected', {
@@ -83,7 +86,10 @@ const LoginScreen = () => {
     GlobalVariable.sessionExpired = false;
     AsyncStorage.setItem(AsyncKey.isBackup, 'true');
     toggleLoginSeed();
-    NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen);
+    setTimeout(
+      () => NavigationServices.pushToScreen(ScreenID.ImportSeedPhraseScreen),
+      300,
+    );
   }, [toggleLoginSeed]);
 
   const onWCPress = useCallback(async () => {
@@ -104,24 +110,6 @@ const LoginScreen = () => {
       setOpenSignMessage(true);
     }
   }, [connector]);
-  const onSocialConnectPress = useCallback(async (provider: string) => {
-    MixpanelAnalytics.tracking('Login Method Selected', {
-      category: 'Login',
-      method: provider,
-    });
-    GlobalVariable.sessionExpired = false;
-    AsyncStorage.setItem(AsyncKey.isBackup, 'false');
-    const res = await web3auth.login({
-      redirectUrl: web3authRedirectUrl,
-      loginProvider: provider,
-    });
-    if (res.privKey) {
-      NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {
-        seed: res.privKey,
-        method: provider,
-      });
-    }
-  }, []);
   const toggleLoginSeed = useCallback(
     () => setOpenLoginSeed(current => !current),
     [],
@@ -129,6 +117,28 @@ const LoginScreen = () => {
   const toggleLoginSocial = useCallback(
     () => setOpenLoginSocial(current => !current),
     [],
+  );
+  const onSocialConnectPress = useCallback(
+    async (provider: string) => {
+      MixpanelAnalytics.tracking('Login Method Selected', {
+        category: 'Login',
+        method: provider,
+      });
+      GlobalVariable.sessionExpired = false;
+      AsyncStorage.setItem(AsyncKey.isBackup, 'false');
+      toggleLoginSocial();
+      const res = await web3auth.login({
+        redirectUrl: web3authRedirectUrl,
+        loginProvider: provider,
+      });
+      if (res.privKey) {
+        NavigationServices.pushToScreen(ScreenID.CreatePasswordScreen, {
+          seed: res.privKey,
+          method: provider,
+        });
+      }
+    },
+    [toggleLoginSocial],
   );
   const onLoginWithApple = useCallback(() => {
     onSocialConnectPress(LOGIN_PROVIDER.APPLE);
@@ -200,7 +210,7 @@ const LoginScreen = () => {
           onPress={onWCPress}
           useReactNative>
           <Text style={[styles.text, {color: colors.text}]}>
-            Wallet connect
+            Wallet Connect
           </Text>
           <SVG.IconWC />
         </Touchable>

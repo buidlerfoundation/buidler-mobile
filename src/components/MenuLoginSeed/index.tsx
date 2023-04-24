@@ -26,7 +26,7 @@ const MenuLoginSeed = ({onCreatePress, onImportPress}: MenuLoginSeedProps) => {
         onPress={onCreatePress}
         useReactNative>
         <Text style={[AppStyles.TextSemi16, {color: colors.text}]}>
-          Create new Wallet
+          Create New Wallet
         </Text>
         <View style={styles.icon}>
           <SVG.IconPlus width={16} height={16} fill={colors.text} />
