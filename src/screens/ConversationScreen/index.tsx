@@ -370,7 +370,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       if (itemIndex >= 0) {
         listRef.current.scrollToIndex({
           index: itemIndex,
-          viewPosition: 0.5,
+          viewPosition: 1,
         });
       }
       setTimeout(() => {
@@ -884,7 +884,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             inverted
             keyExtractor={item => item.message_id}
             renderItem={renderItem}
-            initialNumToRender={10}
+            initialNumToRender={20}
             windowSize={2}
             ListHeaderComponent={
               loadMoreAfterMessage || socketConnecting || socketReconnect ? (

@@ -1,17 +1,19 @@
 import ImageHelper from 'helpers/ImageHelper';
 import {UserData} from 'models';
 import React, {memo, useCallback} from 'react';
-import {StyleSheet, View, ViewStyle} from 'react-native';
+import {StyleSheet, Text, View, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import useThemeColor from 'hook/useThemeColor';
 import SvgUri from 'components/SvgUri';
 import SVG from 'common/SVG';
+import AppStyles from 'common/AppStyles';
 
 type AvatarViewProps = {
   user: UserData;
   size?: number;
   withStatus?: boolean;
   style?: ViewStyle;
+  bot?: boolean;
 };
 
 const AvatarView = ({
@@ -19,6 +21,7 @@ const AvatarView = ({
   size = 25,
   withStatus = true,
   style,
+  bot,
 }: AvatarViewProps) => {
   const {colors} = useThemeColor();
   const renderBody = useCallback(() => {
@@ -65,10 +68,20 @@ const AvatarView = ({
     );
   }, [colors.border, colors.text, size, user?.avatar_url, user?.user_id]);
 
-  return (
-    <View style={[style, {width: size, height: size}]}>
-      {renderBody()}
-      {withStatus && user?.status === 'online' && (
+  const renderUserStatus = useCallback(() => {
+    if (bot) {
+      return (
+        <View
+          style={[
+            styles.botStatus,
+            {backgroundColor: colors.blue, borderColor: colors.border},
+          ]}>
+          <Text style={[AppStyles.TextMed11, {color: colors.text}]}>bot</Text>
+        </View>
+      );
+    }
+    if (withStatus && user?.status === 'online') {
+      return (
         <View
           style={[
             styles.onlineStatus,
@@ -93,7 +106,25 @@ const AvatarView = ({
             ]}
           />
         </View>
-      )}
+      );
+    }
+    return null;
+  }, [
+    bot,
+    colors.backgroundHeader,
+    colors.blue,
+    colors.border,
+    colors.success,
+    colors.text,
+    size,
+    user?.status,
+    withStatus,
+  ]);
+
+  return (
+    <View style={[style, {width: size, height: size}]}>
+      {renderBody()}
+      {renderUserStatus()}
     </View>
   );
 };
@@ -103,6 +134,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -2,
     right: -2,
+  },
+  botStatus: {
+    position: 'absolute',
+    bottom: -6,
+    right: -10,
+    width: 30,
+    height: 18,
+    borderWidth: 2,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

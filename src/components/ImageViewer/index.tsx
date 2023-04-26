@@ -96,7 +96,7 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
                     }}>
                     <VideoPlayer
                       uri={props.source.uri}
-                      style={{width: '100%', aspectRatio: 1.667}}
+                      style={{width: '100%', height: '99%'}}
                       paused={false}
                       ref={ref => (this.videoRefs[index] = ref)}
                     />

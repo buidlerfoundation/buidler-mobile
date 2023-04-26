@@ -173,6 +173,14 @@ const RenderHTML = ({
       'task-archived': {
         color: colors.subtext,
       },
+      'message-text-bot': {
+        fontFamily: Fonts.Medium,
+        fontSize: 15,
+        lineHeight: 24,
+        marginTop: 5,
+        whiteSpace: 'pre',
+        color: colors.mention,
+      },
     }),
     [colors.lightText, colors.mention, colors.subtext, colors.text],
   );

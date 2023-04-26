@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   useCallback,
   useState,
+  useEffect,
 } from 'react';
 import {ViewStyle} from 'react-native';
 import Video from 'react-native-video';
@@ -25,6 +26,12 @@ const VideoPlayer = forwardRef(
         play,
       };
     });
+    useEffect(() => {
+      console.log('Start');
+      return () => {
+        console.log('End');
+      };
+    }, []);
     return (
       <Video
         source={{uri}}

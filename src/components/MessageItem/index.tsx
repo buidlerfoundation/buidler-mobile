@@ -121,17 +121,18 @@ type MessageAvatarProps = {
   showAvatar?: boolean;
   onUserPress: () => void;
   embeds?: boolean;
+  bot?: boolean;
 };
 
 const MessageAvatar = memo(
-  ({sender, showAvatar, onUserPress, embeds}: MessageAvatarProps) => {
+  ({sender, showAvatar, onUserPress, embeds, bot}: MessageAvatarProps) => {
     if (showAvatar || embeds)
       return (
         <Touchable
           style={{marginTop: 5}}
           onPress={onUserPress}
           disabled={embeds}>
-          <AvatarView user={sender} size={35} />
+          <AvatarView user={sender} size={35} bot={bot} />
         </Touchable>
       );
     return <View style={{width: 35}} />;
@@ -243,6 +244,20 @@ const MessageItem = ({
     if (!sender?.user_id) return;
     navigation.navigate(ScreenID.UserScreen, {userId: sender?.user_id, direct});
   }, [direct, navigation, sender?.user_id]);
+  const renderMessageContentType = useCallback(() => {
+    if (item.metadata?.type === 'scam_alert' && item.metadata?.data?.content) {
+      return (
+        <Text
+          style={[
+            AppStyles.TextMed15,
+            {color: colors.subtext, marginTop: 4, lineHeight: 20},
+          ]}>
+          {item.metadata?.data?.content}
+        </Text>
+      );
+    }
+    return null;
+  }, [colors.subtext, item.metadata?.data?.content, item.metadata?.type]);
   if (!sender) return null;
   return (
     <View
@@ -269,6 +284,7 @@ const MessageItem = ({
           showAvatar={showAvatar}
           onUserPress={onUserPress}
           embeds={embeds}
+          bot={!!item.metadata}
         />
         <View style={styles.bodyMessage}>
           <MessageSender
@@ -278,6 +294,7 @@ const MessageItem = ({
             onUserPress={onUserPress}
             embeds={embeds}
           />
+          {renderMessageContentType()}
           {item.task ? (
             <PinPostItem
               pinPost={{...item.task, message_sender_id: item.sender_id}}
@@ -296,7 +313,11 @@ const MessageItem = ({
                     undefined,
                     undefined,
                     !item.isSending && item.createdAt !== item.updatedAt,
-                    item.isSending ? 'message-text-sending' : undefined,
+                    item.metadata
+                      ? 'message-text-bot'
+                      : item.isSending
+                      ? 'message-text-sending'
+                      : undefined,
                   )}
                   embeds={embeds}
                   defaultTextProps={
