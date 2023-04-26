@@ -131,7 +131,7 @@ const MessageAvatar = memo(
         <Touchable
           style={{marginTop: 5}}
           onPress={onUserPress}
-          disabled={embeds}>
+          disabled={embeds || bot}>
           <AvatarView user={sender} size={35} bot={bot} />
         </Touchable>
       );
@@ -145,6 +145,7 @@ type MessageSenderProps = {
   createdAt: string;
   onUserPress: () => void;
   embeds?: boolean;
+  bot?: boolean;
 };
 
 const MessageSender = memo(
@@ -154,12 +155,13 @@ const MessageSender = memo(
     createdAt,
     onUserPress,
     embeds,
+    bot,
   }: MessageSenderProps) => {
     const {colors} = useThemeColor();
     if ((!showAvatar && !embeds) || !sender) return null;
     return (
       <View style={styles.nameWrapper}>
-        <Touchable onPress={onUserPress} disabled={embeds}>
+        <Touchable onPress={onUserPress} disabled={embeds || bot}>
           <Text style={[AppStyles.TextSemi15, {color: colors.text}]}>
             {normalizeUserName(sender.user_name)}
           </Text>
@@ -293,6 +295,7 @@ const MessageItem = ({
             showAvatar={showAvatar}
             onUserPress={onUserPress}
             embeds={embeds}
+            bot={!!item.metadata}
           />
           {renderMessageContentType()}
           {item.task ? (
