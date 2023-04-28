@@ -39,6 +39,24 @@ export const normalizeMessages = (messages?: MessageData[]) => {
   }, []);
 };
 
+export const normalizeMessageTextDisable = (text: string) => {
+  if (!text) return '';
+  let res = text
+    .replace(/^#### (.*$)/gim, '$1')
+    .replace(/^### (.*$)/gim, '$1')
+    .replace(/^## (.*$)/gim, '$1')
+    .replace(/^# (.*$)/gim, '$1')
+    .replace(/^> (.*$)/gim, '$1')
+    .replace(/\*\*(.*)\*\*/gim, '$1')
+    .replace(/\*(.*)\*/gim, '$1')
+    .replace(/!\[(.*?)\]\((.*?)\)/gim, '$1')
+    .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
+    .replace(/<div>|<\/div>/gim, '')
+    .replace(/\u2028/g, '')
+    .replace(/(<@)(.*?)(-)(.*?)(>)/gim, '@$2');
+  return `<div class='message-text'>${res}</div>`;
+};
+
 export const normalizeMessageTextPlain = (
   text: string,
   messageReply?: boolean,

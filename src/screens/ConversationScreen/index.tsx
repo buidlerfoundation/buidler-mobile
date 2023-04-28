@@ -183,6 +183,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   useScrollToTop(
     useRef({
       scrollToTop: () => {
+        setOpenRight(false);
         setOpenLeft(current => !current);
       },
     }),
@@ -195,9 +196,10 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
   useEffect(() => {
     if (route.params?.fromNotification) {
       onCloseLeft();
+      onCloseRight();
       navigation.setParams({fromNotification: false});
     }
-  }, [navigation, onCloseLeft, route.params?.fromNotification]);
+  }, [navigation, onCloseLeft, onCloseRight, route.params?.fromNotification]);
   useEffect(() => {
     if (currentTeamId) {
       if (route.params?.openDrawer) {

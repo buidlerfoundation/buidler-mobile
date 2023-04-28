@@ -11,6 +11,7 @@ import MessagePhoto from '../MessagePhoto';
 import RenderHTML from 'components/RenderHTML';
 import {
   normalizeMessageText,
+  normalizeMessageTextDisable,
   normalizeMessageTextPlain,
   normalizeUserName,
 } from 'helpers/MessageHelper';
@@ -30,6 +31,7 @@ import {useNavigation} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import useCommunityId from 'hook/useCommunityId';
 import useUserById from 'hook/useUserById';
+import ScamVoting from 'components/ScamVoting';
 
 type ReplyMessageProps = {
   replyMessage?: MessageData;
@@ -214,16 +216,17 @@ const MessageItem = ({
   const highlightMessageId = useAppSelector(
     state => state.message.highlightMessageId,
   );
+  const isBot = useMemo(() => !!item.metadata, [item.metadata]);
   const showAvatar = useMemo(() => {
     return item.isHead || !!item.task || !!item.reply_message_id;
   }, [item.isHead, item.reply_message_id, item.task]);
   const handleOpenReactView = useCallback(() => {
     openReactView?.(item);
   }, [item, openReactView]);
-  const handleLongPress = useCallback(
-    () => onLongPress?.(item),
-    [item, onLongPress],
-  );
+  const handleLongPress = useCallback(() => {
+    if (isBot) return;
+    onLongPress?.(item);
+  }, [isBot, item, onLongPress]);
   const isHighLight = useMemo(
     () => highlightMessageId === item.message_id,
     [highlightMessageId, item.message_id],
@@ -286,7 +289,7 @@ const MessageItem = ({
           showAvatar={showAvatar}
           onUserPress={onUserPress}
           embeds={embeds}
-          bot={!!item.metadata}
+          bot={isBot}
         />
         <View style={styles.bodyMessage}>
           <MessageSender
@@ -295,7 +298,7 @@ const MessageItem = ({
             showAvatar={showAvatar}
             onUserPress={onUserPress}
             embeds={embeds}
-            bot={!!item.metadata}
+            bot={isBot}
           />
           {renderMessageContentType()}
           {item.task ? (
@@ -311,17 +314,21 @@ const MessageItem = ({
             <>
               {(!!item.content && (
                 <RenderHTML
-                  html={normalizeMessageText(
-                    item.content,
-                    undefined,
-                    undefined,
-                    !item.isSending && item.createdAt !== item.updatedAt,
-                    item.metadata
-                      ? 'message-text-bot'
-                      : item.isSending
-                      ? 'message-text-sending'
-                      : undefined,
-                  )}
+                  html={
+                    item?.is_scam_detected
+                      ? normalizeMessageTextDisable(item.content)
+                      : normalizeMessageText(
+                          item.content,
+                          undefined,
+                          undefined,
+                          !item.isSending && item.createdAt !== item.updatedAt,
+                          isBot
+                            ? 'message-text-bot'
+                            : item.isSending
+                            ? 'message-text-sending'
+                            : undefined,
+                        )
+                  }
                   embeds={embeds}
                   defaultTextProps={
                     !embeds
@@ -355,6 +362,9 @@ const MessageItem = ({
                   openReactView={handleOpenReactView}
                   parentId={item.message_id}
                 />
+              )}
+              {item?.metadata?.type === 'scam_alert' && (
+                <ScamVoting id={item?.metadata?.data?.id} />
               )}
             </>
           )}

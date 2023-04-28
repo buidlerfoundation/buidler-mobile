@@ -7,6 +7,7 @@ const AppConfig = {
   showScrollMoreOffset: 275,
   timeoutCloseBottomSheet: 400,
   directCommunityId: 'b796712f-eea4-4ba1-abc6-ca76e9af24bc',
+  buidlerCommunityId: 'c9097f50-9f0b-4e0a-a042-ab7790aff3b0',
 };
 
 export const whiteListRefreshTokenApis = [

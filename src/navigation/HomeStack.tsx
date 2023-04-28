@@ -12,7 +12,7 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import ConversationStack from './ConversationStack';
 import SideBarCommunity from 'components/SideBarCommunity';
 import useAppDispatch from 'hook/useAppDispatch';
-import {acceptInvitation} from 'actions/UserActions';
+import {acceptInvitation, startDM} from 'actions/UserActions';
 import NotificationScreen from 'screens/NotificationScreen';
 import NotificationHeader from 'screens/NotificationScreen/NotificationHeader';
 import DirectMessageStack from './DirectMessageStack';
@@ -71,12 +71,16 @@ const HomeStack = () => {
   }, [openOTP, requestOtpCode]);
   useEffect(() => {
     if (route.params?.userId) {
-      navigation.navigate(ScreenID.UserScreen, {
-        userId: route.params?.userId,
-        startDM: route.params?.startDM,
-      });
+      if (route.params.startDM) {
+        // Push to DM
+        dispatch(startDM(route.params?.userId));
+      } else {
+        navigation.navigate(ScreenID.UserScreen, {
+          userId: route.params?.userId,
+        });
+      }
     }
-  }, [navigation, route.params?.startDM, route.params?.userId]);
+  }, [dispatch, navigation, route.params.startDM, route.params?.userId]);
   const header = useCallback(() => null, []);
   const tabBarIconHome = useCallback(
     ({color}: {focused: boolean; color: string}) => {

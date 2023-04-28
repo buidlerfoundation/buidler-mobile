@@ -99,6 +99,7 @@ export interface Channel {
   updatedAt?: string;
   is_chat_deactivated?: boolean;
   dapp_integration_url?: string;
+  firstItem?: boolean;
 }
 
 export interface Space {
@@ -280,6 +281,7 @@ export interface ConversationData {
       updated_at: string;
     };
   };
+  is_scam_detected?: boolean;
 }
 
 export interface MessageDateData {

@@ -1,6 +1,6 @@
 import SVG from 'common/SVG';
 import Touchable from 'components/Touchable';
-import {MessageData, UserData} from 'models';
+import {Channel, MessageData, UserData} from 'models';
 import React, {useState, useEffect, useCallback, memo, useMemo} from 'react';
 import {
   View,
@@ -38,6 +38,9 @@ import useChannelId from 'hook/useChannelId';
 import useDirectChannelId from 'hook/useDirectChannelId';
 import {encryptMessage} from 'helpers/ChannelHelper';
 import useUserData from 'hook/useUserData';
+import useChannel from 'hook/useChannel';
+import useSpaceChannel from 'hook/useSpaceChannel';
+import MentionChannelItem from 'components/MentionChannelItem';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -147,10 +150,14 @@ const MessageInput = ({
   const [cursorPos, setCursorPos] = useState(0);
   const [mentionStr, setMentionStr] = useState('');
   const [mentions, setMentions] = useState([]);
+  const [mentionCharacter, setMentionCharacter] = useState('');
+  const [mentionChannels, setMentionChannels] = useState([]);
   const [isOpenPopupMention, setOpenPopupMention] = useState(false);
   const currentChannel = useCurrentChannel();
   const currentPublicChannelId = useChannelId();
   const currentDirectChannelId = useDirectChannelId();
+  const channel = useChannel();
+  const space = useSpaceChannel();
   const currentChannelId = useMemo(
     () => (direct ? currentDirectChannelId : currentPublicChannelId),
     [currentDirectChannelId, currentPublicChannelId, direct],
@@ -166,7 +173,14 @@ const MessageInput = ({
   const {colors} = useThemeColor();
   const channelType = useMemo(() => (direct ? 'Private' : 'Public'), [direct]);
   useEffect(() => {
-    const startMention = val.substring(0, cursorPos).lastIndexOf('@');
+    const lastIndexMentionUser = val.substring(0, cursorPos).lastIndexOf('@');
+    const lastIndexMentionChannel = val
+      .substring(0, cursorPos)
+      .lastIndexOf('#');
+    const startMention = Math.max(
+      lastIndexMentionUser,
+      lastIndexMentionChannel,
+    );
     const beforeMention = val?.[startMention - 1];
     if (
       (beforeMention === '\n' || beforeMention === ' ' || startMention === 0) &&
@@ -177,25 +191,52 @@ const MessageInput = ({
       }
       const str = val.substring(startMention + 1, cursorPos);
       setMentionStr(str);
+      setMentionCharacter(
+        lastIndexMentionChannel > lastIndexMentionUser ? '#' : '@',
+      );
     } else {
       setOpenPopupMention(false);
     }
   }, [cursorPos, isOpenPopupMention, val]);
   const dataMention = useMemo(() => {
-    return teamUserData
-      .filter(el => !!el)
-      .filter(
-        el =>
-          !el.is_deleted &&
-          el?.user_name
-            ?.toLowerCase?.()
-            ?.includes?.(mentionStr?.toLowerCase?.() || ''),
+    if (mentionCharacter === '#') {
+      const filteredChannel = channel.filter(el =>
+        el.channel_name
+          ?.toLowerCase()
+          ?.includes(mentionStr?.toLowerCase?.() || ''),
       );
-  }, [mentionStr, teamUserData]);
+      return space.reduce<Channel[]>((result, val) => {
+        const channelInSpace = filteredChannel
+          .filter(c => c.space_id === val.space_id)
+          .map((el, index) => {
+            return {
+              ...el,
+              space: val,
+              firstItem: index === 0,
+            };
+          });
+        return [...result, ...channelInSpace];
+      }, []);
+    }
+    if (mentionCharacter === '@') {
+      return teamUserData
+        .filter(el => !!el)
+        .filter(
+          el =>
+            !el.is_deleted &&
+            el?.user_name
+              ?.toLowerCase?.()
+              ?.includes?.(mentionStr?.toLowerCase?.() || ''),
+        );
+    }
+    return [];
+  }, [channel, mentionCharacter, mentionStr, space, teamUserData]);
   const normalizeMessageEdit = useCallback((content: string) => {
     let res = content;
     const matchRegex = /(<@)(.*?)(-)(.*?)(>)/gim;
+    const matchRegexMentionChannel = /<a href=.*?>#(.*?)(<\/a>)/gim;
     const matchMentions = content.match(matchRegex);
+    const matchMentionChannels = content.match(matchRegexMentionChannel);
     matchMentions?.forEach?.(element => {
       const mentionMatch = /(<@)(.*?)(-)(.*?)(>)/.exec(element);
       if (mentionMatch.length > 0) {
@@ -205,6 +246,18 @@ const MessageInput = ({
             return current;
           }
           return [...current, mentionMatch[2]];
+        });
+      }
+    });
+    matchMentionChannels?.forEach?.(element => {
+      const mentionChannelMatch = /<a href=.*?>#(.*?)(<\/a>)/.exec(element);
+      if (mentionChannelMatch.length > 0) {
+        res = res.replace(mentionChannelMatch[0], `#${mentionChannelMatch[1]}`);
+        setMentionChannels(current => {
+          if (current.includes(mentionChannelMatch[1])) {
+            return current;
+          }
+          return [...current, mentionChannelMatch[1]];
         });
       }
     });
@@ -270,9 +323,18 @@ const MessageInput = ({
           );
         }
       });
+      mentionChannels.forEach(el => {
+        const mentionChannel = channel.find(c => c.channel_name === el);
+        if (mentionChannel) {
+          res = res.replace(
+            new RegExp(`#${el}`, 'g'),
+            `<a href='https://community.buidler.app/channels/${teamId}/${mentionChannel.channel_id}' class='mention-string'>#${mentionChannel.channel_name}</a>`,
+          );
+        }
+      });
       return res;
     },
-    [mentions, teamUserData],
+    [channel, mentionChannels, mentions, teamId, teamUserData],
   );
 
   const getMentionData = useCallback(() => {
@@ -493,6 +555,24 @@ const MessageInput = ({
     },
     [cursorPos, mentionStr],
   );
+  const handlePressMentionChannel = useCallback(
+    (channel: Channel) => {
+      setMentionChannels(current => {
+        if (current.includes(channel.channel_name)) {
+          return current;
+        }
+        return [...current, channel.channel_name];
+      });
+      setOpenPopupMention(false);
+      setVal(
+        current =>
+          `${current.substring(0, cursorPos - mentionStr.length - 1)}#${
+            channel.channel_name
+          } ${current.substring(cursorPos)}`,
+      );
+    },
+    [cursorPos, mentionStr.length],
+  );
   const parsedText = useMemo(() => {
     return val.split(/(\s)/g).map((el, index) => {
       if (/@[a-zA-Z0-9]+/.test(el) && mentions.includes(el.substring(1))) {
@@ -502,14 +582,35 @@ const MessageInput = ({
           </Text>
         );
       }
+      if (
+        /#[a-zA-Z0-9]+/.test(el) &&
+        mentionChannels.includes(el.substring(1))
+      ) {
+        return (
+          <Text style={[{color: colors.mention}]} key={`${el}-${index}`}>
+            {el}
+          </Text>
+        );
+      }
       return <Text key={`${el}-${index}`}>{el}</Text>;
     });
-  }, [colors.mention, mentions, val]);
+  }, [colors.mention, mentionChannels, mentions, val]);
   const renderMentionItem = useCallback(
-    ({item}: {item: UserData}) => (
-      <MentionItem user={item} onPress={handlePressMention} />
-    ),
-    [handlePressMention],
+    ({item}: {item: UserData | Channel}) => {
+      if (mentionCharacter === '@') {
+        return <MentionItem user={item} onPress={handlePressMention} />;
+      }
+      if (mentionCharacter === '#') {
+        return (
+          <MentionChannelItem
+            channel={item}
+            onPress={handlePressMentionChannel}
+          />
+        );
+      }
+      return null;
+    },
+    [handlePressMention, handlePressMentionChannel, mentionCharacter],
   );
   return (
     <View>
@@ -636,11 +737,11 @@ const styles = StyleSheet.create({
     paddingTop: 7,
   },
   mentionView: {
-    maxHeight: 150,
+    maxHeight: 200,
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: 10,
+    left: -10,
+    right: -10,
     borderTopWidth: 1,
     paddingHorizontal: 10,
   },

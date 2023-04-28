@@ -316,6 +316,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
         message_attachments,
         plain_text,
         updatedAt,
+        is_scam_detected,
       } = data;
       const newMessageData = {...state.messageData};
       if (newMessageData[entity_id]) {
@@ -334,6 +335,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
                   : null;
               msg.message_attachments = message_attachments;
               msg.updatedAt = updatedAt;
+              msg.is_scam_detected = is_scam_detected;
               return {...msg};
             }
             if (msg.reply_message_id === message_id && msg.conversation_data) {
@@ -344,6 +346,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
                 task,
                 message_attachments,
                 updatedAt,
+                is_scam_detected,
               };
               return {...msg};
             }
