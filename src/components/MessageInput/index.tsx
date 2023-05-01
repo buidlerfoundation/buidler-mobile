@@ -452,10 +452,8 @@ const MessageInput = ({
       if (!sender) return null;
       return (
         <View style={[styles.replyContainer, {borderColor: colors.border}]}>
-          <View
-            style={[styles.replyIndicator, {backgroundColor: colors.subtext}]}
-          />
-          <View style={{marginLeft: 20}}>
+          <SVG.IconMessageReply fill={colors.lightText} />
+          <View style={{marginLeft: 10}}>
             <AvatarView user={sender} size={20} />
           </View>
           <Text
@@ -486,9 +484,7 @@ const MessageInput = ({
               true,
             )}
           </Text>
-          <Touchable
-            style={{padding: 10, margin: 10}}
-            onPress={onClearReplyPress}>
+          <Touchable style={{padding: 10}} onPress={onClearReplyPress}>
             <SVG.IconCircleClose fill={colors.subtext} />
           </Touchable>
         </View>
@@ -497,9 +493,7 @@ const MessageInput = ({
     if (messageEdit) {
       return (
         <View style={[styles.replyContainer, {borderColor: colors.border}]}>
-          <View
-            style={[styles.replyIndicator, {backgroundColor: colors.subtext}]}
-          />
+          <SVG.IconEdit fill={colors.subtext} />
           <Text
             style={[
               styles.replyContent,
@@ -508,9 +502,7 @@ const MessageInput = ({
             ]}>
             Edit message
           </Text>
-          <Touchable
-            style={{padding: 10, margin: 10}}
-            onPress={onClearReplyPress}>
+          <Touchable onPress={onClearReplyPress} style={{padding: 10}}>
             <SVG.IconCircleClose fill={colors.subtext} />
           </Touchable>
         </View>
@@ -614,36 +606,38 @@ const MessageInput = ({
   );
   return (
     <View>
-      <View
-        style={[
-          {
-            backgroundColor: direct
-              ? colors.backgroundHeader
-              : colors.background,
-            borderTopWidth: 1,
-            borderColor: colors.border,
-          },
-          style,
-        ]}>
+      <View style={style}>
         {renderReply()}
-        <View style={[styles.container, inputStyle]}>
-          {attachments.length > 0 && (
-            <FlatList
-              style={styles.attachmentView}
-              data={attachments}
-              keyExtractor={attachment => attachment.id || attachment.randomId}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyboardShouldPersistTaps="always"
-              renderItem={({item}) => (
-                <AttachmentItem
-                  attachment={item}
-                  onPress={onRemoveAttachment}
-                  teamId={teamId}
-                />
-              )}
-            />
-          )}
+        {attachments.length > 0 && (
+          <FlatList
+            style={styles.attachmentView}
+            data={attachments}
+            keyExtractor={attachment => attachment.id || attachment.randomId}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="always"
+            ListHeaderComponent={<View style={{width: 15}} />}
+            ListFooterComponent={<View style={{width: 15}} />}
+            renderItem={({item}) => (
+              <AttachmentItem
+                attachment={item}
+                onPress={onRemoveAttachment}
+                teamId={teamId}
+              />
+            )}
+          />
+        )}
+        <View
+          style={[
+            styles.container,
+            {
+              borderColor: colors.border,
+              backgroundColor: direct
+                ? colors.backgroundHeader
+                : colors.activeBackgroundLight,
+            },
+            inputStyle,
+          ]}>
           <View>
             {isOpenPopupMention && isFocus && dataMention.length > 0 && (
               <FlatList
@@ -708,17 +702,21 @@ const MessageInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginHorizontal: 15,
+    marginVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   replyContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
-  },
-  replyIndicator: {
-    width: 4,
-    height: '100%',
-    borderRadius: 5,
+    borderTopWidth: 1,
+    height: 40,
+    paddingLeft: 20,
+    paddingRight: 10,
+    paddingTop: 3,
   },
   replyName: {
     marginLeft: 10,
@@ -746,7 +744,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   attachmentView: {
-    marginBottom: 10,
+    marginBottom: 5,
   },
   attachmentItem: {
     marginTop: 10,

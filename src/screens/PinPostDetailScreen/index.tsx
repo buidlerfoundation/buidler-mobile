@@ -683,7 +683,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
   },
   inputContainer: {
-    paddingBottom: AppDimension.extraBottom + 10,
+    marginBottom: AppDimension.extraBottom + 10,
   },
   archivedWrap: {
     flexDirection: 'row',
