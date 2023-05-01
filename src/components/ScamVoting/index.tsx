@@ -4,6 +4,7 @@ import React, {memo, useCallback} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import Toast from 'react-native-toast-message';
 import api from 'services/api';
+import HapticUtils from 'utils/HapticUtils';
 
 type ScamVotingProps = {
   id?: string;
@@ -13,6 +14,7 @@ const ScamVoting = ({id}: ScamVotingProps) => {
   const {colors} = useThemeColor();
   const onUpVote = useCallback(() => {
     api.upVoteScamMessage(id).then(res => {
+      HapticUtils.trigger();
       if (res.success) {
         Toast.show({
           type: 'customSuccess',
@@ -23,6 +25,7 @@ const ScamVoting = ({id}: ScamVotingProps) => {
   }, [id]);
   const onDownVote = useCallback(() => {
     api.downVoteScamMessage(id).then(res => {
+      HapticUtils.trigger();
       if (res.success) {
         Toast.show({
           type: 'customSuccess',
