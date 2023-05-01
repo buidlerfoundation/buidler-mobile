@@ -4,7 +4,7 @@ import Touchable from 'components/Touchable';
 import useThemeColor from 'hook/useThemeColor';
 import {Channel} from 'models';
 import React, {memo, useCallback} from 'react';
-import {StyleSheet, Text} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
 type MentionChannelItemProps = {
   channel: Channel;
@@ -27,9 +27,19 @@ const MentionChannelItem = ({channel, onPress}: MentionChannelItemProps) => {
         {channel.channel_name}
       </Text>
       {!!channel.space?.space_name && (
-        <Text style={[AppStyles.TextMed15, {color: colors.subtext}]}>
-          {channel.space?.space_name}
-        </Text>
+        <View style={{marginLeft: 5, alignItems: 'flex-end', maxWidth: 150}}>
+          <Text
+            style={[
+              AppStyles.TextMed15,
+              {
+                color: colors.subtext,
+              },
+            ]}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {channel.space?.space_name}
+          </Text>
+        </View>
       )}
     </Touchable>
   );

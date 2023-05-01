@@ -656,7 +656,7 @@ const MessageInput = ({
                 ]}
                 data={dataMention}
                 keyboardShouldPersistTaps="always"
-                keyExtractor={el => el.user_id}
+                keyExtractor={el => el.user_id || el.channel_id}
                 renderItem={renderMentionItem}
                 ListHeaderComponent={<View style={{height: 10}} />}
                 ListFooterComponent={<View style={{height: 10}} />}
