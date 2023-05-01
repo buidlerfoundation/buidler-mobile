@@ -13,8 +13,8 @@ type ScamVotingProps = {
 const ScamVoting = ({id}: ScamVotingProps) => {
   const {colors} = useThemeColor();
   const onUpVote = useCallback(() => {
+    HapticUtils.trigger();
     api.upVoteScamMessage(id).then(res => {
-      HapticUtils.trigger();
       if (res.success) {
         Toast.show({
           type: 'customSuccess',
@@ -24,8 +24,8 @@ const ScamVoting = ({id}: ScamVotingProps) => {
     });
   }, [id]);
   const onDownVote = useCallback(() => {
+    HapticUtils.trigger();
     api.downVoteScamMessage(id).then(res => {
-      HapticUtils.trigger();
       if (res.success) {
         Toast.show({
           type: 'customSuccess',
