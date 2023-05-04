@@ -673,7 +673,7 @@ const MessageInput = ({
                   {
                     alignItems: 'center',
                     flexDirection: 'row',
-                    left: !disabled ? 50 : 10,
+                    left: !disabled ? 45 : 5,
                   },
                 ]}>
                 <Text
@@ -714,7 +714,7 @@ const MessageInput = ({
               <Text>{parsedText}</Text>
             </TextInput>
             {(!!val?.trim() || attachments.length > 0) && (
-              <Touchable style={{padding: 5}} onPress={onSend}>
+              <Touchable style={{padding: 5, marginRight: 5}} onPress={onSend}>
                 <SVG.IconArrowSend />
               </Touchable>
             )}
@@ -727,7 +727,7 @@ const MessageInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     paddingVertical: 5,
     marginHorizontal: 15,
     marginVertical: 5,
@@ -757,7 +757,7 @@ const styles = StyleSheet.create({
   input: {
     maxHeight: 100,
     flex: 1,
-    marginHorizontal: 10,
+    marginHorizontal: 5,
     paddingTop: 7,
   },
   mentionView: {

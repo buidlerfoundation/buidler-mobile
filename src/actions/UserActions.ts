@@ -780,52 +780,54 @@ export const syncDirectChannelData = () => async (dispatch: Dispatch) => {
 export const startDM =
   (userId: string) => async (dispatch: Dispatch, getState: AppGetState) => {
     const userData = getState().user.userData;
-    const res = await api.getUserDetail(userId, AppConfig.buidlerCommunityId);
-    if (res.success && res.data && userData) {
-      let directChannelId = null;
-      const user = res.data;
-      const directUser = getState().user.directChannelUsers.find(
-        el => el.user_id === userId,
-      );
-      directChannelId = directUser?.direct_channel_id;
-      if (!directChannelId) {
-        const channelMemberData = await createMemberChannelData([
-          userData,
-          user,
-        ]);
-        const body = {
-          channel_type: 'Direct',
-          channel_member_data: channelMemberData.res,
-        };
-        const resDirectChannel = await api.createDirectChannel(
-          AppConfig.directCommunityId,
-          body,
+    if (userData.user_id !== userId) {
+      const res = await api.getUserDetail(userId, AppConfig.buidlerCommunityId);
+      if (res.success && res.data && userData) {
+        let directChannelId = null;
+        const user = res.data;
+        const directUser = getState().user.directChannelUsers.find(
+          el => el.user_id === userId,
         );
-        if (resDirectChannel.statusCode === 200) {
-          directChannelId = resDirectChannel.data?.channel_id;
-          const myKey = channelMemberData.res.find(
-            el => el.user_id === userData.user_id,
+        directChannelId = directUser?.direct_channel_id;
+        if (!directChannelId) {
+          const channelMemberData = await createMemberChannelData([
+            userData,
+            user,
+          ]);
+          const body = {
+            channel_type: 'Direct',
+            channel_member_data: channelMemberData.res,
+          };
+          const resDirectChannel = await api.createDirectChannel(
+            AppConfig.directCommunityId,
+            body,
           );
-          if (myKey) {
-            await SocketUtils.handleChannelPrivateKey(
-              directChannelId,
-              myKey.key,
-              myKey.timestamp,
+          if (resDirectChannel.statusCode === 200) {
+            directChannelId = resDirectChannel.data?.channel_id;
+            const myKey = channelMemberData.res.find(
+              el => el.user_id === userData.user_id,
             );
+            if (myKey) {
+              await SocketUtils.handleChannelPrivateKey(
+                directChannelId,
+                myKey.key,
+                myKey.timestamp,
+              );
+            }
+            dispatch({
+              type: actionTypes.NEW_DIRECT_USER,
+              payload: [{...user, direct_channel_id: directChannelId}],
+            });
+            dispatch({
+              type: actionTypes.NEW_CHANNEL,
+              payload: {...resDirectChannel.data, seen: true},
+            });
           }
-          dispatch({
-            type: actionTypes.NEW_DIRECT_USER,
-            payload: [{...user, direct_channel_id: directChannelId}],
-          });
-          dispatch({
-            type: actionTypes.NEW_CHANNEL,
-            payload: {...resDirectChannel.data, seen: true},
-          });
         }
-      }
-      if (directChannelId) {
-        dispatch(setCurrentDirectChannel({channel_id: directChannelId}));
-        NavigationServices.pushToScreen(StackID.DirectMessageStack);
+        if (directChannelId) {
+          dispatch(setCurrentDirectChannel({channel_id: directChannelId}));
+          NavigationServices.pushToScreen(StackID.DirectMessageStack);
+        }
       }
     }
   };
