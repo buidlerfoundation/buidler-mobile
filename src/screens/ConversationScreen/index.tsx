@@ -372,7 +372,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       if (itemIndex >= 0) {
         listRef.current.scrollToIndex({
           index: itemIndex,
-          viewPosition: 1,
+          viewPosition: replyMessage.content?.length > 650 ? 1 : 0.5,
         });
       }
       setTimeout(() => {

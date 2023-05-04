@@ -21,7 +21,7 @@ type DirectChannelScreenProps = {
   onClose: () => void;
 };
 
-const DirectChannelScreen = ({open, onClose}: DirectChannelScreenProps) => {
+const DirectChannelScreen = ({onClose}: DirectChannelScreenProps) => {
   const dispatch = useAppDispatch();
   const {colors} = useThemeColor();
   const directChannels = useAppSelector(state => state.user.directChannel);
@@ -33,10 +33,10 @@ const DirectChannelScreen = ({open, onClose}: DirectChannelScreenProps) => {
     [onClose],
   );
   useEffect(() => {
-    if (open && socketReconnect) {
+    if (socketReconnect) {
       dispatch(fetchDirectChannel());
     }
-  }, [dispatch, open, socketReconnect]);
+  }, [dispatch, socketReconnect]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>

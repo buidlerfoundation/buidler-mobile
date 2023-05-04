@@ -52,8 +52,11 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
   const {colors} = useThemeColor();
   const handlePress = useCallback(async () => {
     if (!attachment.id) return;
-    await api.removeFile(attachment.id);
-    onPress(attachment.id);
+    api.removeFile(attachment.id).then(res => {
+      if (res.statusCode === 200) {
+        onPress(attachment.id);
+      }
+    });
   }, [attachment.id, onPress]);
   return (
     <View style={styles.attachmentItem}>
@@ -663,16 +666,38 @@ const MessageInput = ({
                 <SVG.IconPlusCircle />
               </Touchable>
             )}
+            {!val?.trim() && (
+              <View
+                style={[
+                  StyleSheet.absoluteFill,
+                  {
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    left: !disabled ? 50 : 10,
+                  },
+                ]}>
+                <Text
+                  style={[
+                    AppStyles.TextSemi15,
+                    {
+                      color: disabled
+                        ? colors.activeBackground
+                        : colors.subtext,
+                    },
+                  ]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {placeholder ||
+                    `message to ${
+                      direct && directChannelUser
+                        ? `@ ${normalizeUserName(directChannelUser.user_name)}`
+                        : `# ${currentChannel?.channel_name}`
+                    }`}
+                </Text>
+              </View>
+            )}
             <TextInput
               style={[styles.input, AppStyles.TextSemi15, {color: colors.text}]}
-              placeholder={
-                placeholder ||
-                `message to ${
-                  direct && directChannelUser
-                    ? `@ ${normalizeUserName(directChannelUser.user_name)}`
-                    : `# ${currentChannel?.channel_name}`
-                }`
-              }
               multiline
               placeholderTextColor={
                 disabled ? colors.activeBackground : colors.subtext
@@ -727,6 +752,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
+    minHeight: 40,
   },
   input: {
     maxHeight: 100,

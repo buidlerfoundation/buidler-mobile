@@ -124,6 +124,7 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
     imgConfig,
     currentChannelId,
     imgBucket,
+    directChannelUsers,
   } = state;
   const channelId = currentChannelId;
   const currentChannel =
@@ -651,10 +652,18 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
             }),
           },
         },
+        directChannelUsers: directChannelUsers.map(el => {
+          if (el.user_id === user_id) {
+            el.status = 'online';
+            return {...el};
+          }
+          return el;
+        }),
       };
     }
     case actionTypes.USER_OFFLINE: {
       const {user_id} = payload;
+      if (!currentTeamId) return state;
       return {
         ...state,
         teamUserMap: {
@@ -670,6 +679,13 @@ const userReducers: Reducer<UserReducerState, AnyAction> = (
             }),
           },
         },
+        directChannelUsers: directChannelUsers.map(el => {
+          if (el.user_id === user_id) {
+            el.status = 'offline';
+            return {...el};
+          }
+          return el;
+        }),
       };
     }
     case actionTypes.GET_INITIAL: {

@@ -1,4 +1,4 @@
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {fetchTeamData, leaveTeam, setCurrentTeam} from 'actions/UserActions';
 import AppConfig from 'common/AppConfig';
 import AppDimension from 'common/AppDimension';
@@ -12,7 +12,7 @@ import useAppDispatch from 'hook/useAppDispatch';
 import useAppSelector from 'hook/useAppSelector';
 import useThemeColor from 'hook/useThemeColor';
 import {Community} from 'models';
-import React, {memo, useCallback, useState} from 'react';
+import React, {memo, useCallback, useEffect, useState} from 'react';
 import {StyleSheet, Text, View, FlatList, Alert} from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
@@ -105,13 +105,11 @@ const SideBarCommunity = () => {
   const renderFooter = useCallback(() => {
     return <View style={{height: 10}} />;
   }, []);
-  useFocusEffect(
-    useCallback(() => {
-      if (reconnectSocket && !teamLoading) {
-        dispatch(fetchTeamData());
-      }
-    }, [dispatch, reconnectSocket, teamLoading]),
-  );
+  useEffect(() => {
+    if (reconnectSocket && !teamLoading) {
+      dispatch(fetchTeamData());
+    }
+  }, [dispatch, reconnectSocket, teamLoading]);
   return (
     <View
       style={[styles.container, {backgroundColor: colors.backgroundHeader}]}>
