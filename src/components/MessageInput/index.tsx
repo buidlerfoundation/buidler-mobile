@@ -714,7 +714,7 @@ const MessageInput = ({
               <Text>{parsedText}</Text>
             </TextInput>
             {(!!val?.trim() || attachments.length > 0) && (
-              <Touchable style={{padding: 5, marginRight: 5}} onPress={onSend}>
+              <Touchable style={{padding: 5}} onPress={onSend}>
                 <SVG.IconArrowSend />
               </Touchable>
             )}
