@@ -662,18 +662,20 @@ const MessageInput = ({
           </View>
           <View style={styles.inputContainer}>
             {!disabled && (
-              <Touchable style={{padding: 5}} onPress={onPlusPress}>
-                <SVG.IconPlusCircle />
-              </Touchable>
+              <View style={{alignSelf: 'flex-end'}}>
+                <Touchable style={{padding: 5}} onPress={onPlusPress}>
+                  <SVG.IconPlusCircle />
+                </Touchable>
+              </View>
             )}
-            {!val?.trim() && (
+            {!val && (
               <View
                 style={[
                   StyleSheet.absoluteFill,
                   {
-                    alignItems: 'center',
                     flexDirection: 'row',
                     left: !disabled ? 45 : 5,
+                    alignItems: 'center',
                   },
                 ]}>
                 <Text
@@ -699,9 +701,6 @@ const MessageInput = ({
             <TextInput
               style={[styles.input, AppStyles.TextSemi15, {color: colors.text}]}
               multiline
-              placeholderTextColor={
-                disabled ? colors.activeBackground : colors.subtext
-              }
               onChangeText={handleChangeText}
               keyboardAppearance="dark"
               ref={inputRef}
@@ -714,9 +713,11 @@ const MessageInput = ({
               <Text>{parsedText}</Text>
             </TextInput>
             {(!!val?.trim() || attachments.length > 0) && (
-              <Touchable style={{padding: 5}} onPress={onSend}>
-                <SVG.IconArrowSend />
-              </Touchable>
+              <View style={{alignSelf: 'flex-end'}}>
+                <Touchable style={{padding: 5}} onPress={onSend}>
+                  <SVG.IconArrowSend />
+                </Touchable>
+              </View>
             )}
           </View>
         </View>
@@ -759,6 +760,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
     paddingTop: 7,
+    paddingBottom: 5,
   },
   mentionView: {
     maxHeight: 200,

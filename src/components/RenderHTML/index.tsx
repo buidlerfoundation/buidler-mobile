@@ -1,4 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
+import {acceptInvitation} from 'actions/UserActions';
 import {setCurrentChannel, setCurrentTeam} from 'actions/UserActions';
 import Fonts from 'common/Fonts';
 import ScreenID from 'common/ScreenID';
@@ -78,6 +79,9 @@ const RenderHTML = ({
         return;
       } else if (sameDAppURL(href, currentChannel?.dapp_integration_url)) {
         onOpenBrowser?.();
+        return;
+      } else if (href.includes('buidler.link')) {
+        dispatch(acceptInvitation(href, true));
         return;
       }
       Linking.openURL(href);

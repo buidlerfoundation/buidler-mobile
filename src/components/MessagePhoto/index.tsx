@@ -189,7 +189,7 @@ const MessagePhoto = ({
     if (stack) return attachments?.slice?.(0, 2);
     return attachments;
   }, [attachments, stack]);
-  const {width} = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
   if (!attachments || attachments.length === 0) return null;
   return (
     <View style={[styles.container, style]}>
@@ -223,6 +223,8 @@ const MessagePhoto = ({
                       url: ImageHelper.normalizeImage(el.file_url, teamId, {
                         w: width,
                       }),
+                      width,
+                      height,
                     }))
             }
           />

@@ -271,3 +271,6 @@ export const removeEncryptedKey = async () => {
   const deviceCode = await getDeviceCode();
   return ApiCaller.delete('user/device/encrypt', {device_code: deviceCode});
 };
+
+export const getListUserOnline = communityId =>
+  ApiCaller.get<String[]>(`user/online?team_id=${communityId}`);

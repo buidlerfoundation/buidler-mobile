@@ -894,7 +894,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
                   <ActivityIndicator />
                 </View>
               ) : (
-                <View style={{height: 15}} />
+                <View />
               )
             }
             onEndReached={onEndReached}

@@ -103,7 +103,7 @@ class ImageViewer extends Component<ImageViewerProps, ImageViewerState> {
                   </View>
                 );
               }
-              return <FastImage {...props} />;
+              return <FastImage {...props} resizeMode="contain" />;
             }}
           />
 

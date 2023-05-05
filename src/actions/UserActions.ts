@@ -195,8 +195,23 @@ export const fetchTeamUser = (teamId: string) => async (dispatch: Dispatch) => {
         teamId,
       },
     });
+    dispatch(fetchListUserOnline(teamId));
   }
 };
+
+export const fetchListUserOnline =
+  (teamId: string) => async (dispatch: Dispatch) => {
+    const onlineUsersRes = await api.getListUserOnline(teamId);
+    if (onlineUsersRes.statusCode === 200) {
+      dispatch({
+        type: actionTypes.GET_TEAM_USER_ONLINE,
+        payload: {
+          onlineUsers: onlineUsersRes.data || [],
+          teamId,
+        },
+      });
+    }
+  };
 
 export const fetchTeamDirectUser = () => async (dispatch: Dispatch) => {
   const directChannelUsersRes = await api.getDirectChannelUsers();
@@ -205,6 +220,7 @@ export const fetchTeamDirectUser = () => async (dispatch: Dispatch) => {
       type: actionTypes.GET_TEAM_DIRECT_USER,
       payload: {directChannelUsersRes},
     });
+    dispatch(fetchListUserOnline(AppConfig.directCommunityId));
   }
 };
 
@@ -288,7 +304,9 @@ export const findTeamAndChannel =
               teamId: currentTeam.team_id,
             },
           });
+          dispatch(fetchListUserOnline(currentTeam.team_id));
         }
+        dispatch(fetchListUserOnline(AppConfig.directCommunityId));
         dispatch({
           type: actionTypes.CURRENT_TEAM_SUCCESS,
           payload: {
@@ -401,6 +419,7 @@ const actionSetCurrentTeam = async (
         type: actionTypes.GET_TEAM_USER,
         payload: {teamUsers: teamUsersRes, teamId: team.team_id},
       });
+      dispatch(fetchListUserOnline(team.team_id));
     }
     SocketUtils.changeTeam();
     dispatch({
@@ -574,7 +593,7 @@ export const fetchWalletBalance = () => async (dispatch: Dispatch) =>
   actionFetchWalletBalance(dispatch);
 
 export const acceptInvitation =
-  (link: string) => async (dispatch: Dispatch) => {
+  (link: string, linkPress?: boolean) => async (dispatch: Dispatch) => {
     const urlObject = url.parse(link);
     const communityUrl = urlObject?.pathname?.substring(1);
     const invitationRef = urlObject?.search?.split('ref=')?.[1];
@@ -582,7 +601,14 @@ export const acceptInvitation =
     const teamId = profileRes?.data?.profile?.team_id;
     const userId = profileRes?.data?.profile?.user_id;
     if (userId) {
-      dispatch(startDM(userId));
+      if (!linkPress) {
+        dispatch(startDM(userId));
+      } else {
+        // TODO: push community id to get correct user profile
+        NavigationServices.pushToScreen(ScreenID.UserScreen, {
+          userId,
+        });
+      }
       return;
     }
     if (!teamId) {
@@ -767,6 +793,7 @@ export const syncDirectChannelData = () => async (dispatch: Dispatch) => {
     api.findDirectChannel(),
     api.getDirectChannelUsers(),
   ]);
+  dispatch(fetchListUserOnline(AppConfig.directCommunityId));
   dispatch({
     type: actionTypes.SYNC_DIRECT_CHANNEL_DATA,
     payload: {resDirectChannel, directChannelUsersRes},
