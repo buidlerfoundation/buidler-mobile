@@ -290,10 +290,16 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
           animated: false,
         });
       }
+      dispatch(
+        setScrollData(currentChannelId, {
+          showScrollDown: false,
+          unreadCount: 0,
+        }),
+      );
     } catch (error) {
       console.log(error);
     }
-  }, [currentChannelId]);
+  }, [currentChannelId, dispatch]);
   useEffect(() => {
     scrollDown();
   }, [scrollDown]);
@@ -474,6 +480,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         dispatch(
           setScrollData(currentChannelId, {
             showScrollDown: false,
+            unreadCount: 0,
           }),
         );
       }
@@ -843,6 +850,16 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     if (!currentChannel?.is_chat_deactivated) return true;
     return userRole === 'Owner' || userRole === 'Admin';
   }, [currentChannel?.is_chat_deactivated, userRole]);
+  const showScrollDown = useMemo(
+    () =>
+      (!isInputFocus && scrollData?.showScrollDown) ||
+      messageData?.canMoreAfter,
+    [isInputFocus, messageData?.canMoreAfter, scrollData?.showScrollDown],
+  );
+  const unReadCount = useMemo(
+    () => scrollData?.unreadCount || 0,
+    [scrollData?.unreadCount],
+  );
   return (
     <KeyboardLayout extraPaddingBottom={-AppDimension.extraBottom - 45}>
       <Drawer
@@ -887,14 +904,13 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             keyExtractor={item => item.message_id}
             renderItem={renderItem}
             initialNumToRender={20}
-            windowSize={2}
             ListHeaderComponent={
               loadMoreAfterMessage || socketConnecting || socketReconnect ? (
                 <View style={styles.footerMessage}>
                   <ActivityIndicator />
                 </View>
               ) : (
-                <View />
+                <View style={{height: 10}} />
               )
             }
             onEndReached={onEndReached}
@@ -905,7 +921,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             onScrollToIndexFailed={onScrollToIndexFailed}
             onMomentumScrollEnd={onMomentumScrollEnd}
             maintainVisibleContentPosition={
-              messageData?.canMoreAfter
+              messageData?.canMoreAfter || scrollData?.showScrollDown
                 ? {
                     minIndexForVisible: 1,
                   }
@@ -921,8 +937,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
               )
             }
           />
-          {((!isInputFocus && scrollData?.showScrollDown) ||
-            messageData?.canMoreAfter) && (
+          {showScrollDown && (
             <View style={styles.scrollDownWrap}>
               <View style={styles.scrollDownAbs}>
                 <Touchable
@@ -932,6 +947,18 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
                   ]}
                   onPress={onScrollDownPress}>
                   <SVG.IconScrollDown fill={colors.text} />
+                  {unReadCount > 0 && (
+                    <View
+                      style={[
+                        styles.unReadCount,
+                        {backgroundColor: colors.success},
+                      ]}>
+                      <Text
+                        style={[AppStyles.TextSemi16, {color: colors.text}]}>
+                        {unReadCount}
+                      </Text>
+                    </View>
+                  )}
                 </Touchable>
               </View>
             </View>
@@ -1118,6 +1145,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
+  },
+  unReadCount: {
+    position: 'absolute',
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: -20,
   },
   bottomView: {},
   footerMessage: {

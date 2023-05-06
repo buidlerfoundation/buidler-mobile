@@ -729,9 +729,9 @@ const MessageInput = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 5,
-    paddingVertical: 5,
+    paddingVertical: 2,
     marginHorizontal: 15,
-    marginVertical: 5,
+    marginVertical: 7,
     borderRadius: 10,
     borderWidth: 1,
   },
