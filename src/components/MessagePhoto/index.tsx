@@ -86,7 +86,7 @@ const AttachmentItem = ({
         {stackAttachment > 1 && (
           <View style={styles.stackView}>
             <Text style={[styles.stackCount, {color: colors.text}]}>
-              +{stackAttachment}
+              +{stackAttachment - 1}
             </Text>
           </View>
         )}

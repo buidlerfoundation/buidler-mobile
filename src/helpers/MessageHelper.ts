@@ -84,7 +84,7 @@ export const normalizeMessageTextPlain = (
     res = res
       .replace(/\n$/gim, '<br />')
       .replace(
-        /((https?|ftps?):\/\/[^"<\s]+)(?![^<>]*>|[^"]*?<\/a)/gim,
+        /((https?|ftps?):\/\/[^"<\s)]+)(?![^"]*?<\/a)/gim,
         "<a class='text-ellipsis' style='white-space: pre-line;' href='$1'>$1</a>",
       )
       .replace(
@@ -145,7 +145,7 @@ export const normalizeMessageText = (
     .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
     .replace(/\n$/gim, '<br />')
     .replace(
-      /((https?|ftps?):\/\/[^"<\s]+)(?![^<>]*>|[^"]*?<\/a)/gim,
+      /((https?|ftps?):\/\/[^"<\s)]+)(?![^"]*?<\/a)/gim,
       "<a href='$1'>$1</a>",
     )
     .replace(

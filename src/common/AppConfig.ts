@@ -185,7 +185,7 @@ export default AppConfig;
 
 export const DeletedUser: UserData = {
   user_id: '',
-  user_name: 'Deleted User',
+  user_name: 'User no longer in community',
   avatar_url: '',
 };
 

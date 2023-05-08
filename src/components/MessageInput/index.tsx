@@ -756,7 +756,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   input: {
-    maxHeight: 100,
+    maxHeight: 200,
     flex: 1,
     marginHorizontal: 5,
     paddingTop: 7,

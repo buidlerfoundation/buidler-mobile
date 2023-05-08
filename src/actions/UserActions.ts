@@ -186,8 +186,23 @@ export const fetchDirectChannel = () => async (dispatch: Dispatch) => {
 };
 
 export const fetchTeamUser = (teamId: string) => async (dispatch: Dispatch) => {
-  const teamUsersRes = await api.getTeamUsers(teamId);
+  const [teamUsersRes, onlineUsersRes] = await Promise.all([
+    api.getTeamUsers(teamId),
+    api.getListUserOnline(teamId),
+  ]);
   if (teamUsersRes.statusCode === 200) {
+    if (teamUsersRes.data) {
+      const onlineUsers = onlineUsersRes?.data || [];
+      teamUsersRes.data = teamUsersRes.data.map(el => {
+        if (onlineUsers.includes(el.user_id)) {
+          return {
+            ...el,
+            status: 'online',
+          };
+        }
+        return el;
+      });
+    }
     dispatch({
       type: actionTypes.GET_TEAM_USER,
       payload: {
@@ -195,7 +210,6 @@ export const fetchTeamUser = (teamId: string) => async (dispatch: Dispatch) => {
         teamId,
       },
     });
-    dispatch(fetchListUserOnline(teamId));
   }
 };
 
@@ -214,13 +228,27 @@ export const fetchListUserOnline =
   };
 
 export const fetchTeamDirectUser = () => async (dispatch: Dispatch) => {
-  const directChannelUsersRes = await api.getDirectChannelUsers();
+  const [directChannelUsersRes, onlineUsersRes] = await Promise.all([
+    api.getDirectChannelUsers(),
+    api.getListUserOnline(AppConfig.directCommunityId),
+  ]);
   if (directChannelUsersRes.statusCode === 200) {
+    if (directChannelUsersRes.data) {
+      const onlineUsers = onlineUsersRes?.data || [];
+      directChannelUsersRes.data = directChannelUsersRes.data.map(el => {
+        if (onlineUsers.includes(el.user_id)) {
+          return {
+            ...el,
+            status: 'online',
+          };
+        }
+        return el;
+      });
+    }
     dispatch({
       type: actionTypes.GET_TEAM_DIRECT_USER,
       payload: {directChannelUsersRes},
     });
-    dispatch(fetchListUserOnline(AppConfig.directCommunityId));
   }
 };
 
