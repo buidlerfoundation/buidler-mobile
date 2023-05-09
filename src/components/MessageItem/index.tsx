@@ -32,6 +32,7 @@ import ScreenID from 'common/ScreenID';
 import useCommunityId from 'hook/useCommunityId';
 import useUserById from 'hook/useUserById';
 import ScamVoting from 'components/ScamVoting';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 type ReplyMessageProps = {
   replyMessage?: MessageData;
@@ -241,9 +242,12 @@ const MessageItem = ({
         dispatch(removeReact(item?.message_id, reactName, userData?.user_id));
       } else {
         dispatch(addReact(item?.message_id, reactName, userData?.user_id));
+        MixpanelAnalytics.tracking('Message Reacted', {
+          category: direct ? 'Direct Message' : 'Channel Message',
+        });
       }
     },
-    [dispatch, item.message_id, reactData, userData?.user_id],
+    [direct, dispatch, item.message_id, reactData, userData?.user_id],
   );
   const onUserPress = useCallback(() => {
     if (!sender?.user_id) return;

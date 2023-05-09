@@ -14,6 +14,7 @@ import {useNavigation} from '@react-navigation/native';
 import ScreenID from 'common/ScreenID';
 import {updateSpaceToggle} from 'actions/SideBarActions';
 import useSpaceCollapsed from 'hook/useSpaceCollapsed';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 type SpaceItemProps = {
   item: Space;
@@ -38,6 +39,7 @@ const SpaceItem = ({
     dispatch(updateSpaceToggle(item.space_id, isCollapsed));
   }, [dispatch, isCollapsed, item.space_id]);
   const onBadgePress = useCallback(() => {
+    MixpanelAnalytics.tracking('View Entry Requirement');
     navigation.navigate(ScreenID.SpaceDetailScreen, {space: item});
   }, [item, navigation]);
   const handleSpacePress = useCallback(() => {

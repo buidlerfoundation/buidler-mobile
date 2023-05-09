@@ -86,6 +86,7 @@ import ChannelScreen from 'screens/ChannelScreen';
 import DirectChannelScreen from 'screens/DirectChannelScreen';
 import DAppBrowserScreen from 'screens/DAppBrowserScreen';
 import PinPostScreen from 'screens/PinPostScreen';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -626,6 +627,9 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         team_id: currentTeamId,
       };
       await dispatch(createTask(currentChannelId, body));
+      MixpanelAnalytics.tracking('Message Pinned', {
+        category: direct ? 'Direct Message' : 'Channel Message',
+      });
       if (isLock) {
         dispatch(uploadToIPFS(body.task_id, currentChannelId, body.content));
       }
@@ -635,6 +639,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       closeMenuConfirmPin,
       currentChannelId,
       currentTeamId,
+      direct,
       dispatch,
       selectedMessage?.content,
       selectedMessage?.message_id,
@@ -649,7 +654,10 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         currentChannelId,
       ),
     );
-  }, [currentChannelId, dispatch, selectedMessage]);
+    MixpanelAnalytics.tracking('Message Deleted', {
+      category: direct ? 'Direct Message' : 'Channel Message',
+    });
+  }, [currentChannelId, direct, dispatch, selectedMessage]);
   const onMenuPin = useCallback(() => {
     onCloseMenuMessage();
     setTimeout(() => {
@@ -833,9 +841,18 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
         dispatch(
           addReact(selectedMessage?.message_id, name, userData?.user_id),
         );
+        MixpanelAnalytics.tracking('Message Reacted', {
+          category: direct ? 'Direct Message' : 'Channel Message',
+        });
       }
     },
-    [dispatch, reactData, selectedMessage?.message_id, userData?.user_id],
+    [
+      direct,
+      dispatch,
+      reactData,
+      selectedMessage?.message_id,
+      userData?.user_id,
+    ],
   );
   const onEmojiSelected = useCallback(
     emoji => {

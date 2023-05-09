@@ -11,6 +11,7 @@ import numeral from 'numeral';
 import React, {memo, useCallback, useMemo, useRef, useState} from 'react';
 import {View, StyleSheet, Text, Linking} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 
 type ConditionItemProps = {
   item: SpaceCollectionData;
@@ -41,6 +42,7 @@ const ConditionItem = memo(({item}: ConditionItemProps) => {
   ]);
   const onGetCondition = useCallback(() => {
     if (!link) return;
+    MixpanelAnalytics.tracking('Get Space Condition');
     Linking.openURL(link);
   }, [link]);
   return (

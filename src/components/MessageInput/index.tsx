@@ -41,6 +41,8 @@ import useUserData from 'hook/useUserData';
 import useChannel from 'hook/useChannel';
 import useSpaceChannel from 'hook/useSpaceChannel';
 import MentionChannelItem from 'components/MentionChannelItem';
+import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
+import useTotalTeamUserData from 'hook/useTotalMemberUser';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -157,6 +159,7 @@ const MessageInput = ({
   const [mentionChannels, setMentionChannels] = useState([]);
   const [isOpenPopupMention, setOpenPopupMention] = useState(false);
   const currentChannel = useCurrentChannel();
+  const totalTeamUser = useTotalTeamUserData();
   const currentPublicChannelId = useChannelId();
   const currentDirectChannelId = useDirectChannelId();
   const channel = useChannel();
@@ -394,6 +397,26 @@ const MessageInput = ({
     } else {
       message.message_id = getUniqueId();
     }
+    let gaLabel = '';
+    if (message.content) {
+      gaLabel += 'text';
+    }
+    if (attachments?.find(el => el?.type?.includes('image'))) {
+      gaLabel += ', image';
+    }
+    if (attachments?.find(el => el?.type?.includes('video'))) {
+      gaLabel += ', video';
+    }
+    if (attachments?.find(el => el?.type?.includes('application'))) {
+      gaLabel += ', file';
+    }
+    MixpanelAnalytics.tracking('Message Sent', {
+      category: direct ? 'Direct Message' : 'Channel Message',
+      type: gaLabel,
+      is_reply: `${!!messageReply}`,
+      is_exclusive_space: `${currentChannel?.space?.space_type === 'Private'}`,
+      total_member: `${totalTeamUser}`,
+    });
     SocketUtils.sendMessage(message);
     SocketUtils.generateId = null;
     setVal('');
@@ -403,13 +426,15 @@ const MessageInput = ({
     canMoreAfter,
     normalizeContentMessageSubmit,
     val,
+    direct,
+    currentChannelId,
     postId,
     getMentionData,
     attachments,
-    currentChannelId,
-    direct,
     directChannelUser,
     messageReply,
+    currentChannel?.space?.space_type,
+    totalTeamUser,
     onClearAttachment,
     scrollDown,
     dispatch,
@@ -422,6 +447,9 @@ const MessageInput = ({
     const content = direct ? encryptMessage(text, currentChannelId) : text;
     const plain_text = direct ? encryptMessage(text, currentChannelId) : text;
     await api.editMessage(messageEdit?.message_id, content, plain_text);
+    MixpanelAnalytics.tracking('Message Edited', {
+      category: direct ? 'Direct Message' : 'Channel Message',
+    });
     setVal('');
     onClearReply?.();
     onClearAttachment?.();

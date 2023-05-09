@@ -6,7 +6,9 @@ function usePublicUser(userId: string) {
   const teamUserData = useTeamUserData();
 
   return React.useMemo(
-    () => teamUserData.find(el => el.user_id === userId) || DeletedUser,
+    () =>
+      teamUserData.find(el => !el.is_deleted && el.user_id === userId) ||
+      DeletedUser,
     [teamUserData, userId],
   );
 }
