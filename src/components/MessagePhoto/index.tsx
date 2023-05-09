@@ -116,7 +116,7 @@ const AttachmentItem = ({
                     att.file_url.replace(/\..*$/g, '_thumbnail.png'),
                     teamId,
                   )
-                : ImageHelper.normalizeImage(att.file_url, teamId, {h: 90}),
+                : ImageHelper.normalizeImage(att.file_url, teamId, {w: width}),
             }}
             style={{width: imageWidth, aspectRatio: 1.667}}
             resizeMode="contain"

@@ -60,16 +60,28 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
       }
     });
   }, [attachment.id, onPress]);
+  const ratio = useMemo(() => {
+    if (!attachment.width || !attachment.height) return 1.667;
+    return attachment.width / attachment.height;
+  }, [attachment.height, attachment.width]);
+  const isVideo = useMemo(
+    () => attachment.type.includes('video'),
+    [attachment.type],
+  );
   return (
     <View style={styles.attachmentItem}>
-      {attachment.type.includes('video') ? (
+      {isVideo ? (
         <Video
           source={{
             uri:
               attachment.uri ||
               ImageHelper.normalizeImage(attachment.url, teamId),
           }}
-          style={{borderRadius: 5, width: 150, height: 90}}
+          style={{
+            borderRadius: 5,
+            height: 90,
+            aspectRatio: ratio,
+          }}
           paused
           resizeMode="contain"
         />
@@ -80,12 +92,24 @@ const AttachmentItem = ({attachment, teamId, onPress}: AttachmentItemProps) => {
               attachment.uri ||
               ImageHelper.normalizeImage(attachment.url, teamId),
           }}
-          style={{borderRadius: 5, width: 150, height: 90}}
-          resizeMode="cover"
+          style={{
+            borderRadius: 5,
+            height: 90,
+            aspectRatio: ratio,
+          }}
         />
       )}
       {attachment.loading && (
         <Spinner size="small" backgroundColor="#11111180" />
+      )}
+      {isVideo && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {alignItems: 'center', justifyContent: 'center'},
+          ]}>
+          <SVG.IconVideoPlay />
+        </View>
       )}
       {attachment.id && (
         <View

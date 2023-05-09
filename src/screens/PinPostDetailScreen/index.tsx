@@ -259,6 +259,7 @@ const PinPostDetailScreen = () => {
         setAttachments(current => [
           ...current,
           {
+            ...img,
             uri: img.uri || img.path,
             randomId,
             loading: true,

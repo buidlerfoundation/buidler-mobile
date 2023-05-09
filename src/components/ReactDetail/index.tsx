@@ -12,6 +12,8 @@ import AvatarView from 'components/AvatarView';
 import useUserData from 'hook/useUserData';
 import useAppDispatch from 'hook/useAppDispatch';
 import {removeReact} from 'actions/ReactActions';
+import Spinner from 'components/Spinner';
+import {DeletedUser} from 'common/AppConfig';
 
 type ReactUserItemProps = {
   item: ReactUserApiData;
@@ -24,7 +26,7 @@ const ReactUserItem = memo(({item, direct, onPress}: ReactUserItemProps) => {
   const {colors} = useThemeColor();
   const userData = useUserData();
   const user = useMemo(
-    () => teamUserData.find(el => el.user_id === item.user_id),
+    () => teamUserData.find(el => el.user_id === item.user_id) || DeletedUser,
     [item.user_id, teamUserData],
   );
   const isMine = useMemo(
@@ -100,6 +102,7 @@ type ReactDetailProps = {
 const ReactDetail = ({initialReactId, reacts, parentId}: ReactDetailProps) => {
   const dispatch = useAppDispatch();
   const [selectedReactId, setSelectedReactId] = useState<undefined | string>();
+  const [loading, setLoading] = useState(false);
   const [reactDataMap, setReactDataMap] = useState<{
     [key: string]: ReactUserApiData[];
   }>({});
@@ -111,14 +114,20 @@ const ReactDetail = ({initialReactId, reacts, parentId}: ReactDetailProps) => {
   }, [initialReactId]);
   useEffect(() => {
     if (selectedReactId) {
-      api.getReactionDetail(parentId, selectedReactId).then(res => {
-        if (res.statusCode === 200) {
-          setReactDataMap(current => ({
-            ...current,
-            [selectedReactId]: res.data,
-          }));
-        }
-      });
+      setLoading(true);
+      api
+        .getReactionDetail(parentId, selectedReactId)
+        .then(res => {
+          if (res.statusCode === 200) {
+            setReactDataMap(current => ({
+              ...current,
+              [selectedReactId]: res.data,
+            }));
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }, [parentId, selectedReactId]);
   const reactData = useMemo(
@@ -171,12 +180,16 @@ const ReactDetail = ({initialReactId, reacts, parentId}: ReactDetailProps) => {
         ListHeaderComponent={<View style={{width: 20}} />}
         ListFooterComponent={<View style={{width: 20}} />}
       />
-      <FlatList
-        data={reactData}
-        keyExtractor={item => `${item.user_id}-${item.emoji_id}`}
-        renderItem={renderUserItem}
-        ListFooterComponent={<View style={{height: 20}} />}
-      />
+      {loading && reactData.length === 0 ? (
+        <Spinner size="small" />
+      ) : (
+        <FlatList
+          data={reactData}
+          keyExtractor={item => `${item.user_id}-${item.emoji_id}`}
+          renderItem={renderUserItem}
+          ListFooterComponent={<View style={{height: 20}} />}
+        />
+      )}
     </View>
   );
 };

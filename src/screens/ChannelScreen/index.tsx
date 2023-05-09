@@ -104,6 +104,12 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
   const onCommunityPress = useCallback(() => {
     navigation.navigate(ScreenID.CommunityDetailScreen);
   }, [navigation]);
+  const onlineCount = useMemo(
+    () =>
+      teamUserData.filter(el => !el.is_deleted && el.status === 'online')
+        .length,
+    [teamUserData],
+  );
   const renderHeader = useCallback(() => {
     return (
       <Touchable
@@ -156,7 +162,7 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
         <View style={[styles.rowMemberWrap, {marginTop: 8}]}>
           <View style={[styles.dot, {backgroundColor: colors.success}]} />
           <Text style={[AppStyles.TextSemi15, {color: colors.lightText}]}>
-            Online: {teamUserData.filter(el => el.status === 'online').length}
+            Online: {onlineCount ? onlineCount : ''}
           </Text>
         </View>
         <Touchable
@@ -183,6 +189,7 @@ const ChannelScreen = ({open, onClose}: ChannelScreenProps) => {
     communityVerified,
     onCommunityPress,
     onInvitePress,
+    onlineCount,
     showBadge,
     showCover,
     teamUserData,

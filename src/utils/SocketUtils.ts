@@ -107,8 +107,8 @@ class SocketUtil {
         }
       } else {
         Toast.show({
-          type: 'customError',
-          props: {message: 'Network error'},
+          type: 'customInfo',
+          props: {message: 'Connecting...'},
         });
         store.dispatch({
           type: actionTypes.SOCKET_CONNECTING,
