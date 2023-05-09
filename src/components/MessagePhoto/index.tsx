@@ -109,6 +109,25 @@ const AttachmentItem = ({
         contentId={contentId}
         allAttachments={allAttachments}>
         <View>
+          {!att?.mimetype?.includes('video') && (
+            <FastImage
+              source={{
+                uri: att?.mimetype?.includes('video')
+                  ? ImageHelper.normalizeImage(
+                      att.file_url.replace(/\..*$/g, '_thumbnail.png'),
+                      teamId,
+                    )
+                  : ImageHelper.normalizeImage(att.file_url, teamId, {
+                      w: width,
+                    }),
+              }}
+              style={[
+                StyleSheet.absoluteFill,
+                {width: imageWidth, aspectRatio: 1.667},
+              ]}
+              resizeMode="contain"
+            />
+          )}
           <FastImage
             source={{
               uri: att?.mimetype?.includes('video')
@@ -116,7 +135,9 @@ const AttachmentItem = ({
                     att.file_url.replace(/\..*$/g, '_thumbnail.png'),
                     teamId,
                   )
-                : ImageHelper.normalizeImage(att.file_url, teamId, {w: width}),
+                : ImageHelper.normalizeImage(att.file_url, teamId, {
+                    w: imageWidth,
+                  }),
             }}
             style={{width: imageWidth, aspectRatio: 1.667}}
             resizeMode="contain"
