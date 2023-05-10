@@ -43,6 +43,9 @@ import useSpaceChannel from 'hook/useSpaceChannel';
 import MentionChannelItem from 'components/MentionChannelItem';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import useTotalTeamUserData from 'hook/useTotalMemberUser';
+import useDebounce from 'hook/useDebounce';
+import {updateDraft} from 'actions/DraftActions';
+import useAppSelector from 'hook/useAppSelector';
 
 type AttachmentItemProps = {
   attachment: any;
@@ -175,6 +178,7 @@ const MessageInput = ({
 }: MessageInputProps) => {
   const dispatch = useAppDispatch();
   const [val, setVal] = useState('');
+  const debounceTextValue = useDebounce(val, 250);
   const [isFocus, setFocus] = useState(true);
   const [cursorPos, setCursorPos] = useState(0);
   const [mentionStr, setMentionStr] = useState('');
@@ -192,6 +196,13 @@ const MessageInput = ({
     () => (direct ? currentDirectChannelId : currentPublicChannelId),
     [currentDirectChannelId, currentPublicChannelId, direct],
   );
+  const entityId = useMemo(
+    () => postId || currentChannelId,
+    [currentChannelId, postId],
+  );
+  const textFromDraft = useAppSelector(
+    state => state.draft.data?.[entityId]?.text || '',
+  );
   const directChannelUser = useDirectChannelUser();
   const userData = useUserData();
   const teamId = useCommunityId(direct);
@@ -202,6 +213,17 @@ const MessageInput = ({
   );
   const {colors} = useThemeColor();
   const channelType = useMemo(() => (direct ? 'Private' : 'Public'), [direct]);
+  const saveDraft = useCallback(
+    (text: string) => {
+      if (entityId && !messageEdit) {
+        dispatch(updateDraft(entityId, {text}));
+      }
+    },
+    [dispatch, entityId, messageEdit],
+  );
+  useEffect(() => {
+    saveDraft(debounceTextValue);
+  }, [debounceTextValue, saveDraft]);
   useEffect(() => {
     const lastIndexMentionUser = val.substring(0, cursorPos).lastIndexOf('@');
     const lastIndexMentionChannel = val
@@ -301,14 +323,14 @@ const MessageInput = ({
 
   useEffect(() => {
     if (currentChannelId) {
-      setVal('');
+      setVal(textFromDraft);
       onClearAttachment?.();
     }
   }, [currentChannelId, onClearAttachment]);
 
   useEffect(() => {
     if (postId) {
-      setVal('');
+      setVal(textFromDraft);
       onClearAttachment?.();
     }
   }, [onClearAttachment, postId]);

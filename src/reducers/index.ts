@@ -15,6 +15,7 @@ import galleryReducer from './GalleryReducers';
 import notificationReducer from './NotificationReducers';
 import sideBarReducers from './SideBarReducers';
 import socketReducers from './SocketReducers';
+import draftReducers from './DraftReducers';
 
 const appReducer = combineReducers({
   configs: configReducers,
@@ -33,6 +34,7 @@ const appReducer = combineReducers({
   notification: notificationReducer,
   sideBar: sideBarReducers,
   socket: socketReducers,
+  draft: draftReducers,
 });
 
 const rootReducer = (state, action) => {

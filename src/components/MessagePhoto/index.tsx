@@ -123,7 +123,7 @@ const AttachmentItem = ({
               }}
               style={[
                 StyleSheet.absoluteFill,
-                {width: imageWidth, aspectRatio: 1.667},
+                {width: imageWidth, aspectRatio: 1.667, opacity: 0},
               ]}
               resizeMode="contain"
             />

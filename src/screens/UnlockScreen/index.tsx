@@ -27,6 +27,7 @@ import {biometricAuthenticate, isBiometricAvailable} from 'services/biometric';
 import {getCredentials} from 'services/keychain';
 import AppStyles from 'common/AppStyles';
 import NavigationServices from 'services/NavigationServices';
+import {initialDraft} from 'actions/DraftActions';
 
 const UnlockScreen = () => {
   const inputRef = useRef<TextInput>();
@@ -58,6 +59,7 @@ const UnlockScreen = () => {
             payload: privateKey,
           });
           dispatch(initialSpaceToggle());
+          dispatch(initialDraft());
           NavigationServices.replace(ScreenID.LoadingScreen);
         }
       } catch (error) {

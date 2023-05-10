@@ -23,6 +23,7 @@ export const AsyncKey = {
   isBackup: `${PrefixKey}_is_backup`,
   loginType: `${PrefixKey}_login_type`,
   generatedPrivateKey: `${PrefixKey}_generated_private_key`,
+  draftMessageKey: `${PrefixKey}_draft_message`,
 };
 
 export const GeneratedPrivateKey = async () => {
