@@ -87,6 +87,7 @@ import DirectChannelScreen from 'screens/DirectChannelScreen';
 import DAppBrowserScreen from 'screens/DAppBrowserScreen';
 import PinPostScreen from 'screens/PinPostScreen';
 import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
+import {updateAttachmentDraft} from 'actions/DraftActions';
 
 type ConversationScreenProps = {
   direct?: boolean;
@@ -150,6 +151,9 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     () => (direct ? currentDirectChannelId : currentPublicChannelId),
     [currentDirectChannelId, currentPublicChannelId, direct],
   );
+  const attachmentsFromDraft = useAppSelector(
+    state => state.draft.attachmentData?.[currentChannelId]?.attachments || [],
+  );
   const currentChannel = useChannelById(currentChannelId, direct);
   const channelType = useMemo(() => (direct ? 'Direct' : 'Public'), [direct]);
   const [isInputFocus, setFocus] = useState(false);
@@ -189,6 +193,15 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
       },
     }),
   );
+  useEffect(() => {
+    if (currentChannelId) {
+      dispatch(
+        updateAttachmentDraft(currentChannelId, {
+          attachments,
+        }),
+      );
+    }
+  }, [attachments, currentChannelId, dispatch]);
   useEffect(() => {
     if (!isFocused) {
       onCloseLeft();
@@ -308,9 +321,17 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
     if (currentChannelId) {
       setMessageReply(null);
       setMessageEdit(null);
-      setAttachments([]);
-      SocketUtils.generateId = null;
+      setAttachments(
+        attachmentsFromDraft.map(el => {
+          return {
+            ...el,
+            loading: false,
+          };
+        }),
+      );
+      SocketUtils.generateId = attachmentsFromDraft?.[0]?.attachmentId || null;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChannelId]);
   const {colors} = useThemeColor();
   const uniqMessages = useMemo(
@@ -575,6 +596,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             randomId,
             loading: true,
             type: img.type || 'image',
+            attachmentId: SocketUtils.generateId,
           },
         ]);
         const body = {
@@ -985,7 +1007,7 @@ const ConversationScreen = ({direct}: ConversationScreenProps) => {
             <MessageInput
               openGallery={toggleGallery}
               onRemoveAttachment={onRemoveAttachment}
-              attachments={attachments}
+              attachments={attachmentsFromDraft}
               onClearAttachment={onClearAttachment}
               messageReply={messageReply}
               messageEdit={messageEdit}

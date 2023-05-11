@@ -3,6 +3,7 @@ import {AppGetState} from 'renderer/store';
 import {AsyncKey} from 'common/AppStorage';
 import {actionTypes} from './actionTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {LocalAttachment} from 'models';
 
 export const initialDraft = () => async (dispatch: Dispatch) => {
   const dataLocal = await AsyncStorage.getItem(AsyncKey.draftMessageKey);
@@ -29,5 +30,14 @@ export const updateDraft =
     dispatch({
       type: actionTypes.UPDATE_DRAFT,
       payload: {entityId, text: data?.text},
+    });
+  };
+
+export const updateAttachmentDraft =
+  (entityId: string, data?: {attachments?: LocalAttachment[]}) =>
+  (dispatch: Dispatch) => {
+    dispatch({
+      type: actionTypes.UPDATE_ATTACHMENT_DRAFT,
+      payload: {entityId, attachments: data?.attachments || []},
     });
   };
