@@ -164,6 +164,14 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
           });
           toggleModalConfirm();
           break;
+        case 'signTypedMessage':
+          setConfirmData({
+            title: 'Sign Typed Message',
+            message: object.raw,
+            data,
+          });
+          toggleModalConfirm();
+          break;
         case 'switchEthereumChain':
           if (!data) {
             Toast.show({
@@ -305,6 +313,35 @@ const DAppBrowser = ({url, webviewRef, focus}: DAppBrowserProps) => {
         webviewRef.current.injectJavaScript(setConfig);
         webviewRef.current.injectJavaScript(emitChange);
         webviewRef.current.injectJavaScript(callback);
+        break;
+      case 'signTypedMessage': {
+        try {
+          const raw = JSON.parse(object.raw);
+          if (connector?.connected) {
+            const params = [object.address, raw];
+            const signature = await connector.signTypedData(params);
+            const callback = `window.${network}.sendResponse(${id}, "${signature}")`;
+            webviewRef.current.injectJavaScript(callback);
+          } else if (privateKey) {
+            const signer = new Wallet(privateKey);
+            delete raw.types.EIP712Domain;
+            const signature = await signer._signTypedData(
+              raw.domain,
+              raw.types,
+              raw.message,
+            );
+            const callback = `window.${network}.sendResponse(${id}, "${signature}")`;
+            webviewRef.current.injectJavaScript(callback);
+          }
+        } catch (error) {
+          Toast.show({
+            type: 'customError',
+            props: {message: error},
+          });
+        }
+        break;
+      }
+      default:
         break;
     }
     toggleModalConfirm();
