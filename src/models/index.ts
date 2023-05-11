@@ -191,6 +191,8 @@ export interface AttachmentData {
   mimetype?: string;
   original_name?: string;
   is_uploaded?: boolean;
+  width?: number;
+  height?: number;
 }
 
 export interface FileApiData {

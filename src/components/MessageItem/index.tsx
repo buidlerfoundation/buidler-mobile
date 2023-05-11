@@ -348,7 +348,7 @@ const MessageItem = ({
               <MessagePhoto
                 attachments={item?.message_attachments || []}
                 teamId={teamId}
-                imageWidth={!embeds ? width - 160 : (width - 132) / 2}
+                imageWidth={!embeds ? width - 140 : (width - 132) / 2}
                 stack={embeds}
                 edited={
                   !item.isSending &&

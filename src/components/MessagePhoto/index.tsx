@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import useThemeColor from 'hook/useThemeColor';
 import FastImage from 'react-native-fast-image';
+import AppDimension from 'common/AppDimension';
 
 type AttachmentItemProps = {
   att: AttachmentData;
@@ -43,7 +44,23 @@ const AttachmentItem = ({
   allAttachments,
 }: AttachmentItemProps) => {
   const {colors} = useThemeColor();
-  const {width} = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
+  const maxHeight = useMemo(
+    () =>
+      Math.round(
+        (height - 172 - AppDimension.extraBottom - AppDimension.extraTop) / 2,
+      ),
+    [height],
+  );
+  const aspectRatio = useMemo(() => {
+    if (!att.height || !att.width) {
+      return 1.667;
+    }
+    const imageHeight = (imageWidth * att.height) / att.width;
+    return (
+      Math.round((imageWidth / Math.min(imageHeight, maxHeight)) * 1000) / 1000
+    );
+  }, [att.height, att.width, imageWidth, maxHeight]);
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
   if (att.is_uploaded === false) {
     return (
@@ -123,7 +140,7 @@ const AttachmentItem = ({
               }}
               style={[
                 StyleSheet.absoluteFill,
-                {width: imageWidth, aspectRatio: 1.667, opacity: 0},
+                {width: imageWidth, aspectRatio, opacity: 0},
               ]}
               resizeMode="contain"
             />
@@ -139,8 +156,7 @@ const AttachmentItem = ({
                     w: imageWidth,
                   }),
             }}
-            style={{width: imageWidth, aspectRatio: 1.667}}
-            resizeMode="contain"
+            style={{width: imageWidth, aspectRatio}}
           />
           {att?.mimetype?.includes('video') && (
             <View
