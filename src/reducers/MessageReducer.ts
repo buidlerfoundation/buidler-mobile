@@ -55,7 +55,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
               }
               return {
                 ...el,
-                message_attachments: el.message_attachments.map(att => {
+                message_attachments: el.message_attachments?.map(att => {
                   if (att.file_id === file.file_id) {
                     return {
                       ...file,
@@ -216,7 +216,7 @@ const messageReducers: Reducer<MessageReducerState, AnyAction> = (
           ...newMessageData[channelId],
           data: newMessageData[channelId].data.map(el => {
             if (el.message_id === messageId) {
-              el.message_attachments = el.message_attachments.filter(
+              el.message_attachments = el.message_attachments?.filter(
                 item => item.file_id !== fileId,
               );
             }

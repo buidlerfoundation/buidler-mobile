@@ -82,7 +82,7 @@ const ReplyMessage = memo(
               ellipsizeMode="middle">
               {replier.user_name}
             </Text>
-            {replyMessage.message_attachments.length > 0 && (
+            {replyMessage.message_attachments?.length > 0 && (
               <View style={{marginLeft: 8}}>
                 <SVG.IconReplyAttachment fill={colors.lightText} />
               </View>
