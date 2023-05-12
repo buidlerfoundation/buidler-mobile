@@ -649,10 +649,12 @@ export const acceptInvitation =
     );
     const inviteRes = await api.acceptInvitation(invitationId, invitationRef);
     if (inviteRes.success) {
-      Toast.show({
-        type: 'customSuccess',
-        props: {message: 'You have successfully joined new community.'},
-      });
+      if (inviteRes.metadata?.is_new_team_member) {
+        Toast.show({
+          type: 'customSuccess',
+          props: {message: 'You have successfully joined new community.'},
+        });
+      }
       dispatch({
         type: actionTypes.ACCEPT_TEAM_SUCCESS,
         payload: inviteRes.data,
@@ -669,6 +671,7 @@ export const accessToHome =
     const dataFromUrl = getState()?.configs?.dataFromUrl;
     let invitationCommunity = null;
     let userId = null;
+    let newMember = false;
     if (dataFromUrl) {
       dispatch({type: actionTypes.SET_DATA_FROM_URL, payload: ''});
       const urlObject = url.parse(dataFromUrl);
@@ -689,6 +692,7 @@ export const accessToHome =
         );
         if (inviteRes.success) {
           invitationCommunity = inviteRes.data;
+          newMember = inviteRes.metadata?.is_new_team_member;
         }
       }
     }
@@ -696,10 +700,12 @@ export const accessToHome =
     const {team, currentTeamId, channelMap} = getState()?.user;
     let params = {};
     if (invitationCommunity) {
-      Toast.show({
-        type: 'customSuccess',
-        props: {message: 'You have successfully joined new community.'},
-      });
+      if (newMember) {
+        Toast.show({
+          type: 'customSuccess',
+          props: {message: 'You have successfully joined new community.'},
+        });
+      }
       params = {
         openDrawer: true,
       };
