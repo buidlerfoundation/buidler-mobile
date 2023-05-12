@@ -92,7 +92,9 @@ const ReplyMessage = memo(
                 html={normalizeMessageTextPlain(
                   replyMessage.content || 'View attachment',
                   true,
-                  replyMessage.createdAt !== replyMessage.updatedAt,
+                  replyMessage.is_scam_detected
+                    ? false
+                    : replyMessage.createdAt !== replyMessage.updatedAt,
                 )}
                 defaultTextProps={{
                   ellipsizeMode: 'tail',

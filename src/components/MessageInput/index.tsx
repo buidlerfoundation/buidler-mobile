@@ -326,6 +326,7 @@ const MessageInput = ({
       setVal(textFromDraft);
       onClearAttachment?.();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChannelId, onClearAttachment]);
 
   useEffect(() => {
@@ -333,6 +334,7 @@ const MessageInput = ({
       setVal(textFromDraft);
       onClearAttachment?.();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClearAttachment, postId]);
   useEffect(() => {
     if (!val) {
@@ -541,7 +543,7 @@ const MessageInput = ({
             ]}>
             {sender.user_name}
           </Text>
-          {messageReply.message_attachments.length > 0 && (
+          {messageReply.message_attachments?.length > 0 && (
             <View style={{marginLeft: 8}}>
               <SVG.IconReplyAttachment fill={colors.lightText} />
             </View>
