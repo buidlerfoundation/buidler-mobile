@@ -25,6 +25,7 @@ import DAppBrowserScreen from 'screens/DAppBrowserScreen';
 import CreatePasswordScreen from 'screens/CreatePasswordScreen';
 import ImportSeedPhraseScreen from 'screens/ImportSeedPhraseScreen';
 import LoadingScreen from 'screens/LoadingScreen';
+import CommunityProfileScreen from 'screens/CommunityProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +62,10 @@ const RootNavigator = () => {
           }}>
           <Stack.Screen name={ScreenID.EnterOTPScreen} component={EnterOTP} />
           <Stack.Screen name={ScreenID.UserScreen} component={UserScreen} />
+          <Stack.Screen
+            name={ScreenID.CommunityProfileScreen}
+            component={CommunityProfileScreen}
+          />
           <Stack.Screen
             name={ScreenID.PinPostDetailScreen}
             component={PinPostDetailScreen}

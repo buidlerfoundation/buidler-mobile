@@ -642,27 +642,35 @@ export const acceptInvitation =
     if (!teamId) {
       return;
     }
-    const invitationRes = await api.invitation(teamId);
-    const invitationUrl = invitationRes.data?.invitation_url;
-    const invitationId = invitationUrl?.substring(
-      invitationUrl?.lastIndexOf('/') + 1,
-    );
-    const inviteRes = await api.acceptInvitation(invitationId, invitationRef);
-    if (inviteRes.success) {
-      if (inviteRes.metadata?.is_new_team_member) {
-        Toast.show({
-          type: 'customSuccess',
-          props: {message: 'You have successfully joined new community.'},
+    if (linkPress) {
+      NavigationServices.pushToScreen(ScreenID.CommunityProfileScreen, {
+        communityId: `${communityUrl}?&${
+          invitationRef ? `ref=${invitationRef}` : ''
+        }`,
+      });
+    } else {
+      const invitationRes = await api.invitation(teamId);
+      const invitationUrl = invitationRes.data?.invitation_url;
+      const invitationId = invitationUrl?.substring(
+        invitationUrl?.lastIndexOf('/') + 1,
+      );
+      const inviteRes = await api.acceptInvitation(invitationId, invitationRef);
+      if (inviteRes.success) {
+        if (inviteRes.metadata?.is_new_team_member) {
+          Toast.show({
+            type: 'customSuccess',
+            props: {message: 'You have successfully joined new community.'},
+          });
+        }
+        dispatch({
+          type: actionTypes.ACCEPT_TEAM_SUCCESS,
+          payload: inviteRes.data,
+        });
+        await dispatch(setCurrentTeam(inviteRes.data));
+        NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
+          openDrawer: true,
         });
       }
-      dispatch({
-        type: actionTypes.ACCEPT_TEAM_SUCCESS,
-        payload: inviteRes.data,
-      });
-      await dispatch(setCurrentTeam(inviteRes.data));
-      NavigationServices.pushToScreen(ScreenID.ConversationScreen, {
-        openDrawer: true,
-      });
     }
   };
 

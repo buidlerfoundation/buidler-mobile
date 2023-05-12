@@ -25,6 +25,7 @@ export default {
   NFTDetailScreen: 'NFTDetailScreen',
   DAPPBrowserScreen: 'DAPPBrowserScreen',
   DAPPSignMessageScreen: 'DAPPSignMessageScreen',
+  CommunityProfileScreen: 'CommunityProfileScreen',
 };
 
 export const StackID = {
