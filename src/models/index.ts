@@ -193,6 +193,7 @@ export interface AttachmentData {
   is_uploaded?: boolean;
   width?: number;
   height?: number;
+  localFile?: any;
 }
 
 export interface FileApiData {
@@ -285,6 +286,7 @@ export interface ConversationData {
     };
   };
   is_scam_detected?: boolean;
+  files?: any[];
 }
 
 export interface MessageDateData {

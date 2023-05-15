@@ -427,6 +427,7 @@ const MessageInput = ({
     };
     if (attachments.length > 0) {
       message.file_ids = attachments.map(el => el.randomId);
+      message.files = attachments;
     }
     if (postId) {
       message.entity_id = postId;

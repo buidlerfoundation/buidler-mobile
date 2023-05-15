@@ -807,6 +807,7 @@ class SocketUtil {
     text?: string;
     entity_type?: string;
     file_ids?: string[];
+    files?: any[];
   }) => {
     const user: any = store.getState()?.user;
     const messageData: any = store.getState()?.message?.messageData;

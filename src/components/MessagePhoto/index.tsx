@@ -16,6 +16,8 @@ import {
 import useThemeColor from 'hook/useThemeColor';
 import FastImage from 'react-native-fast-image';
 import AppDimension from 'common/AppDimension';
+import Video from 'react-native-video';
+import Spinner from 'components/Spinner';
 
 type AttachmentItemProps = {
   att: AttachmentData;
@@ -52,6 +54,17 @@ const AttachmentItem = ({
       ),
     [height],
   );
+  const aspectRatioLocalFile = useMemo(() => {
+    const localWidth = att.localFile?.width;
+    const localHeight = att.localFile?.height;
+    if (!localHeight || !localWidth) {
+      return 1.667;
+    }
+    const imageHeight = (imageWidth * localHeight) / localWidth;
+    return (
+      Math.round((imageWidth / Math.min(imageHeight, maxHeight)) * 1000) / 1000
+    );
+  }, [att.localFile?.height, att.localFile?.width, imageWidth, maxHeight]);
   const aspectRatio = useMemo(() => {
     if (!att.height || !att.width) {
       return 1.667;
@@ -61,8 +74,45 @@ const AttachmentItem = ({
       Math.round((imageWidth / Math.min(imageHeight, maxHeight)) * 1000) / 1000
     );
   }, [att.height, att.width, imageWidth, maxHeight]);
+  const renderLocalFile = useCallback(
+    (localFile: any) => {
+      if (localFile.type.includes('video')) {
+        return (
+          <Video
+            source={{
+              uri: localFile.uri,
+            }}
+            style={{
+              borderRadius: 5,
+              width: imageWidth,
+              aspectRatio: aspectRatioLocalFile,
+            }}
+            paused
+            resizeMode="cover"
+          />
+        );
+      }
+      return (
+        <FastImage
+          source={{
+            uri: localFile.uri,
+          }}
+          style={{width: imageWidth, aspectRatio: aspectRatioLocalFile}}
+        />
+      );
+    },
+    [aspectRatioLocalFile, imageWidth],
+  );
   const onFilePress = useCallback(() => onPress(att), [att, onPress]);
   if (att.is_uploaded === false) {
+    if (att.localFile) {
+      return (
+        <View>
+          {renderLocalFile(att.localFile)}
+          <Spinner size="small" backgroundColor="#11111180" />
+        </View>
+      );
+    }
     return (
       <View
         style={[
