@@ -15,10 +15,13 @@ import MixpanelAnalytics from 'services/analytics/MixpanelAnalytics';
 import ModalProvider from 'components/ModalProvider';
 import {withWalletConnect} from '@walletconnect/react-native-dapp';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {TonClient} from '@eversdk/core';
+import {libReactNative} from '@eversdk/lib-react-native';
 
 LogBox.ignoreAllLogs();
 
 const App = () => {
+  TonClient.useBinaryLibrary(libReactNative);
   const appState = useRef(AppState.currentState);
   useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};

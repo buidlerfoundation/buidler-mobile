@@ -1519,6 +1519,16 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
+"@eversdk/core@^1.42.1":
+  version "1.42.1"
+  resolved "https://registry.yarnpkg.com/@eversdk/core/-/core-1.42.1.tgz#647aababd871c2b694a515608f1fabd37e856388"
+  integrity sha512-Wm93n/t6rBhGmbkV7OEsB+/DAD5OfCNOyhNARPWqBmjNLiamHLhzsO8LC293WM2Z4UxT9N0Gp4PsL2V6mrliaA==
+
+"@eversdk/lib-react-native@^1.43.0":
+  version "1.43.0"
+  resolved "https://registry.yarnpkg.com/@eversdk/lib-react-native/-/lib-react-native-1.43.0.tgz#3c143041ab117bbf1df8216103aef0d9a06f6424"
+  integrity sha512-oXvTcEmpo1DZe0rfwflZ0F1ln6Ew6Pmwy+8WgcAvj0nl+HXB2z7xq0ye+SsjSdkXFpQm4lBhbw3XonhamXUweQ==
+
 "@expo/config-plugins@^4.0.3":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@expo/config-plugins/-/config-plugins-4.1.5.tgz#9d357d2cda9c095e511b51583ede8a3b76174068"
