@@ -334,7 +334,7 @@ const PinPostItem = ({
         style={styles.attachmentWrap}
         attachments={pinPost.task_attachments}
         teamId={community.team_id}
-        imageWidth={embeds ? (width - 132) / 2 : (width - 50) / 2}
+        imageWidth={embeds ? width - 120 : width - 50}
         stack={!detail}
         onLongPress={handleLongPress}
         isPinPost
